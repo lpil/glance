@@ -51,3 +51,48 @@ pub fn private_enum_test() {
     ),
   ])))
 }
+
+pub fn phantom_test() {
+  "pub type Spooky(t) {
+    Spooky
+  }"
+  |> glance.module()
+  |> should.equal(Ok(Module([
+    CustomType(
+      name: "Spooky",
+      publicity: Public,
+      parameters: ["t"],
+      variants: [Variant("Spooky", [])],
+    ),
+  ])))
+}
+
+pub fn phantom_multiple_test() {
+  "pub type Spooky(t, u) {
+    Spooky
+  }"
+  |> glance.module()
+  |> should.equal(Ok(Module([
+    CustomType(
+      name: "Spooky",
+      publicity: Public,
+      parameters: ["t", "u"],
+      variants: [Variant("Spooky", [])],
+    ),
+  ])))
+}
+
+pub fn phantom_trailing_comma_test() {
+  "pub type Spooky(t, u, ) {
+    Spooky
+  }"
+  |> glance.module()
+  |> should.equal(Ok(Module([
+    CustomType(
+      name: "Spooky",
+      publicity: Public,
+      parameters: ["t", "u"],
+      variants: [Variant("Spooky", [])],
+    ),
+  ])))
+}

@@ -1,6 +1,6 @@
 import gleam/list
 import gleam/option.{Option}
-import glexer/token.{Token}
+import glexer/token.{Token} as t
 import glexer.{Position}
 import gleam/result
 
@@ -79,27 +79,11 @@ fn expect_upper_name(
 ) -> Result(t, Error) {
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
-    [#(token.UpperName(name), _), ..tokens] -> next(name, tokens)
+    [#(t.UpperName(name), _), ..tokens] -> next(name, tokens)
     [#(other, position), ..] ->
-      Error(UnexpectedToken(other, token.UpperName(""), position))
+      Error(UnexpectedToken(other, t.UpperName(""), position))
   }
 }
-
-// fn maybe(
-//   expected: Token,
-//   tokens: Tokens,
-//   next: fn(Option(Position), Tokens) -> Result(t, Error),
-// ) -> Result(t, Error) {
-//   case tokens {
-//     [] -> Error(UnexpectedEndOfInput)
-//     [#(token, position), ..tokens] if token == expected -> {
-//       next(Some(position), tokens)
-//     }
-//     tokens -> {
-//       next(None, tokens)
-//     }
-//   }
-// }
 
 fn until(
   limit: Token,
@@ -122,10 +106,10 @@ fn until(
 fn slurp(module: Module, tokens: Tokens) -> Result(Module, Error) {
   case tokens {
     [] -> Ok(module)
-    [#(token.Pub, _), #(token.Type, _), ..tokens] -> {
+    [#(t.Pub, _), #(t.Type, _), ..tokens] -> {
       slurp_custom_type(module, Public, tokens)
     }
-    [#(token.Type, _), ..tokens] -> {
+    [#(t.Type, _), ..tokens] -> {
       slurp_custom_type(module, Private, tokens)
     }
     [_, ..tokens] -> slurp(module, tokens)
@@ -137,19 +121,48 @@ fn slurp_custom_type(
   publicity: Publicity,
   tokens: Tokens,
 ) -> Result(Module, Error) {
+  // Name(a, b, c)
   use name, tokens <- expect_upper_name(tokens)
-  use _, tokens <- expect(token.LeftBrace, tokens)
-  let ct = CustomType(name, publicity, [], [])
+  use #(parameters, tokens) <- result.try(slurp_optional_type_parameters(tokens))
+
+  // { <variant>.. }
+  use _, tokens <- expect(t.LeftBrace, tokens)
+  let ct = CustomType(name, publicity, parameters, [])
   use #(ct, tokens) <- result.try(slurp_variants(ct, tokens))
+
+  // Continue to the next statement
   let module = push_custom_type(module, ct)
   slurp(module, tokens)
+}
+
+fn slurp_optional_type_parameters(
+  tokens: Tokens,
+) -> Result(#(List(String), Tokens), Error) {
+  case tokens {
+    [#(t.LeftParen, _), ..tokens] -> slurp_type_parameters([], tokens)
+    _ -> Ok(#([], tokens))
+  }
+}
+
+fn slurp_type_parameters(
+  parameters: List(String),
+  tokens: Tokens,
+) -> Result(#(List(String), Tokens), Error) {
+  case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+    [#(t.Name(name), _), #(t.Comma, _), ..tokens] ->
+      slurp_type_parameters([name, ..parameters], tokens)
+    [#(t.Name(name), _), #(t.RightParen, _), ..tokens] ->
+      Ok(#(list.reverse([name, ..parameters]), tokens))
+    [#(t.RightParen, _), ..tokens] -> Ok(#(list.reverse(parameters), tokens))
+  }
 }
 
 fn slurp_variants(
   ct: CustomType,
   tokens: Tokens,
 ) -> Result(#(CustomType, Tokens), Error) {
-  use ct, tokens <- until(token.RightBrace, ct, tokens)
+  use ct, tokens <- until(t.RightBrace, ct, tokens)
   use name, tokens <- expect_upper_name(tokens)
   let ct = push_variant(ct, Variant(name, []))
   Ok(#(ct, tokens))
