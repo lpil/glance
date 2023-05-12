@@ -8,12 +8,21 @@ type Tokens =
   List(#(Token, Position))
 
 pub type Module {
-  Module(custom_types: List(CustomType))
+  Module(custom_types: List(CustomType), type_aliases: List(TypeAlias))
 }
 
 pub type Publicity {
   Public
   Private
+}
+
+pub type TypeAlias {
+  TypeAlias(
+    name: String,
+    publicity: Publicity,
+    parameters: List(String),
+    aliased: Type,
+  )
 }
 
 pub type CustomType {
@@ -34,7 +43,10 @@ pub type Field {
 }
 
 pub type Type {
-  Dunno
+  NamedType(name: String, module: Option(String), parameters: List(String))
+  TupleType(elements: List(Type))
+  FunctionType(paramters: List(Type), return: Type)
+  VariableType(name: String)
 }
 
 pub type Error {
@@ -47,13 +59,17 @@ pub fn module(src: String) -> Result(Module, Error) {
   glexer.new(src)
   |> glexer.lex
   |> list.filter(fn(pair) { pair.0 != t.CommentNormal })
-  |> slurp(Module([]), _)
+  |> slurp(Module([], []), _)
 }
 
 fn push_custom_type(module: Module, custom_type: CustomType) -> Module {
   let custom_type =
     CustomType(..custom_type, variants: list.reverse(custom_type.variants))
-  Module(custom_types: [custom_type, ..module.custom_types])
+  Module(..module, custom_types: [custom_type, ..module.custom_types])
+}
+
+fn push_type_alias(module: Module, type_alias: TypeAlias) -> Module {
+  Module(..module, type_aliases: [type_alias, ..module.type_aliases])
 }
 
 fn push_variant(custom_type: CustomType, variant: Variant) -> CustomType {
@@ -108,16 +124,16 @@ fn slurp(module: Module, tokens: Tokens) -> Result(Module, Error) {
   case tokens {
     [] -> Ok(module)
     [#(t.Pub, _), #(t.Type, _), ..tokens] -> {
-      slurp_custom_type(module, Public, tokens)
+      type_definition(module, Public, tokens)
     }
     [#(t.Type, _), ..tokens] -> {
-      slurp_custom_type(module, Private, tokens)
+      type_definition(module, Private, tokens)
     }
     [_, ..tokens] -> slurp(module, tokens)
   }
 }
 
-fn slurp_custom_type(
+fn type_definition(
   module: Module,
   publicity: Publicity,
   tokens: Tokens,
@@ -126,10 +142,49 @@ fn slurp_custom_type(
   use name, tokens <- expect_upper_name(tokens)
   use #(parameters, tokens) <- result.try(slurp_optional_type_parameters(tokens))
 
-  // { <variant>.. }
-  use _, tokens <- expect(t.LeftBrace, tokens)
+  case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+    [#(t.Equal, _), ..tokens] -> {
+      type_alias(module, name, parameters, publicity, tokens)
+    }
+    [#(t.LeftBrace, _), ..tokens] -> {
+      custom_type(module, name, parameters, publicity, tokens)
+    }
+  }
+}
+
+fn type_alias(
+  module: Module,
+  name: String,
+  parameters: List(String),
+  publicity: Publicity,
+  tokens: Tokens,
+) -> Result(Module, Error) {
+  use #(type_, tokens) <- result.try(type_(tokens))
+  module
+  |> push_type_alias(TypeAlias(name, publicity, parameters, type_))
+  |> slurp(tokens)
+}
+
+fn type_(tokens: Tokens) -> Result(#(Type, Tokens), Error) {
+  case tokens {
+    [#(t.Name(name), _), ..tokens] -> {
+      Ok(#(VariableType(name), tokens))
+    }
+    _ -> todo("Type")
+  }
+}
+
+fn custom_type(
+  module: Module,
+  name: String,
+  parameters: List(String),
+  publicity: Publicity,
+  tokens: Tokens,
+) -> Result(Module, Error) {
+  // <variant>.. }
   let ct = CustomType(name, publicity, parameters, [])
-  use #(ct, tokens) <- result.try(slurp_variants(ct, tokens))
+  use #(ct, tokens) <- result.try(variants(ct, tokens))
 
   // Continue to the next statement
   let module = push_custom_type(module, ct)
@@ -159,7 +214,7 @@ fn slurp_type_parameters(
   }
 }
 
-fn slurp_variants(
+fn variants(
   ct: CustomType,
   tokens: Tokens,
 ) -> Result(#(CustomType, Tokens), Error) {
