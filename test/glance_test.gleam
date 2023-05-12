@@ -215,6 +215,32 @@ pub fn fields_trailing_comma_test() {
   )))
 }
 
+pub fn labelled_fields_test() {
+  "pub type Box(a) {
+    Box(a: a, b: a)
+  }"
+  |> glance.module()
+  |> should.equal(Ok(Module(
+    [
+      CustomType(
+        name: "Box",
+        publicity: Public,
+        parameters: ["a"],
+        variants: [
+          Variant(
+            "Box",
+            [
+              Field(Some("a"), VariableType("a")),
+              Field(Some("b"), VariableType("a")),
+            ],
+          ),
+        ],
+      ),
+    ],
+    [],
+  )))
+}
+
 pub fn phantom_trailing_comma_test() {
   "pub type Spooky(t, u, ) {
     Spooky
