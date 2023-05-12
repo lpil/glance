@@ -2,7 +2,7 @@ import gleeunit
 import gleeunit/should
 import gleam/option.{None, Some}
 import glance.{
-  CustomType, FunctionType, Module, NamedType, Private, Public, TupleType,
+  CustomType, Field, FunctionType, Module, NamedType, Private, Public, TupleType,
   TypeAlias, VariableType, Variant,
 }
 
@@ -92,6 +92,123 @@ pub fn phantom_multiple_test() {
         publicity: Public,
         parameters: ["t", "u"],
         variants: [Variant("Spooky", [])],
+      ),
+    ],
+    [],
+  )))
+}
+
+pub fn box_test() {
+  "pub type Box(x) {
+    Box(x)
+  }"
+  |> glance.module()
+  |> should.equal(Ok(Module(
+    [
+      CustomType(
+        name: "Box",
+        publicity: Public,
+        parameters: ["x"],
+        variants: [Variant("Box", [Field(None, VariableType("x"))])],
+      ),
+    ],
+    [],
+  )))
+}
+
+pub fn multiple_fields_test() {
+  "pub type Box(x, y, z) {
+    Box(x, y, z)
+  }"
+  |> glance.module()
+  |> should.equal(Ok(Module(
+    [
+      CustomType(
+        name: "Box",
+        publicity: Public,
+        parameters: ["x", "y", "z"],
+        variants: [
+          Variant(
+            "Box",
+            [
+              Field(None, VariableType("x")),
+              Field(None, VariableType("y")),
+              Field(None, VariableType("z")),
+            ],
+          ),
+        ],
+      ),
+    ],
+    [],
+  )))
+}
+
+pub fn trailing_comma_in_parameters_test() {
+  "pub type Box(x, ) {
+    Box
+  }"
+  |> glance.module()
+  |> should.equal(Ok(Module(
+    [
+      CustomType(
+        name: "Box",
+        publicity: Public,
+        parameters: ["x"],
+        variants: [Variant("Box", [])],
+      ),
+    ],
+    [],
+  )))
+}
+
+pub fn empty_parameter_list_test() {
+  "pub type Box() {
+    Box
+  }"
+  |> glance.module()
+  |> should.equal(Ok(Module(
+    [
+      CustomType(
+        name: "Box",
+        publicity: Public,
+        parameters: [],
+        variants: [Variant("Box", [])],
+      ),
+    ],
+    [],
+  )))
+}
+
+pub fn empty_fields_list_test() {
+  "pub type Box {
+    Box()
+  }"
+  |> glance.module()
+  |> should.equal(Ok(Module(
+    [
+      CustomType(
+        name: "Box",
+        publicity: Public,
+        parameters: [],
+        variants: [Variant("Box", [])],
+      ),
+    ],
+    [],
+  )))
+}
+
+pub fn fields_trailing_comma_test() {
+  "pub type Box(a) {
+    Box(a,)
+  }"
+  |> glance.module()
+  |> should.equal(Ok(Module(
+    [
+      CustomType(
+        name: "Box",
+        publicity: Public,
+        parameters: ["a"],
+        variants: [Variant("Box", [Field(None, VariableType("a"))])],
       ),
     ],
     [],

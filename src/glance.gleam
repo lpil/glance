@@ -151,7 +151,7 @@ fn type_definition(
 ) -> Result(Module, Error) {
   // Name(a, b, c)
   use name, tokens <- expect_upper_name(tokens)
-  use #(parameters, tokens) <- result.try(slurp_optional_type_parameters(tokens))
+  use #(parameters, tokens) <- result.try(optional_type_parameters(tokens))
 
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
@@ -271,25 +271,32 @@ fn custom_type(
   slurp(module, tokens)
 }
 
-fn slurp_optional_type_parameters(
+fn optional_type_parameters(
   tokens: Tokens,
 ) -> Result(#(List(String), Tokens), Error) {
   case tokens {
-    [#(t.LeftParen, _), ..tokens] -> slurp_type_parameters([], tokens)
+    [#(t.LeftParen, _), ..tokens] -> type_parameters([], tokens)
     _ -> Ok(#([], tokens))
   }
 }
 
-fn slurp_type_parameters(
+fn type_parameters(
   parameters: List(String),
   tokens: Tokens,
 ) -> Result(#(List(String), Tokens), Error) {
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
-    [#(t.Name(name), _), #(t.Comma, _), ..tokens] ->
-      slurp_type_parameters([name, ..parameters], tokens)
-    [#(t.Name(name), _), #(t.RightParen, _), ..tokens] ->
+
+    // Final parameter
+    [#(t.Name(name), _), #(t.RightParen, _), ..tokens]
+    | // Final parameter with trailing comma
+    [#(t.Name(name), _), #(t.Comma, _), #(t.RightParen, _), ..tokens] ->
       Ok(#(list.reverse([name, ..parameters]), tokens))
+
+    // Non-final parameter
+    [#(t.Name(name), _), #(t.Comma, _), ..tokens] ->
+      type_parameters([name, ..parameters], tokens)
+
     [#(t.RightParen, _), ..tokens] -> Ok(#(list.reverse(parameters), tokens))
   }
 }
@@ -300,6 +307,52 @@ fn variants(
 ) -> Result(#(CustomType, Tokens), Error) {
   use ct, tokens <- until(t.RightBrace, ct, tokens)
   use name, tokens <- expect_upper_name(tokens)
-  let ct = push_variant(ct, Variant(name, []))
+  use #(parameters, tokens) <- result.try(optional_variant_fields(tokens))
+  let ct = push_variant(ct, Variant(name, parameters))
   Ok(#(ct, tokens))
+}
+
+fn optional_variant_fields(
+  tokens: Tokens,
+) -> Result(#(List(Field), Tokens), Error) {
+  case tokens {
+    [#(t.LeftParen, _), #(t.RightParen, _), ..tokens] -> Ok(#([], tokens))
+    [#(t.LeftParen, _), ..tokens] -> variant_fields([], tokens)
+    _ -> Ok(#([], tokens))
+  }
+}
+
+fn variant_fields(
+  fields: List(Field),
+  tokens: Tokens,
+) -> Result(#(List(Field), Tokens), Error) {
+  // An optional label
+  //  my_field:
+  let #(label, tokens) = case tokens {
+    [#(t.Name(name), _), #(t.Colon, _), ..tokens] -> #(Some(name), tokens)
+    _ -> #(None, tokens)
+  }
+
+  // The type of the field
+  use #(type_, tokens) <- result.try(type_(tokens))
+
+  case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+
+    // The end of the fields
+    [#(t.RightParen, _), ..tokens]
+    | // A trailing comma 
+    [#(t.Comma, _), #(t.RightParen, _), ..tokens] -> {
+      Ok(#(list.reverse([Field(label, type_), ..fields]), tokens))
+    }
+
+    // A comma before another field
+    [#(t.Comma, _), ..tokens] -> {
+      variant_fields([Field(label, type_), ..fields], tokens)
+    }
+
+    [#(token, position), ..] -> {
+      Error(UnexpectedToken(token, position))
+    }
+  }
 }
