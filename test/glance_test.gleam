@@ -2,8 +2,8 @@ import gleeunit
 import gleeunit/should
 import gleam/option.{None, Some}
 import glance.{
-  CustomType, Field, FunctionType, Module, NamedType, Private, Public, TupleType,
-  TypeAlias, VariableType, Variant,
+  CustomType, Field, FunctionType, Import, Module, NamedType, Private, Public,
+  TupleType, TypeAlias, UnqualifiedImport, VariableType, Variant,
 }
 
 pub fn main() {
@@ -13,7 +13,7 @@ pub fn main() {
 pub fn empty_test() {
   ""
   |> glance.module()
-  |> should.equal(Ok(Module([], [])))
+  |> should.equal(Ok(Module([], [], [])))
 }
 
 pub fn public_enum_test() {
@@ -22,6 +22,7 @@ pub fn public_enum_test() {
   }"
   |> glance.module()
   |> should.equal(Ok(Module(
+    [],
     [
       CustomType(
         name: "Cardinal",
@@ -45,6 +46,7 @@ pub fn private_enum_test() {
   }"
   |> glance.module()
   |> should.equal(Ok(Module(
+    [],
     [
       CustomType(
         name: "Cardinal",
@@ -68,6 +70,7 @@ pub fn phantom_test() {
   }"
   |> glance.module()
   |> should.equal(Ok(Module(
+    [],
     [
       CustomType(
         name: "Spooky",
@@ -86,6 +89,7 @@ pub fn phantom_multiple_test() {
   }"
   |> glance.module()
   |> should.equal(Ok(Module(
+    [],
     [
       CustomType(
         name: "Spooky",
@@ -104,6 +108,7 @@ pub fn box_test() {
   }"
   |> glance.module()
   |> should.equal(Ok(Module(
+    [],
     [
       CustomType(
         name: "Box",
@@ -122,6 +127,7 @@ pub fn multiple_fields_test() {
   }"
   |> glance.module()
   |> should.equal(Ok(Module(
+    [],
     [
       CustomType(
         name: "Box",
@@ -149,6 +155,7 @@ pub fn trailing_comma_in_parameters_test() {
   }"
   |> glance.module()
   |> should.equal(Ok(Module(
+    [],
     [
       CustomType(
         name: "Box",
@@ -167,6 +174,7 @@ pub fn empty_parameter_list_test() {
   }"
   |> glance.module()
   |> should.equal(Ok(Module(
+    [],
     [
       CustomType(
         name: "Box",
@@ -185,6 +193,7 @@ pub fn empty_fields_list_test() {
   }"
   |> glance.module()
   |> should.equal(Ok(Module(
+    [],
     [
       CustomType(
         name: "Box",
@@ -203,6 +212,7 @@ pub fn fields_trailing_comma_test() {
   }"
   |> glance.module()
   |> should.equal(Ok(Module(
+    [],
     [
       CustomType(
         name: "Box",
@@ -221,6 +231,7 @@ pub fn labelled_fields_test() {
   }"
   |> glance.module()
   |> should.equal(Ok(Module(
+    [],
     [
       CustomType(
         name: "Box",
@@ -247,6 +258,7 @@ pub fn phantom_trailing_comma_test() {
   }"
   |> glance.module()
   |> should.equal(Ok(Module(
+    [],
     [
       CustomType(
         name: "Spooky",
@@ -273,6 +285,7 @@ pub fn comment_discarding_test() {
   }"
   |> glance.module()
   |> should.equal(Ok(Module(
+    [],
     [
       CustomType(
         name: "Spooky",
@@ -290,6 +303,7 @@ pub fn alias_variable_test() {
   |> glance.module()
   |> should.equal(Ok(Module(
     [],
+    [],
     [
       TypeAlias(
         name: "X",
@@ -305,6 +319,7 @@ pub fn alias_named_test() {
   "pub type X = Y"
   |> glance.module()
   |> should.equal(Ok(Module(
+    [],
     [],
     [
       TypeAlias(
@@ -322,6 +337,7 @@ pub fn alias_qualified_named_test() {
   |> glance.module()
   |> should.equal(Ok(Module(
     [],
+    [],
     [
       TypeAlias(
         name: "X",
@@ -337,6 +353,7 @@ pub fn alias_tuple_test() {
   "pub type X = #(A, B)"
   |> glance.module()
   |> should.equal(Ok(Module(
+    [],
     [],
     [
       TypeAlias(
@@ -354,6 +371,7 @@ pub fn alias_fn_test() {
   |> glance.module()
   |> should.equal(Ok(Module(
     [],
+    [],
     [
       TypeAlias(
         name: "X",
@@ -365,5 +383,71 @@ pub fn alias_fn_test() {
         ),
       ),
     ],
+  )))
+}
+
+pub fn import_test() {
+  "import one"
+  |> glance.module()
+  |> should.equal(Ok(Module([Import("one", None, [])], [], [])))
+}
+
+pub fn nested_import_test() {
+  "import one/two/three"
+  |> glance.module()
+  |> should.equal(Ok(Module([Import("one/two/three", None, [])], [], [])))
+}
+
+pub fn aliased_import_test() {
+  "import one/two/three as four"
+  |> glance.module()
+  |> should.equal(Ok(Module([Import("one/two/three", Some("four"), [])], [], [])))
+}
+
+pub fn empty_unqualified_test() {
+  "import one/two/three.{} as four"
+  |> glance.module()
+  |> should.equal(Ok(Module([Import("one/two/three", Some("four"), [])], [], [])))
+}
+
+pub fn unqualified_test() {
+  "import one/two/three.{One, Two, three, four} as four"
+  |> glance.module()
+  |> should.equal(Ok(Module(
+    [
+      Import(
+        "one/two/three",
+        Some("four"),
+        [
+          UnqualifiedImport("One", None),
+          UnqualifiedImport("Two", None),
+          UnqualifiedImport("three", None),
+          UnqualifiedImport("four", None),
+        ],
+      ),
+    ],
+    [],
+    [],
+  )))
+}
+
+pub fn unqualified_aliased_test() {
+  "import one/two/three.{One as Two, Three, four as five, six} as four"
+  |> glance.module()
+  |> should.equal(Ok(Module(
+    [
+      Import(
+        "one/two/three",
+        Some("four"),
+        [
+          UnqualifiedImport("One", Some("Two")),
+          UnqualifiedImport("Three", None),
+          UnqualifiedImport("four", Some("five")),
+          UnqualifiedImport("six", None),
+        ],
+      ),
+    ],
+    [],
+    [],
   )))
 }

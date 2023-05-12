@@ -8,7 +8,23 @@ type Tokens =
   List(#(Token, Position))
 
 pub type Module {
-  Module(custom_types: List(CustomType), type_aliases: List(TypeAlias))
+  Module(
+    imports: List(Import),
+    custom_types: List(CustomType),
+    type_aliases: List(TypeAlias),
+  )
+}
+
+pub type Import {
+  Import(
+    module: String,
+    alias: Option(String),
+    unqualified: List(UnqualifiedImport),
+  )
+}
+
+pub type UnqualifiedImport {
+  UnqualifiedImport(name: String, alias: Option(String))
 }
 
 pub type Publicity {
@@ -59,7 +75,7 @@ pub fn module(src: String) -> Result(Module, Error) {
   glexer.new(src)
   |> glexer.lex
   |> list.filter(fn(pair) { pair.0 != t.CommentNormal })
-  |> slurp(Module([], []), _)
+  |> slurp(Module([], [], []), _)
 }
 
 fn push_custom_type(module: Module, custom_type: CustomType) -> Module {
@@ -88,19 +104,6 @@ fn expect(
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
   }
 }
-
-// fn maybe(
-//   expected: Token,
-//   tokens: Tokens,
-//   next: fn(Option(Position), Tokens) -> Result(t, Error),
-// ) -> Result(t, Error) {
-//   case tokens {
-//     [] -> Error(UnexpectedEndOfInput)
-//     [#(token, position), ..tokens] if token == expected ->
-//       next(Some(position), tokens)
-//     _ -> next(None, tokens)
-//   }
-// }
 
 fn expect_upper_name(
   tokens: Tokens,
@@ -134,6 +137,9 @@ fn until(
 fn slurp(module: Module, tokens: Tokens) -> Result(Module, Error) {
   case tokens {
     [] -> Ok(module)
+    [#(t.Import, _), ..tokens] -> {
+      import_statement(module, tokens)
+    }
     [#(t.Pub, _), #(t.Type, _), ..tokens] -> {
       type_definition(module, Public, tokens)
     }
@@ -141,6 +147,113 @@ fn slurp(module: Module, tokens: Tokens) -> Result(Module, Error) {
       type_definition(module, Private, tokens)
     }
     [_, ..tokens] -> slurp(module, tokens)
+  }
+}
+
+fn import_statement(module: Module, tokens: Tokens) -> Result(Module, Error) {
+  use #(module_name, tokens) <- result.try(module_name("", tokens))
+  use #(unqualified, tokens) <- result.try(optional_unqualified_imports(tokens))
+  let #(alias, tokens) = optional_module_alias(tokens)
+  let import_ = Import(module_name, alias, unqualified)
+  slurp(Module(..module, imports: [import_, ..module.imports]), tokens)
+}
+
+fn module_name(name: String, tokens: Tokens) -> Result(#(String, Tokens), Error) {
+  case tokens {
+    [#(t.Slash, _), #(t.Name(s), _), ..tokens] if name != "" -> {
+      module_name(name <> "/" <> s, tokens)
+    }
+    [#(t.Name(s), _), ..tokens] if name == "" -> {
+      module_name(s, tokens)
+    }
+
+    [] if name == "" -> Error(UnexpectedEndOfInput)
+    [#(other, position), ..] if name == "" ->
+      Error(UnexpectedToken(other, position))
+
+    _ -> Ok(#(name, tokens))
+  }
+}
+
+fn optional_module_alias(tokens: Tokens) -> #(Option(String), Tokens) {
+  case tokens {
+    [#(t.As, _), #(t.Name(alias), _), ..tokens] -> #(Some(alias), tokens)
+    _ -> #(None, tokens)
+  }
+}
+
+fn optional_unqualified_imports(
+  tokens: Tokens,
+) -> Result(#(List(UnqualifiedImport), Tokens), Error) {
+  case tokens {
+    [#(t.Dot, _), #(t.LeftBrace, _), ..tokens] ->
+      unqualified_imports([], tokens)
+    _ -> Ok(#([], tokens))
+  }
+}
+
+fn unqualified_imports(
+  items: List(UnqualifiedImport),
+  tokens: Tokens,
+) -> Result(#(List(UnqualifiedImport), Tokens), Error) {
+  case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+
+    [#(t.RightBrace, _), ..tokens] -> Ok(#(list.reverse(items), tokens))
+
+    // Aliased non-final item
+    [
+      #(t.UpperName(name), _),
+      #(t.As, _),
+      #(t.UpperName(alias), _),
+      #(t.Comma, _),
+      ..tokens
+    ]
+    | [
+      #(t.Name(name), _),
+      #(t.As, _),
+      #(t.Name(alias), _),
+      #(t.Comma, _),
+      ..tokens
+    ] -> {
+      let import_ = UnqualifiedImport(name, Some(alias))
+      unqualified_imports([import_, ..items], tokens)
+    }
+
+    // Aliased final item
+    [
+      #(t.UpperName(name), _),
+      #(t.As, _),
+      #(t.UpperName(alias), _),
+      #(t.RightBrace, _),
+      ..tokens
+    ]
+    | [
+      #(t.Name(name), _),
+      #(t.As, _),
+      #(t.Name(alias), _),
+      #(t.RightBrace, _),
+      ..tokens
+    ] -> {
+      let import_ = UnqualifiedImport(name, Some(alias))
+      Ok(#(list.reverse([import_, ..items]), tokens))
+    }
+
+    // Unaliased non-final item
+    [#(t.UpperName(name), _), #(t.Comma, _), ..tokens]
+    | [#(t.Name(name), _), #(t.Comma, _), ..tokens] -> {
+      let import_ = UnqualifiedImport(name, None)
+      unqualified_imports([import_, ..items], tokens)
+    }
+
+    // Unaliased final item
+    [#(t.UpperName(name), _), #(t.RightBrace, _), ..tokens]
+    | [#(t.Name(name), _), #(t.RightBrace, _), ..tokens] -> {
+      let import_ = UnqualifiedImport(name, None)
+      Ok(#(list.reverse([import_, ..items]), tokens))
+    }
+
+    [#(other, position), ..] -> Error(UnexpectedToken(other, position))
   }
 }
 
