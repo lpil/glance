@@ -46,6 +46,7 @@ pub type Error {
 pub fn module(src: String) -> Result(Module, Error) {
   glexer.new(src)
   |> glexer.lex
+  |> list.filter(fn(pair) { pair.0 != t.CommentNormal })
   |> slurp(Module([]), _)
 }
 

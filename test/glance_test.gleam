@@ -96,3 +96,26 @@ pub fn phantom_trailing_comma_test() {
     ),
   ])))
 }
+
+pub fn comment_discarding_test() {
+  "pub type 
+    // Comment!
+  Spooky(
+    // one
+    t, u,
+    // two
+     ) {
+      // three
+    Spooky
+    // four
+  }"
+  |> glance.module()
+  |> should.equal(Ok(Module([
+    CustomType(
+      name: "Spooky",
+      publicity: Public,
+      parameters: ["t", "u"],
+      variants: [Variant("Spooky", [])],
+    ),
+  ])))
+}
