@@ -76,18 +76,18 @@ fn push_variant(custom_type: CustomType, variant: Variant) -> CustomType {
   CustomType(..custom_type, variants: [variant, ..custom_type.variants])
 }
 
-// fn expect(
-//   expected: Token,
-//   tokens: Tokens,
-//   next: fn(Position, Tokens) -> Result(t, Error),
-// ) -> Result(t, Error) {
-//   case tokens {
-//     [] -> Error(UnexpectedEndOfInput)
-//     [#(token, position), ..tokens] if token == expected ->
-//       next(position, tokens)
-//     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
-//   }
-// }
+fn expect(
+  expected: Token,
+  tokens: Tokens,
+  next: fn(Position, Tokens) -> Result(t, Error),
+) -> Result(t, Error) {
+  case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+    [#(token, position), ..tokens] if token == expected ->
+      next(position, tokens)
+    [#(other, position), ..] -> Error(UnexpectedToken(other, position))
+  }
+}
 
 // fn maybe(
 //   expected: Token,
@@ -180,6 +180,9 @@ fn type_alias(
 fn type_(tokens: Tokens) -> Result(#(Type, Tokens), Error) {
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
+    [#(t.Fn, _), #(t.LeftParen, _), ..tokens] -> {
+      fn_type(tokens)
+    }
     [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> {
       tuple_type(tokens)
     }
@@ -209,6 +212,13 @@ fn named_type(
   })
   let t = NamedType(name, module, parameters)
   Ok(#(t, tokens))
+}
+
+fn fn_type(tokens: Tokens) -> Result(#(Type, Tokens), Error) {
+  use #(parameters, tokens) <- result.try(types_then_paren([], tokens))
+  use _, tokens <- expect(t.RightArrow, tokens)
+  use #(return, tokens) <- result.try(type_(tokens))
+  Ok(#(FunctionType(parameters, return), tokens))
 }
 
 fn tuple_type(tokens: Tokens) -> Result(#(Type, Tokens), Error) {
