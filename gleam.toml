@@ -1,9 +1,9 @@
 name = "glance"
 version = "0.1.0"
-description = "Extract information from Gleam source code"
+description = "A Gleam source code parser, in Gleam!"
 
 licences = ["Apache-2.0"]
-repository = { type = "github", user = "lpil", repo = "htmgrrrl" }
+repository = { type = "github", user = "lpil", repo = "glance" }
 links = [
   { title = "Website", href = "https://gleam.run" },
   { title = "Sponsor", href = "https://github.com/sponsors/lpil" },
