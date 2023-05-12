@@ -1,0 +1,17 @@
+name = "glance"
+version = "0.1.0"
+description = "Extract information from Gleam source code"
+
+licences = ["Apache-2.0"]
+repository = { type = "github", user = "lpil", repo = "htmgrrrl" }
+links = [
+  { title = "Website", href = "https://gleam.run" },
+  { title = "Sponsor", href = "https://github.com/sponsors/lpil" },
+]
+
+[dependencies]
+gleam_stdlib = "~> 0.28"
+glexer = "~> 0.1"
+
+[dev-dependencies]
+gleeunit = "~> 0.10"
