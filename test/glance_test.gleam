@@ -2,8 +2,8 @@ import gleeunit
 import gleeunit/should
 import gleam/option.{None, Some}
 import glance.{
-  CustomType, Module, NamedType, Private, Public, TypeAlias, VariableType,
-  Variant,
+  CustomType, Module, NamedType, Private, Public, TupleType, TypeAlias,
+  VariableType, Variant,
 }
 
 pub fn main() {
@@ -185,6 +185,22 @@ pub fn alias_qualified_named_test() {
         publicity: Public,
         parameters: [],
         aliased: NamedType("Y", Some("wibble"), []),
+      ),
+    ],
+  )))
+}
+
+pub fn alias_tuple_test() {
+  "pub type X = #(A, B)"
+  |> glance.module()
+  |> should.equal(Ok(Module(
+    [],
+    [
+      TypeAlias(
+        name: "X",
+        publicity: Public,
+        parameters: [],
+        aliased: TupleType([NamedType("A", None, []), NamedType("B", None, [])]),
       ),
     ],
   )))

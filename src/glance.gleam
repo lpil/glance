@@ -180,6 +180,9 @@ fn type_alias(
 fn type_(tokens: Tokens) -> Result(#(Type, Tokens), Error) {
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
+    [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> {
+      tuple_type(tokens)
+    }
     [#(t.Name(module), _), #(t.Dot, _), #(t.UpperName(name), _), ..tokens] -> {
       named_type(name, Some(module), tokens)
     }
@@ -206,6 +209,11 @@ fn named_type(
   })
   let t = NamedType(name, module, parameters)
   Ok(#(t, tokens))
+}
+
+fn tuple_type(tokens: Tokens) -> Result(#(Type, Tokens), Error) {
+  use #(types, tokens) <- result.try(types_then_paren([], tokens))
+  Ok(#(TupleType(types), tokens))
 }
 
 fn types_then_paren(
