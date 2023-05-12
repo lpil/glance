@@ -1,5 +1,5 @@
 import gleam/list
-import gleam/option.{Option}
+import gleam/option.{None, Option, Some}
 import glexer/token.{Token} as t
 import glexer.{Position}
 import gleam/result
@@ -43,7 +43,7 @@ pub type Field {
 }
 
 pub type Type {
-  NamedType(name: String, module: Option(String), parameters: List(String))
+  NamedType(name: String, module: Option(String), parameters: List(Type))
   TupleType(elements: List(Type))
   FunctionType(paramters: List(Type), return: Type)
   VariableType(name: String)
@@ -51,7 +51,7 @@ pub type Type {
 
 pub type Error {
   UnexpectedEndOfInput
-  UnexpectedToken(token: Token, expected: Token, position: Position)
+  UnexpectedToken(token: Token, position: Position)
 }
 
 // TODO: document
@@ -76,19 +76,31 @@ fn push_variant(custom_type: CustomType, variant: Variant) -> CustomType {
   CustomType(..custom_type, variants: [variant, ..custom_type.variants])
 }
 
-fn expect(
-  expected: Token,
-  tokens: Tokens,
-  next: fn(Position, Tokens) -> Result(t, Error),
-) -> Result(t, Error) {
-  case tokens {
-    [] -> Error(UnexpectedEndOfInput)
-    [#(token, position), ..tokens] if token == expected ->
-      next(position, tokens)
-    [#(other, position), ..] ->
-      Error(UnexpectedToken(other, expected, position))
-  }
-}
+// fn expect(
+//   expected: Token,
+//   tokens: Tokens,
+//   next: fn(Position, Tokens) -> Result(t, Error),
+// ) -> Result(t, Error) {
+//   case tokens {
+//     [] -> Error(UnexpectedEndOfInput)
+//     [#(token, position), ..tokens] if token == expected ->
+//       next(position, tokens)
+//     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
+//   }
+// }
+
+// fn maybe(
+//   expected: Token,
+//   tokens: Tokens,
+//   next: fn(Option(Position), Tokens) -> Result(t, Error),
+// ) -> Result(t, Error) {
+//   case tokens {
+//     [] -> Error(UnexpectedEndOfInput)
+//     [#(token, position), ..tokens] if token == expected ->
+//       next(Some(position), tokens)
+//     _ -> next(None, tokens)
+//   }
+// }
 
 fn expect_upper_name(
   tokens: Tokens,
@@ -97,8 +109,7 @@ fn expect_upper_name(
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
     [#(t.UpperName(name), _), ..tokens] -> next(name, tokens)
-    [#(other, position), ..] ->
-      Error(UnexpectedToken(other, t.UpperName(""), position))
+    [#(other, position), ..] -> Error(UnexpectedToken(other, position))
   }
 }
 
@@ -168,10 +179,61 @@ fn type_alias(
 
 fn type_(tokens: Tokens) -> Result(#(Type, Tokens), Error) {
   case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+    [#(t.Name(module), _), #(t.Dot, _), #(t.UpperName(name), _), ..tokens] -> {
+      named_type(name, Some(module), tokens)
+    }
+    [#(t.UpperName(name), _), ..tokens] -> {
+      named_type(name, None, tokens)
+    }
     [#(t.Name(name), _), ..tokens] -> {
       Ok(#(VariableType(name), tokens))
     }
-    _ -> todo("Type")
+    [#(token, position), ..] -> {
+      Error(UnexpectedToken(token, position))
+    }
+  }
+}
+
+fn named_type(
+  name: String,
+  module: Option(String),
+  tokens: Tokens,
+) -> Result(#(Type, Tokens), Error) {
+  use #(parameters, tokens) <- result.try(case tokens {
+    [#(t.LeftParen, _), ..tokens] -> types_then_paren([], tokens)
+    _ -> Ok(#([], tokens))
+  })
+  let t = NamedType(name, module, parameters)
+  Ok(#(t, tokens))
+}
+
+fn types_then_paren(
+  types: List(Type),
+  tokens: Tokens,
+) -> Result(#(List(Type), Tokens), Error) {
+  case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+
+    [#(t.RightParen, _), ..tokens] -> {
+      Ok(#(list.reverse(types), tokens))
+    }
+
+    _ -> {
+      use #(type_, tokens) <- result.try(type_(tokens))
+      case tokens {
+        [] -> Error(UnexpectedEndOfInput)
+        [#(t.RightParen, _), ..tokens] -> {
+          Ok(#(list.reverse([type_, ..types]), tokens))
+        }
+        [#(t.Comma, _), ..tokens] -> {
+          types_then_paren([type_, ..types], tokens)
+        }
+        [#(token, position), ..] -> {
+          Error(UnexpectedToken(token, position))
+        }
+      }
+    }
   }
 }
 

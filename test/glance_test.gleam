@@ -1,7 +1,9 @@
 import gleeunit
 import gleeunit/should
+import gleam/option.{None, Some}
 import glance.{
-  CustomType, Module, Private, Public, TypeAlias, VariableType, Variant,
+  CustomType, Module, NamedType, Private, Public, TypeAlias, VariableType,
+  Variant,
 }
 
 pub fn main() {
@@ -140,7 +142,7 @@ pub fn comment_discarding_test() {
   )))
 }
 
-pub fn alias_named_test() {
+pub fn alias_variable_test() {
   "pub type X = a"
   |> glance.module()
   |> should.equal(Ok(Module(
@@ -151,6 +153,38 @@ pub fn alias_named_test() {
         publicity: Public,
         parameters: [],
         aliased: VariableType("a"),
+      ),
+    ],
+  )))
+}
+
+pub fn alias_named_test() {
+  "pub type X = Y"
+  |> glance.module()
+  |> should.equal(Ok(Module(
+    [],
+    [
+      TypeAlias(
+        name: "X",
+        publicity: Public,
+        parameters: [],
+        aliased: NamedType("Y", None, []),
+      ),
+    ],
+  )))
+}
+
+pub fn alias_qualified_named_test() {
+  "pub type X = wibble.Y"
+  |> glance.module()
+  |> should.equal(Ok(Module(
+    [],
+    [
+      TypeAlias(
+        name: "X",
+        publicity: Public,
+        parameters: [],
+        aliased: NamedType("Y", Some("wibble"), []),
       ),
     ],
   )))
