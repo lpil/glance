@@ -12,6 +12,7 @@ pub type Module {
     imports: List(Import),
     custom_types: List(CustomType),
     type_aliases: List(TypeAlias),
+    constants: List(Constant),
   )
 }
 
@@ -21,6 +22,35 @@ pub type Import {
     alias: Option(String),
     unqualified: List(UnqualifiedImport),
   )
+}
+
+pub type ConstantExpression {
+  // ConstantTuple(List(ConstantExpression))
+  // ConstantList(List(ConstantExpression))
+  // // TODO: define bitstring segments
+  // ConstantBitstring
+  // ConstantConstructor(
+  //   name: String,
+  //   module: Option(String),
+  //   parameters: List(CallArgument(ConstantExpression)),
+  // )
+  ConstantInt(String)
+  ConstantFloat(String)
+  ConstantString(String)
+  ConstantVariable(String)
+}
+
+pub type Constant {
+  Constant(
+    name: String,
+    publicity: Publicity,
+    annotation: Option(Type),
+    value: ConstantExpression,
+  )
+}
+
+pub type CallArgument(t) {
+  CallArgument(label: Option(String), value: t)
 }
 
 pub type UnqualifiedImport {
@@ -75,7 +105,11 @@ pub fn module(src: String) -> Result(Module, Error) {
   glexer.new(src)
   |> glexer.lex
   |> list.filter(fn(pair) { pair.0 != t.CommentNormal })
-  |> slurp(Module([], [], []), _)
+  |> slurp(Module([], [], [], []), _)
+}
+
+fn push_constant(module: Module, constant: Constant) -> Module {
+  Module(..module, constants: [constant, ..module.constants])
 }
 
 fn push_custom_type(module: Module, custom_type: CustomType) -> Module {
@@ -116,6 +150,17 @@ fn expect_upper_name(
   }
 }
 
+fn expect_name(
+  tokens: Tokens,
+  next: fn(String, Tokens) -> Result(t, Error),
+) -> Result(t, Error) {
+  case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+    [#(t.Name(name), _), ..tokens] -> next(name, tokens)
+    [#(other, position), ..] -> Error(UnexpectedToken(other, position))
+  }
+}
+
 fn until(
   limit: Token,
   acc: acc,
@@ -145,6 +190,12 @@ fn slurp(module: Module, tokens: Tokens) -> Result(Module, Error) {
     }
     [#(t.Type, _), ..tokens] -> {
       type_definition(module, Private, tokens)
+    }
+    [#(t.Pub, _), #(t.Const, _), ..tokens] -> {
+      const_definition(module, Public, tokens)
+    }
+    [#(t.Const, _), ..tokens] -> {
+      const_definition(module, Private, tokens)
     }
     [_, ..tokens] -> slurp(module, tokens)
   }
@@ -254,6 +305,51 @@ fn unqualified_imports(
     }
 
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
+  }
+}
+
+fn const_definition(
+  module: Module,
+  publicity: Publicity,
+  tokens: Tokens,
+) -> Result(Module, Error) {
+  // name
+  use name, tokens <- expect_name(tokens)
+
+  // Optional type annotation
+  use #(annotation, tokens) <- result.try(case tokens {
+    [#(t.Colon, _), ..tokens] -> {
+      use #(annotation, tokens) <- result.map(type_(tokens))
+      #(Some(annotation), tokens)
+    }
+    _ -> Ok(#(None, tokens))
+  })
+
+  // = ConstantExpression
+  use _, tokens <- expect(t.Equal, tokens)
+
+  use #(expression, tokens) <- result.try(constant_expression(tokens))
+
+  module
+  |> push_constant(Constant(name, publicity, annotation, expression))
+  |> slurp(tokens)
+}
+
+fn constant_expression(
+  tokens: Tokens,
+) -> Result(#(ConstantExpression, Tokens), Error) {
+  case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+
+    // FIXME: Remove this work around for a bug in glexer where floats don't get
+    // tokenised once the bug has been fixed.
+    [#(t.Int(a), _), #(t.Dot, _), #(t.Int(b), _), ..tokens] ->
+      Ok(#(ConstantFloat(a <> "." <> b), tokens))
+
+    [#(t.Int(i), _), ..tokens] -> Ok(#(ConstantInt(i), tokens))
+    [#(t.Name(n), _), ..tokens] -> Ok(#(ConstantVariable(n), tokens))
+    [#(t.Float(i), _), ..tokens] -> Ok(#(ConstantFloat(i), tokens))
+    [#(t.String(i), _), ..tokens] -> Ok(#(ConstantString(i), tokens))
   }
 }
 

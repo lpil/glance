@@ -2,6 +2,7 @@ import gleeunit
 import gleeunit/should
 import gleam/option.{None, Some}
 import glance.{
+  Constant, ConstantFloat, ConstantInt, ConstantString, ConstantVariable,
   CustomType, Field, FunctionType, Import, Module, NamedType, Private, Public,
   TupleType, TypeAlias, UnqualifiedImport, VariableType, Variant,
 }
@@ -13,7 +14,7 @@ pub fn main() {
 pub fn empty_test() {
   ""
   |> glance.module()
-  |> should.equal(Ok(Module([], [], [])))
+  |> should.equal(Ok(Module([], [], [], [])))
 }
 
 pub fn public_enum_test() {
@@ -36,6 +37,7 @@ pub fn public_enum_test() {
         ],
       ),
     ],
+    [],
     [],
   )))
 }
@@ -61,6 +63,7 @@ pub fn private_enum_test() {
       ),
     ],
     [],
+    [],
   )))
 }
 
@@ -79,6 +82,7 @@ pub fn phantom_test() {
         variants: [Variant("Spooky", [])],
       ),
     ],
+    [],
     [],
   )))
 }
@@ -99,6 +103,7 @@ pub fn phantom_multiple_test() {
       ),
     ],
     [],
+    [],
   )))
 }
 
@@ -117,6 +122,7 @@ pub fn box_test() {
         variants: [Variant("Box", [Field(None, VariableType("x"))])],
       ),
     ],
+    [],
     [],
   )))
 }
@@ -146,6 +152,7 @@ pub fn multiple_fields_test() {
       ),
     ],
     [],
+    [],
   )))
 }
 
@@ -164,6 +171,7 @@ pub fn trailing_comma_in_parameters_test() {
         variants: [Variant("Box", [])],
       ),
     ],
+    [],
     [],
   )))
 }
@@ -184,6 +192,7 @@ pub fn empty_parameter_list_test() {
       ),
     ],
     [],
+    [],
   )))
 }
 
@@ -203,6 +212,7 @@ pub fn empty_fields_list_test() {
       ),
     ],
     [],
+    [],
   )))
 }
 
@@ -221,6 +231,7 @@ pub fn fields_trailing_comma_test() {
         variants: [Variant("Box", [Field(None, VariableType("a"))])],
       ),
     ],
+    [],
     [],
   )))
 }
@@ -249,6 +260,7 @@ pub fn labelled_fields_test() {
       ),
     ],
     [],
+    [],
   )))
 }
 
@@ -267,6 +279,7 @@ pub fn phantom_trailing_comma_test() {
         variants: [Variant("Spooky", [])],
       ),
     ],
+    [],
     [],
   )))
 }
@@ -295,6 +308,7 @@ pub fn comment_discarding_test() {
       ),
     ],
     [],
+    [],
   )))
 }
 
@@ -312,6 +326,7 @@ pub fn alias_variable_test() {
         aliased: VariableType("a"),
       ),
     ],
+    [],
   )))
 }
 
@@ -329,6 +344,7 @@ pub fn alias_named_test() {
         aliased: NamedType("Y", None, []),
       ),
     ],
+    [],
   )))
 }
 
@@ -346,6 +362,7 @@ pub fn alias_qualified_named_test() {
         aliased: NamedType("Y", Some("wibble"), []),
       ),
     ],
+    [],
   )))
 }
 
@@ -363,6 +380,7 @@ pub fn alias_tuple_test() {
         aliased: TupleType([NamedType("A", None, []), NamedType("B", None, [])]),
       ),
     ],
+    [],
   )))
 }
 
@@ -383,71 +401,124 @@ pub fn alias_fn_test() {
         ),
       ),
     ],
+    [],
   )))
 }
 
 pub fn import_test() {
   "import one"
   |> glance.module()
-  |> should.equal(Ok(Module([Import("one", None, [])], [], [])))
+  |> should.equal(Ok(Module([Import("one", None, [])], [], [], [])))
 }
 
 pub fn nested_import_test() {
   "import one/two/three"
   |> glance.module()
-  |> should.equal(Ok(Module([Import("one/two/three", None, [])], [], [])))
+  |> should.be_ok
+  |> fn(x: Module) { x.imports }
+  |> should.equal([Import("one/two/three", None, [])])
 }
 
 pub fn aliased_import_test() {
   "import one/two/three as four"
   |> glance.module()
-  |> should.equal(Ok(Module([Import("one/two/three", Some("four"), [])], [], [])))
+  |> should.be_ok
+  |> fn(x: Module) { x.imports }
+  |> should.equal([Import("one/two/three", Some("four"), [])])
 }
 
 pub fn empty_unqualified_test() {
   "import one/two/three.{} as four"
   |> glance.module()
-  |> should.equal(Ok(Module([Import("one/two/three", Some("four"), [])], [], [])))
+  |> should.be_ok
+  |> fn(x: Module) { x.imports }
+  |> should.equal([Import("one/two/three", Some("four"), [])])
 }
 
 pub fn unqualified_test() {
   "import one/two/three.{One, Two, three, four} as four"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [
-      Import(
-        "one/two/three",
-        Some("four"),
-        [
-          UnqualifiedImport("One", None),
-          UnqualifiedImport("Two", None),
-          UnqualifiedImport("three", None),
-          UnqualifiedImport("four", None),
-        ],
-      ),
-    ],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.imports }
+  |> should.equal([
+    Import(
+      "one/two/three",
+      Some("four"),
+      [
+        UnqualifiedImport("One", None),
+        UnqualifiedImport("Two", None),
+        UnqualifiedImport("three", None),
+        UnqualifiedImport("four", None),
+      ],
+    ),
+  ])
 }
 
 pub fn unqualified_aliased_test() {
   "import one/two/three.{One as Two, Three, four as five, six} as four"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [
-      Import(
-        "one/two/three",
-        Some("four"),
-        [
-          UnqualifiedImport("One", Some("Two")),
-          UnqualifiedImport("Three", None),
-          UnqualifiedImport("four", Some("five")),
-          UnqualifiedImport("six", None),
-        ],
-      ),
-    ],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.imports }
+  |> should.equal([
+    Import(
+      "one/two/three",
+      Some("four"),
+      [
+        UnqualifiedImport("One", Some("Two")),
+        UnqualifiedImport("Three", None),
+        UnqualifiedImport("four", Some("five")),
+        UnqualifiedImport("six", None),
+      ],
+    ),
+  ])
+}
+
+pub fn constant_int_test() {
+  "const x = 123"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.constants }
+  |> should.equal([Constant("x", Private, None, ConstantInt("123"))])
+}
+
+pub fn constant_float_test() {
+  "const x = 1.1"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.constants }
+  |> should.equal([Constant("x", Private, None, ConstantFloat("1.1"))])
+}
+
+pub fn constant_string_test() {
+  "const x = \"123\""
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.constants }
+  |> should.equal([Constant("x", Private, None, ConstantString("123"))])
+}
+
+pub fn constant_variable_test() {
+  "const x = y"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.constants }
+  |> should.equal([Constant("x", Private, None, ConstantVariable("y"))])
+}
+
+pub fn constant_pub_int_test() {
+  "pub const x = 123"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.constants }
+  |> should.equal([Constant("x", Public, None, ConstantInt("123"))])
+}
+
+pub fn constant_annotated_int_test() {
+  "pub const x: Int = 123"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.constants }
+  |> should.equal([
+    Constant("x", Public, Some(NamedType("Int", None, [])), ConstantInt("123")),
+  ])
 }
