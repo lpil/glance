@@ -2,10 +2,10 @@ import gleeunit
 import gleeunit/should
 import gleam/option.{None, Some}
 import glance.{
-  Constant, ConstantFloat, ConstantInt, ConstantList, ConstantString,
-  ConstantTuple, ConstantVariable, CustomType, Field, FunctionType, Import,
-  Module, NamedType, Private, Public, TupleType, TypeAlias, UnqualifiedImport,
-  VariableType, Variant,
+  Constant, ConstantConstructor, ConstantFloat, ConstantInt, ConstantList,
+  ConstantString, ConstantTuple, ConstantVariable, CustomType, Field,
+  FunctionType, Import, Module, NamedType, Private, Public, TupleType, TypeAlias,
+  UnqualifiedImport, VariableType, Variant,
 }
 
 pub fn main() {
@@ -598,4 +598,65 @@ pub fn constant_empty_list_test() {
   |> should.be_ok
   |> fn(x: Module) { x.constants }
   |> should.equal([Constant("x", Private, None, ConstantList([]))])
+}
+
+pub fn constant_enum_constructor_test() {
+  "const x = Nil"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.constants }
+  |> should.equal([
+    Constant("x", Private, None, ConstantConstructor("Nil", None, [])),
+  ])
+}
+
+pub fn constant_qualified_enum_constructor_test() {
+  "const x = wibble.Nil"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.constants }
+  |> should.equal([
+    Constant("x", Private, None, ConstantConstructor("Nil", Some("wibble"), [])),
+  ])
+}
+
+pub fn constant_constructor_test() {
+  "const x = Box(1, 2.0)"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.constants }
+  |> should.equal([
+    Constant(
+      "x",
+      Private,
+      None,
+      ConstantConstructor(
+        "Box",
+        None,
+        [Field(None, ConstantInt("1")), Field(None, ConstantFloat("2.0"))],
+      ),
+    ),
+  ])
+}
+
+pub fn constant_labelled_constructor_test() {
+  "const x = Box(1, wobber: 2.0)"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.constants }
+  |> should.equal([
+    Constant(
+      "x",
+      Private,
+      None,
+      ConstantConstructor(
+        "Box",
+        None,
+        [
+          Field(None, ConstantInt("1")),
+          Field(Some("wobber"), ConstantFloat("2.0")),
+        ],
+      ),
+    ),
+  ])
 }

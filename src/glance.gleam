@@ -27,17 +27,17 @@ pub type Import {
 pub type ConstantExpression {
   // // TODO: define bitstring segments
   // ConstantBitstring
-  // ConstantConstructor(
-  //   name: String,
-  //   module: Option(String),
-  //   parameters: List(CallArgument(ConstantExpression)),
-  // )
   ConstantInt(String)
   ConstantFloat(String)
   ConstantString(String)
   ConstantVariable(String)
   ConstantTuple(List(ConstantExpression))
   ConstantList(List(ConstantExpression))
+  ConstantConstructor(
+    name: String,
+    module: Option(String),
+    parameters: List(Field(ConstantExpression)),
+  )
 }
 
 pub type Constant {
@@ -47,10 +47,6 @@ pub type Constant {
     annotation: Option(Type),
     value: ConstantExpression,
   )
-}
-
-pub type CallArgument(t) {
-  CallArgument(label: Option(String), value: t)
 }
 
 pub type UnqualifiedImport {
@@ -81,11 +77,11 @@ pub type CustomType {
 }
 
 pub type Variant {
-  Variant(name: String, fields: List(Field))
+  Variant(name: String, fields: List(Field(Type)))
 }
 
-pub type Field {
-  Field(label: Option(String), type_: Type)
+pub type Field(t) {
+  Field(label: Option(String), item: t)
 }
 
 pub type Type {
@@ -340,73 +336,82 @@ fn constant_expression(
 ) -> Result(#(ConstantExpression, Tokens), Error) {
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
+    [#(t.Name(module), _), #(t.Dot, _), #(t.UpperName(name), _), ..tokens] ->
+      constant_constructor(name, Some(module), tokens)
+    [#(t.UpperName(name), _), ..tokens] ->
+      constant_constructor(name, None, tokens)
     [#(t.Int(i), _), ..tokens] -> Ok(#(ConstantInt(i), tokens))
     [#(t.Name(n), _), ..tokens] -> Ok(#(ConstantVariable(n), tokens))
     [#(t.Float(i), _), ..tokens] -> Ok(#(ConstantFloat(i), tokens))
     [#(t.String(i), _), ..tokens] -> Ok(#(ConstantString(i), tokens))
-    [#(t.LeftSquare, _), ..tokens] -> constant_list([], tokens)
-    [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> constant_tuple([], tokens)
+    [#(t.LeftSquare, _), ..tokens] -> constant_list(tokens)
+    [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> constant_tuple(tokens)
+    [#(token, position), ..] -> Error(UnexpectedToken(token, position))
+  }
+}
+
+fn constant_constructor(
+  name: String,
+  module: Option(String),
+  tokens: Tokens,
+) -> Result(#(ConstantExpression, Tokens), Error) {
+  case tokens {
+    [#(t.LeftParen, _), ..tokens] -> {
+      let parser = field(_, of: constant_expression)
+      let result = comma_delimited([], tokens, parser, t.RightParen)
+      use #(arguments, tokens) <- result.try(result)
+      Ok(#(ConstantConstructor(name, module, arguments), tokens))
+    }
+    _ -> {
+      Ok(#(ConstantConstructor(name, module, []), tokens))
+    }
+  }
+}
+
+fn comma_delimited(
+  items: List(t),
+  tokens: Tokens,
+  parse parser: fn(Tokens) -> Result(#(t, Tokens), Error),
+  until final: t.Token,
+) -> Result(#(List(t), Tokens), Error) {
+  case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+
+    [#(token, _), ..tokens] if token == final -> {
+      Ok(#(list.reverse(items), tokens))
+    }
+
+    _ -> {
+      use #(element, tokens) <- result.try(parser(tokens))
+      case tokens {
+        [#(t.Comma, _), ..tokens] -> {
+          comma_delimited([element, ..items], tokens, parser, final)
+        }
+        [#(token, _), ..tokens] if token == final -> {
+          Ok(#(list.reverse([element, ..items]), tokens))
+        }
+        [#(other, position), ..] -> {
+          Error(UnexpectedToken(other, position))
+        }
+      }
+    }
   }
 }
 
 fn constant_tuple(
-  elements: List(ConstantExpression),
   tokens: Tokens,
 ) -> Result(#(ConstantExpression, Tokens), Error) {
-  case tokens {
-    [] -> Error(UnexpectedEndOfInput)
-
-    [#(t.RightParen, _), ..tokens] -> {
-      let elements = list.reverse(elements)
-      Ok(#(ConstantTuple(elements), tokens))
-    }
-
-    _ -> {
-      use #(element, tokens) <- result.try(constant_expression(tokens))
-      case tokens {
-        [#(t.Comma, _), ..tokens] -> {
-          constant_tuple([element, ..elements], tokens)
-        }
-        [#(t.RightParen, _), ..tokens] -> {
-          let elements = list.reverse([element, ..elements])
-          Ok(#(ConstantTuple(elements), tokens))
-        }
-        [#(other, position), ..] -> {
-          Error(UnexpectedToken(other, position))
-        }
-      }
-    }
-  }
+  let result =
+    comma_delimited([], tokens, constant_expression, until: t.RightParen)
+  use #(elements, tokens) <- result.try(result)
+  Ok(#(ConstantTuple(elements), tokens))
 }
 
-fn constant_list(
-  elements: List(ConstantExpression),
-  tokens: Tokens,
-) -> Result(#(ConstantExpression, Tokens), Error) {
-  case tokens {
-    [] -> Error(UnexpectedEndOfInput)
-
-    [#(t.RightSquare, _), ..tokens] -> {
-      let elements = list.reverse(elements)
-      Ok(#(ConstantList(elements), tokens))
-    }
-
-    _ -> {
-      use #(element, tokens) <- result.try(constant_expression(tokens))
-      case tokens {
-        [#(t.Comma, _), ..tokens] -> {
-          constant_list([element, ..elements], tokens)
-        }
-        [#(t.RightSquare, _), ..tokens] -> {
-          let elements = list.reverse([element, ..elements])
-          Ok(#(ConstantList(elements), tokens))
-        }
-        [#(other, position), ..] -> {
-          Error(UnexpectedToken(other, position))
-        }
-      }
-    }
-  }
+fn constant_list(tokens: Tokens) -> Result(#(ConstantExpression, Tokens), Error) {
+  let result =
+    comma_delimited([], tokens, constant_expression, until: t.RightSquare)
+  use #(elements, tokens) <- result.try(result)
+  Ok(#(ConstantList(elements), tokens))
 }
 
 fn type_definition(
@@ -472,7 +477,9 @@ fn named_type(
   tokens: Tokens,
 ) -> Result(#(Type, Tokens), Error) {
   use #(parameters, tokens) <- result.try(case tokens {
-    [#(t.LeftParen, _), ..tokens] -> types_then_paren([], tokens)
+    [#(t.LeftParen, _), ..tokens] ->
+      comma_delimited([], tokens, type_, until: t.RightParen)
+
     _ -> Ok(#([], tokens))
   })
   let t = NamedType(name, module, parameters)
@@ -480,44 +487,17 @@ fn named_type(
 }
 
 fn fn_type(tokens: Tokens) -> Result(#(Type, Tokens), Error) {
-  use #(parameters, tokens) <- result.try(types_then_paren([], tokens))
+  let result = comma_delimited([], tokens, type_, until: t.RightParen)
+  use #(parameters, tokens) <- result.try(result)
   use _, tokens <- expect(t.RightArrow, tokens)
   use #(return, tokens) <- result.try(type_(tokens))
   Ok(#(FunctionType(parameters, return), tokens))
 }
 
 fn tuple_type(tokens: Tokens) -> Result(#(Type, Tokens), Error) {
-  use #(types, tokens) <- result.try(types_then_paren([], tokens))
+  let result = comma_delimited([], tokens, type_, until: t.RightParen)
+  use #(types, tokens) <- result.try(result)
   Ok(#(TupleType(types), tokens))
-}
-
-fn types_then_paren(
-  types: List(Type),
-  tokens: Tokens,
-) -> Result(#(List(Type), Tokens), Error) {
-  case tokens {
-    [] -> Error(UnexpectedEndOfInput)
-
-    [#(t.RightParen, _), ..tokens] -> {
-      Ok(#(list.reverse(types), tokens))
-    }
-
-    _ -> {
-      use #(type_, tokens) <- result.try(type_(tokens))
-      case tokens {
-        [] -> Error(UnexpectedEndOfInput)
-        [#(t.RightParen, _), ..tokens] -> {
-          Ok(#(list.reverse([type_, ..types]), tokens))
-        }
-        [#(t.Comma, _), ..tokens] -> {
-          types_then_paren([type_, ..types], tokens)
-        }
-        [#(token, position), ..] -> {
-          Error(UnexpectedToken(token, position))
-        }
-      }
-    }
-  }
 }
 
 fn custom_type(
@@ -540,29 +520,17 @@ fn optional_type_parameters(
   tokens: Tokens,
 ) -> Result(#(List(String), Tokens), Error) {
   case tokens {
-    [#(t.LeftParen, _), ..tokens] -> type_parameters([], tokens)
+    [#(t.LeftParen, _), ..tokens] ->
+      comma_delimited([], tokens, name, until: t.RightParen)
     _ -> Ok(#([], tokens))
   }
 }
 
-fn type_parameters(
-  parameters: List(String),
-  tokens: Tokens,
-) -> Result(#(List(String), Tokens), Error) {
+fn name(tokens: Tokens) -> Result(#(String, Tokens), Error) {
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
-
-    // Final parameter
-    [#(t.Name(name), _), #(t.RightParen, _), ..tokens]
-    | // Final parameter with trailing comma
-    [#(t.Name(name), _), #(t.Comma, _), #(t.RightParen, _), ..tokens] ->
-      Ok(#(list.reverse([name, ..parameters]), tokens))
-
-    // Non-final parameter
-    [#(t.Name(name), _), #(t.Comma, _), ..tokens] ->
-      type_parameters([name, ..parameters], tokens)
-
-    [#(t.RightParen, _), ..tokens] -> Ok(#(list.reverse(parameters), tokens))
+    [#(t.Name(name), _), ..tokens] -> Ok(#(name, tokens))
+    [#(token, position), ..] -> Error(UnexpectedToken(token, position))
   }
 }
 
@@ -579,45 +547,28 @@ fn variants(
 
 fn optional_variant_fields(
   tokens: Tokens,
-) -> Result(#(List(Field), Tokens), Error) {
+) -> Result(#(List(Field(Type)), Tokens), Error) {
   case tokens {
     [#(t.LeftParen, _), #(t.RightParen, _), ..tokens] -> Ok(#([], tokens))
-    [#(t.LeftParen, _), ..tokens] -> variant_fields([], tokens)
+    [#(t.LeftParen, _), ..tokens] -> {
+      comma_delimited([], tokens, field(_, of: type_), until: t.RightParen)
+    }
     _ -> Ok(#([], tokens))
   }
 }
 
-fn variant_fields(
-  fields: List(Field),
+fn field(
   tokens: Tokens,
-) -> Result(#(List(Field), Tokens), Error) {
-  // An optional label
-  //  my_field:
-  let #(label, tokens) = case tokens {
-    [#(t.Name(name), _), #(t.Colon, _), ..tokens] -> #(Some(name), tokens)
-    _ -> #(None, tokens)
-  }
-
-  // The type of the field
-  use #(type_, tokens) <- result.try(type_(tokens))
-
+  of parser: fn(Tokens) -> Result(#(t, Tokens), Error),
+) -> Result(#(Field(t), Tokens), Error) {
   case tokens {
-    [] -> Error(UnexpectedEndOfInput)
-
-    // The end of the fields
-    [#(t.RightParen, _), ..tokens]
-    | // A trailing comma 
-    [#(t.Comma, _), #(t.RightParen, _), ..tokens] -> {
-      Ok(#(list.reverse([Field(label, type_), ..fields]), tokens))
+    [#(t.Name(name), _), #(t.Colon, _), ..tokens] -> {
+      use #(t, tokens) <- result.try(parser(tokens))
+      Ok(#(Field(Some(name), t), tokens))
     }
-
-    // A comma before another field
-    [#(t.Comma, _), ..tokens] -> {
-      variant_fields([Field(label, type_), ..fields], tokens)
-    }
-
-    [#(token, position), ..] -> {
-      Error(UnexpectedToken(token, position))
+    _ -> {
+      use #(t, tokens) <- result.try(parser(tokens))
+      Ok(#(Field(None, t), tokens))
     }
   }
 }
