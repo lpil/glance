@@ -13,6 +13,7 @@ pub type Module {
     custom_types: List(CustomType),
     type_aliases: List(TypeAlias),
     constants: List(Constant),
+    external_types: List(ExternalType),
   )
 }
 
@@ -76,6 +77,10 @@ pub type CustomType {
   )
 }
 
+pub type ExternalType {
+  ExternalType(name: String, publicity: Publicity, parameters: List(String))
+}
+
 pub type Variant {
   Variant(name: String, fields: List(Field(Type)))
 }
@@ -101,11 +106,15 @@ pub fn module(src: String) -> Result(Module, Error) {
   glexer.new(src)
   |> glexer.lex
   |> list.filter(fn(pair) { pair.0 != t.CommentNormal })
-  |> slurp(Module([], [], [], []), _)
+  |> slurp(Module([], [], [], [], []), _)
 }
 
 fn push_constant(module: Module, constant: Constant) -> Module {
   Module(..module, constants: [constant, ..module.constants])
+}
+
+fn push_external_type(module: Module, external_type: ExternalType) -> Module {
+  Module(..module, external_types: [external_type, ..module.external_types])
 }
 
 fn push_custom_type(module: Module, custom_type: CustomType) -> Module {
@@ -192,6 +201,12 @@ fn slurp(module: Module, tokens: Tokens) -> Result(Module, Error) {
     }
     [#(t.Const, _), ..tokens] -> {
       const_definition(module, Private, tokens)
+    }
+    [#(t.Pub, _), #(t.External, _), #(t.Type, _), ..tokens] -> {
+      external_type_definition(module, Public, tokens)
+    }
+    [#(t.External, _), #(t.Type, _), ..tokens] -> {
+      external_type_definition(module, Private, tokens)
     }
     [_, ..tokens] -> slurp(module, tokens)
   }
@@ -302,6 +317,19 @@ fn unqualified_imports(
 
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
   }
+}
+
+fn external_type_definition(
+  module: Module,
+  publicity: Publicity,
+  tokens: Tokens,
+) -> Result(Module, Error) {
+  use name, tokens <- expect_upper_name(tokens)
+  use #(parameters, tokens) <- result.try(optional_type_parameters(tokens))
+
+  module
+  |> push_external_type(ExternalType(name, publicity, parameters))
+  |> slurp(tokens)
 }
 
 fn const_definition(

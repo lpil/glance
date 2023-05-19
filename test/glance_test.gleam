@@ -4,8 +4,8 @@ import gleam/option.{None, Some}
 import glance.{
   Constant, ConstantBitString, ConstantConstructor, ConstantFloat, ConstantInt,
   ConstantList, ConstantString, ConstantTuple, ConstantVariable, CustomType,
-  Field, FunctionType, Import, Module, NamedType, Private, Public, TupleType,
-  TypeAlias, UnqualifiedImport, VariableType, Variant,
+  ExternalType, Field, FunctionType, Import, Module, NamedType, Private, Public,
+  TupleType, TypeAlias, UnqualifiedImport, VariableType, Variant,
 }
 
 pub fn main() {
@@ -15,7 +15,7 @@ pub fn main() {
 pub fn empty_test() {
   ""
   |> glance.module()
-  |> should.equal(Ok(Module([], [], [], [])))
+  |> should.equal(Ok(Module([], [], [], [], [])))
 }
 
 pub fn public_enum_test() {
@@ -38,6 +38,7 @@ pub fn public_enum_test() {
         ],
       ),
     ],
+    [],
     [],
     [],
   )))
@@ -65,6 +66,7 @@ pub fn private_enum_test() {
     ],
     [],
     [],
+    [],
   )))
 }
 
@@ -83,6 +85,7 @@ pub fn phantom_test() {
         variants: [Variant("Spooky", [])],
       ),
     ],
+    [],
     [],
     [],
   )))
@@ -105,6 +108,7 @@ pub fn phantom_multiple_test() {
     ],
     [],
     [],
+    [],
   )))
 }
 
@@ -123,6 +127,7 @@ pub fn box_test() {
         variants: [Variant("Box", [Field(None, VariableType("x"))])],
       ),
     ],
+    [],
     [],
     [],
   )))
@@ -154,6 +159,7 @@ pub fn multiple_fields_test() {
     ],
     [],
     [],
+    [],
   )))
 }
 
@@ -172,6 +178,7 @@ pub fn trailing_comma_in_parameters_test() {
         variants: [Variant("Box", [])],
       ),
     ],
+    [],
     [],
     [],
   )))
@@ -194,6 +201,7 @@ pub fn empty_parameter_list_test() {
     ],
     [],
     [],
+    [],
   )))
 }
 
@@ -214,6 +222,7 @@ pub fn empty_fields_list_test() {
     ],
     [],
     [],
+    [],
   )))
 }
 
@@ -232,6 +241,7 @@ pub fn fields_trailing_comma_test() {
         variants: [Variant("Box", [Field(None, VariableType("a"))])],
       ),
     ],
+    [],
     [],
     [],
   )))
@@ -262,6 +272,7 @@ pub fn labelled_fields_test() {
     ],
     [],
     [],
+    [],
   )))
 }
 
@@ -280,6 +291,7 @@ pub fn phantom_trailing_comma_test() {
         variants: [Variant("Spooky", [])],
       ),
     ],
+    [],
     [],
     [],
   )))
@@ -310,6 +322,7 @@ pub fn comment_discarding_test() {
     ],
     [],
     [],
+    [],
   )))
 }
 
@@ -327,6 +340,7 @@ pub fn alias_variable_test() {
         aliased: VariableType("a"),
       ),
     ],
+    [],
     [],
   )))
 }
@@ -346,6 +360,7 @@ pub fn alias_named_test() {
       ),
     ],
     [],
+    [],
   )))
 }
 
@@ -364,6 +379,7 @@ pub fn alias_qualified_named_test() {
       ),
     ],
     [],
+    [],
   )))
 }
 
@@ -381,6 +397,7 @@ pub fn alias_tuple_test() {
         aliased: TupleType([NamedType("A", None, []), NamedType("B", None, [])]),
       ),
     ],
+    [],
     [],
   )))
 }
@@ -403,13 +420,14 @@ pub fn alias_fn_test() {
       ),
     ],
     [],
+    [],
   )))
 }
 
 pub fn import_test() {
   "import one"
   |> glance.module()
-  |> should.equal(Ok(Module([Import("one", None, [])], [], [], [])))
+  |> should.equal(Ok(Module([Import("one", None, [])], [], [], [], [])))
 }
 
 pub fn nested_import_test() {
@@ -667,4 +685,36 @@ pub fn constant_bit_string_test() {
   |> should.be_ok
   |> fn(x: Module) { x.constants }
   |> should.equal([Constant("x", Private, None, ConstantBitString)])
+}
+
+pub fn external_type_test() {
+  "external type Wibble"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.external_types }
+  |> should.equal([ExternalType("Wibble", Private, [])])
+}
+
+pub fn pub_external_type_test() {
+  "pub external type Wibble"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.external_types }
+  |> should.equal([ExternalType("Wibble", Public, [])])
+}
+
+pub fn parameter_external_type_test() {
+  "external type Wibble(a, b, c)"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.external_types }
+  |> should.equal([ExternalType("Wibble", Private, ["a", "b", "c"])])
+}
+
+pub fn trailing_comma_parameter_external_type_test() {
+  "external type Wibble(a, b, c, )"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.external_types }
+  |> should.equal([ExternalType("Wibble", Private, ["a", "b", "c"])])
 }
