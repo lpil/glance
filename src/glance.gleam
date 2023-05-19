@@ -340,12 +340,6 @@ fn constant_expression(
 ) -> Result(#(ConstantExpression, Tokens), Error) {
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
-
-    // FIXME: Remove this work around for a bug in glexer where floats don't get
-    // tokenised once the bug has been fixed.
-    [#(t.Int(a), _), #(t.Dot, _), #(t.Int(b), _), ..tokens] ->
-      Ok(#(ConstantFloat(a <> "." <> b), tokens))
-
     [#(t.Int(i), _), ..tokens] -> Ok(#(ConstantInt(i), tokens))
     [#(t.Name(n), _), ..tokens] -> Ok(#(ConstantVariable(n), tokens))
     [#(t.Float(i), _), ..tokens] -> Ok(#(ConstantFloat(i), tokens))

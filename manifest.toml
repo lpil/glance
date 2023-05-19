@@ -4,7 +4,7 @@
 packages = [
   { name = "gleam_stdlib", version = "0.28.2", build_tools = ["gleam"], requirements = [], otp_app = "gleam_stdlib", source = "hex", outer_checksum = "088E334A00C9530D4B194F31406E51B6E4E4697C6A380D11591E60CC2F239724" },
   { name = "gleeunit", version = "0.10.1", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleeunit", source = "hex", outer_checksum = "ECEA2DE4BE6528D36AFE74F42A21CDF99966EC36D7F25DEB34D47DD0F7977BAF" },
-  { name = "glexer", version = "0.1.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "glexer", source = "hex", outer_checksum = "619071B23C700D3566BDE5401D859F13496B1EBE5C0437B650795535324492B5" },
+  { name = "glexer", version = "0.4.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "glexer", source = "hex", outer_checksum = "29EA34B79E07A7F18D95BB7470C789E91C8C58D52E01B19EDD76BC41CFCEE5C1" },
 ]
 
 [requirements]
