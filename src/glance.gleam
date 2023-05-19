@@ -25,7 +25,6 @@ pub type Import {
 }
 
 pub type ConstantExpression {
-  // ConstantTuple(List(ConstantExpression))
   // ConstantList(List(ConstantExpression))
   // // TODO: define bitstring segments
   // ConstantBitstring
@@ -38,6 +37,7 @@ pub type ConstantExpression {
   ConstantFloat(String)
   ConstantString(String)
   ConstantVariable(String)
+  ConstantTuple(List(ConstantExpression))
 }
 
 pub type Constant {
@@ -344,6 +344,37 @@ fn constant_expression(
     [#(t.Name(n), _), ..tokens] -> Ok(#(ConstantVariable(n), tokens))
     [#(t.Float(i), _), ..tokens] -> Ok(#(ConstantFloat(i), tokens))
     [#(t.String(i), _), ..tokens] -> Ok(#(ConstantString(i), tokens))
+    [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> constant_tuple([], tokens)
+  }
+}
+
+fn constant_tuple(
+  elements: List(ConstantExpression),
+  tokens: Tokens,
+) -> Result(#(ConstantExpression, Tokens), Error) {
+  case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+
+    [#(t.RightParen, _), ..tokens] -> {
+      let elements = list.reverse(elements)
+      Ok(#(ConstantTuple(elements), tokens))
+    }
+
+    _ -> {
+      use #(element, tokens) <- result.try(constant_expression(tokens))
+      case tokens {
+        [#(t.Comma, _), ..tokens] -> {
+          constant_tuple([element, ..elements], tokens)
+        }
+        [#(t.RightParen, _), ..tokens] -> {
+          let elements = list.reverse([element, ..elements])
+          Ok(#(ConstantTuple(elements), tokens))
+        }
+        [#(other, position), ..] -> {
+          Error(UnexpectedToken(other, position))
+        }
+      }
+    }
   }
 }
 

@@ -2,9 +2,10 @@ import gleeunit
 import gleeunit/should
 import gleam/option.{None, Some}
 import glance.{
-  Constant, ConstantFloat, ConstantInt, ConstantString, ConstantVariable,
-  CustomType, Field, FunctionType, Import, Module, NamedType, Private, Public,
-  TupleType, TypeAlias, UnqualifiedImport, VariableType, Variant,
+  Constant, ConstantFloat, ConstantInt, ConstantString, ConstantTuple,
+  ConstantVariable, CustomType, Field, FunctionType, Import, Module, NamedType,
+  Private, Public, TupleType, TypeAlias, UnqualifiedImport, VariableType,
+  Variant,
 }
 
 pub fn main() {
@@ -521,4 +522,42 @@ pub fn constant_annotated_int_test() {
   |> should.equal([
     Constant("x", Public, Some(NamedType("Int", None, [])), ConstantInt("123")),
   ])
+}
+
+pub fn constant_tuple_test() {
+  "const x = #(1, 2.0, 3)"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.constants }
+  |> should.equal([
+    Constant(
+      "x",
+      Private,
+      None,
+      ConstantTuple([ConstantInt("1"), ConstantFloat("2.0"), ConstantInt("3")]),
+    ),
+  ])
+}
+
+pub fn constant_tuple_trailing_comma_test() {
+  "const x = #(1, 2.0, 3,)"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.constants }
+  |> should.equal([
+    Constant(
+      "x",
+      Private,
+      None,
+      ConstantTuple([ConstantInt("1"), ConstantFloat("2.0"), ConstantInt("3")]),
+    ),
+  ])
+}
+
+pub fn constant_empty_tuple_test() {
+  "const x = #()"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.constants }
+  |> should.equal([Constant("x", Private, None, ConstantTuple([]))])
 }
