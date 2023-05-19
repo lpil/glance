@@ -2,10 +2,10 @@ import gleeunit
 import gleeunit/should
 import gleam/option.{None, Some}
 import glance.{
-  Constant, ConstantConstructor, ConstantFloat, ConstantInt, ConstantList,
-  ConstantString, ConstantTuple, ConstantVariable, CustomType, Field,
-  FunctionType, Import, Module, NamedType, Private, Public, TupleType, TypeAlias,
-  UnqualifiedImport, VariableType, Variant,
+  Constant, ConstantBitString, ConstantConstructor, ConstantFloat, ConstantInt,
+  ConstantList, ConstantString, ConstantTuple, ConstantVariable, CustomType,
+  Field, FunctionType, Import, Module, NamedType, Private, Public, TupleType,
+  TypeAlias, UnqualifiedImport, VariableType, Variant,
 }
 
 pub fn main() {
@@ -659,4 +659,12 @@ pub fn constant_labelled_constructor_test() {
       ),
     ),
   ])
+}
+
+pub fn constant_bit_string_test() {
+  "const x = <<1, 2.0>>"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.constants }
+  |> should.equal([Constant("x", Private, None, ConstantBitString)])
 }

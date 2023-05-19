@@ -25,8 +25,8 @@ pub type Import {
 }
 
 pub type ConstantExpression {
-  // // TODO: define bitstring segments
-  // ConstantBitstring
+  // TODO: define bitstring segments
+  ConstantBitString
   ConstantInt(String)
   ConstantFloat(String)
   ConstantString(String)
@@ -346,7 +346,18 @@ fn constant_expression(
     [#(t.String(i), _), ..tokens] -> Ok(#(ConstantString(i), tokens))
     [#(t.LeftSquare, _), ..tokens] -> constant_list(tokens)
     [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> constant_tuple(tokens)
+    [#(t.LessLess, _), ..tokens] -> constant_bit_string(tokens)
     [#(token, position), ..] -> Error(UnexpectedToken(token, position))
+  }
+}
+
+fn constant_bit_string(
+  tokens: Tokens,
+) -> Result(#(ConstantExpression, Tokens), Error) {
+  case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+    [#(t.GreaterGreater, _), ..tokens] -> Ok(#(ConstantBitString, tokens))
+    [_, ..tokens] -> constant_bit_string(tokens)
   }
 }
 
