@@ -25,7 +25,6 @@ pub type Import {
 }
 
 pub type ConstantExpression {
-  // ConstantList(List(ConstantExpression))
   // // TODO: define bitstring segments
   // ConstantBitstring
   // ConstantConstructor(
@@ -38,6 +37,7 @@ pub type ConstantExpression {
   ConstantString(String)
   ConstantVariable(String)
   ConstantTuple(List(ConstantExpression))
+  ConstantList(List(ConstantExpression))
 }
 
 pub type Constant {
@@ -344,6 +344,7 @@ fn constant_expression(
     [#(t.Name(n), _), ..tokens] -> Ok(#(ConstantVariable(n), tokens))
     [#(t.Float(i), _), ..tokens] -> Ok(#(ConstantFloat(i), tokens))
     [#(t.String(i), _), ..tokens] -> Ok(#(ConstantString(i), tokens))
+    [#(t.LeftSquare, _), ..tokens] -> constant_list([], tokens)
     [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> constant_tuple([], tokens)
   }
 }
@@ -369,6 +370,36 @@ fn constant_tuple(
         [#(t.RightParen, _), ..tokens] -> {
           let elements = list.reverse([element, ..elements])
           Ok(#(ConstantTuple(elements), tokens))
+        }
+        [#(other, position), ..] -> {
+          Error(UnexpectedToken(other, position))
+        }
+      }
+    }
+  }
+}
+
+fn constant_list(
+  elements: List(ConstantExpression),
+  tokens: Tokens,
+) -> Result(#(ConstantExpression, Tokens), Error) {
+  case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+
+    [#(t.RightSquare, _), ..tokens] -> {
+      let elements = list.reverse(elements)
+      Ok(#(ConstantList(elements), tokens))
+    }
+
+    _ -> {
+      use #(element, tokens) <- result.try(constant_expression(tokens))
+      case tokens {
+        [#(t.Comma, _), ..tokens] -> {
+          constant_list([element, ..elements], tokens)
+        }
+        [#(t.RightSquare, _), ..tokens] -> {
+          let elements = list.reverse([element, ..elements])
+          Ok(#(ConstantList(elements), tokens))
         }
         [#(other, position), ..] -> {
           Error(UnexpectedToken(other, position))
