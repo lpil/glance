@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Esternal types can now be parsed.
+
 ## 0.2.0 - 2023-05-19
 
 - Constant defintions can now be parsed. Bit string segments are currently
