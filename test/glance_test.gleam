@@ -4,8 +4,9 @@ import gleam/option.{None, Some}
 import glance.{
   Constant, ConstantBitString, ConstantConstructor, ConstantFloat, ConstantInt,
   ConstantList, ConstantString, ConstantTuple, ConstantVariable, CustomType,
-  ExternalType, Field, FunctionType, Import, Module, NamedType, Private, Public,
-  TupleType, TypeAlias, UnqualifiedImport, VariableType, Variant,
+  ExternalFunction, ExternalType, Field, FunctionType, Import, Module, NamedType,
+  Private, Public, TupleType, TypeAlias, UnqualifiedImport, VariableType,
+  Variant,
 }
 
 pub fn main() {
@@ -15,7 +16,7 @@ pub fn main() {
 pub fn empty_test() {
   ""
   |> glance.module()
-  |> should.equal(Ok(Module([], [], [], [], [])))
+  |> should.equal(Ok(Module([], [], [], [], [], [])))
 }
 
 pub fn public_enum_test() {
@@ -23,25 +24,21 @@ pub fn public_enum_test() {
     North East South West
   }"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [
-      CustomType(
-        name: "Cardinal",
-        publicity: Public,
-        parameters: [],
-        variants: [
-          Variant("North", []),
-          Variant("East", []),
-          Variant("South", []),
-          Variant("West", []),
-        ],
-      ),
-    ],
-    [],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.custom_types }
+  |> should.equal([
+    CustomType(
+      name: "Cardinal",
+      publicity: Public,
+      parameters: [],
+      variants: [
+        Variant("North", []),
+        Variant("East", []),
+        Variant("South", []),
+        Variant("West", []),
+      ],
+    ),
+  ])
 }
 
 pub fn private_enum_test() {
@@ -49,25 +46,21 @@ pub fn private_enum_test() {
     North East South West
   }"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [
-      CustomType(
-        name: "Cardinal",
-        publicity: Private,
-        parameters: [],
-        variants: [
-          Variant("North", []),
-          Variant("East", []),
-          Variant("South", []),
-          Variant("West", []),
-        ],
-      ),
-    ],
-    [],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.custom_types }
+  |> should.equal([
+    CustomType(
+      name: "Cardinal",
+      publicity: Private,
+      parameters: [],
+      variants: [
+        Variant("North", []),
+        Variant("East", []),
+        Variant("South", []),
+        Variant("West", []),
+      ],
+    ),
+  ])
 }
 
 pub fn phantom_test() {
@@ -75,20 +68,16 @@ pub fn phantom_test() {
     Spooky
   }"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [
-      CustomType(
-        name: "Spooky",
-        publicity: Public,
-        parameters: ["t"],
-        variants: [Variant("Spooky", [])],
-      ),
-    ],
-    [],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.custom_types }
+  |> should.equal([
+    CustomType(
+      name: "Spooky",
+      publicity: Public,
+      parameters: ["t"],
+      variants: [Variant("Spooky", [])],
+    ),
+  ])
 }
 
 pub fn phantom_multiple_test() {
@@ -96,20 +85,16 @@ pub fn phantom_multiple_test() {
     Spooky
   }"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [
-      CustomType(
-        name: "Spooky",
-        publicity: Public,
-        parameters: ["t", "u"],
-        variants: [Variant("Spooky", [])],
-      ),
-    ],
-    [],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.custom_types }
+  |> should.equal([
+    CustomType(
+      name: "Spooky",
+      publicity: Public,
+      parameters: ["t", "u"],
+      variants: [Variant("Spooky", [])],
+    ),
+  ])
 }
 
 pub fn box_test() {
@@ -117,20 +102,16 @@ pub fn box_test() {
     Box(x)
   }"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [
-      CustomType(
-        name: "Box",
-        publicity: Public,
-        parameters: ["x"],
-        variants: [Variant("Box", [Field(None, VariableType("x"))])],
-      ),
-    ],
-    [],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.custom_types }
+  |> should.equal([
+    CustomType(
+      name: "Box",
+      publicity: Public,
+      parameters: ["x"],
+      variants: [Variant("Box", [Field(None, VariableType("x"))])],
+    ),
+  ])
 }
 
 pub fn multiple_fields_test() {
@@ -138,29 +119,25 @@ pub fn multiple_fields_test() {
     Box(x, y, z)
   }"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [
-      CustomType(
-        name: "Box",
-        publicity: Public,
-        parameters: ["x", "y", "z"],
-        variants: [
-          Variant(
-            "Box",
-            [
-              Field(None, VariableType("x")),
-              Field(None, VariableType("y")),
-              Field(None, VariableType("z")),
-            ],
-          ),
-        ],
-      ),
-    ],
-    [],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.custom_types }
+  |> should.equal([
+    CustomType(
+      name: "Box",
+      publicity: Public,
+      parameters: ["x", "y", "z"],
+      variants: [
+        Variant(
+          "Box",
+          [
+            Field(None, VariableType("x")),
+            Field(None, VariableType("y")),
+            Field(None, VariableType("z")),
+          ],
+        ),
+      ],
+    ),
+  ])
 }
 
 pub fn trailing_comma_in_parameters_test() {
@@ -168,20 +145,16 @@ pub fn trailing_comma_in_parameters_test() {
     Box
   }"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [
-      CustomType(
-        name: "Box",
-        publicity: Public,
-        parameters: ["x"],
-        variants: [Variant("Box", [])],
-      ),
-    ],
-    [],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.custom_types }
+  |> should.equal([
+    CustomType(
+      name: "Box",
+      publicity: Public,
+      parameters: ["x"],
+      variants: [Variant("Box", [])],
+    ),
+  ])
 }
 
 pub fn empty_parameter_list_test() {
@@ -189,20 +162,16 @@ pub fn empty_parameter_list_test() {
     Box
   }"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [
-      CustomType(
-        name: "Box",
-        publicity: Public,
-        parameters: [],
-        variants: [Variant("Box", [])],
-      ),
-    ],
-    [],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.custom_types }
+  |> should.equal([
+    CustomType(
+      name: "Box",
+      publicity: Public,
+      parameters: [],
+      variants: [Variant("Box", [])],
+    ),
+  ])
 }
 
 pub fn empty_fields_list_test() {
@@ -210,20 +179,16 @@ pub fn empty_fields_list_test() {
     Box()
   }"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [
-      CustomType(
-        name: "Box",
-        publicity: Public,
-        parameters: [],
-        variants: [Variant("Box", [])],
-      ),
-    ],
-    [],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.custom_types }
+  |> should.equal([
+    CustomType(
+      name: "Box",
+      publicity: Public,
+      parameters: [],
+      variants: [Variant("Box", [])],
+    ),
+  ])
 }
 
 pub fn fields_trailing_comma_test() {
@@ -231,20 +196,16 @@ pub fn fields_trailing_comma_test() {
     Box(a,)
   }"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [
-      CustomType(
-        name: "Box",
-        publicity: Public,
-        parameters: ["a"],
-        variants: [Variant("Box", [Field(None, VariableType("a"))])],
-      ),
-    ],
-    [],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.custom_types }
+  |> should.equal([
+    CustomType(
+      name: "Box",
+      publicity: Public,
+      parameters: ["a"],
+      variants: [Variant("Box", [Field(None, VariableType("a"))])],
+    ),
+  ])
 }
 
 pub fn labelled_fields_test() {
@@ -252,28 +213,24 @@ pub fn labelled_fields_test() {
     Box(a: a, b: a)
   }"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [
-      CustomType(
-        name: "Box",
-        publicity: Public,
-        parameters: ["a"],
-        variants: [
-          Variant(
-            "Box",
-            [
-              Field(Some("a"), VariableType("a")),
-              Field(Some("b"), VariableType("a")),
-            ],
-          ),
-        ],
-      ),
-    ],
-    [],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.custom_types }
+  |> should.equal([
+    CustomType(
+      name: "Box",
+      publicity: Public,
+      parameters: ["a"],
+      variants: [
+        Variant(
+          "Box",
+          [
+            Field(Some("a"), VariableType("a")),
+            Field(Some("b"), VariableType("a")),
+          ],
+        ),
+      ],
+    ),
+  ])
 }
 
 pub fn phantom_trailing_comma_test() {
@@ -281,20 +238,16 @@ pub fn phantom_trailing_comma_test() {
     Spooky
   }"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [
-      CustomType(
-        name: "Spooky",
-        publicity: Public,
-        parameters: ["t", "u"],
-        variants: [Variant("Spooky", [])],
-      ),
-    ],
-    [],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.custom_types }
+  |> should.equal([
+    CustomType(
+      name: "Spooky",
+      publicity: Public,
+      parameters: ["t", "u"],
+      variants: [Variant("Spooky", [])],
+    ),
+  ])
 }
 
 pub fn comment_discarding_test() {
@@ -310,124 +263,102 @@ pub fn comment_discarding_test() {
     // four
   }"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [
-      CustomType(
-        name: "Spooky",
-        publicity: Public,
-        parameters: ["t", "u"],
-        variants: [Variant("Spooky", [])],
-      ),
-    ],
-    [],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.custom_types }
+  |> should.equal([
+    CustomType(
+      name: "Spooky",
+      publicity: Public,
+      parameters: ["t", "u"],
+      variants: [Variant("Spooky", [])],
+    ),
+  ])
 }
 
 pub fn alias_variable_test() {
   "pub type X = a"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [],
-    [
-      TypeAlias(
-        name: "X",
-        publicity: Public,
-        parameters: [],
-        aliased: VariableType("a"),
-      ),
-    ],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.type_aliases }
+  |> should.equal([
+    TypeAlias(
+      name: "X",
+      publicity: Public,
+      parameters: [],
+      aliased: VariableType("a"),
+    ),
+  ])
 }
 
 pub fn alias_named_test() {
   "pub type X = Y"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [],
-    [
-      TypeAlias(
-        name: "X",
-        publicity: Public,
-        parameters: [],
-        aliased: NamedType("Y", None, []),
-      ),
-    ],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(x: Module) { x.type_aliases }
+  |> should.equal([
+    TypeAlias(
+      name: "X",
+      publicity: Public,
+      parameters: [],
+      aliased: NamedType("Y", None, []),
+    ),
+  ])
 }
 
 pub fn alias_qualified_named_test() {
   "pub type X = wibble.Y"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [],
-    [
-      TypeAlias(
-        name: "X",
-        publicity: Public,
-        parameters: [],
-        aliased: NamedType("Y", Some("wibble"), []),
-      ),
-    ],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(m: Module) { m.type_aliases }
+  |> should.equal([
+    TypeAlias(
+      name: "X",
+      publicity: Public,
+      parameters: [],
+      aliased: NamedType("Y", Some("wibble"), []),
+    ),
+  ])
 }
 
 pub fn alias_tuple_test() {
   "pub type X = #(A, B)"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [],
-    [
-      TypeAlias(
-        name: "X",
-        publicity: Public,
-        parameters: [],
-        aliased: TupleType([NamedType("A", None, []), NamedType("B", None, [])]),
-      ),
-    ],
-    [],
-    [],
-  )))
+  |> should.be_ok
+  |> fn(m: Module) { m.type_aliases }
+  |> should.equal([
+    TypeAlias(
+      name: "X",
+      publicity: Public,
+      parameters: [],
+      aliased: TupleType([NamedType("A", None, []), NamedType("B", None, [])]),
+    ),
+  ])
 }
 
 pub fn alias_fn_test() {
   "pub type X = fn(A, B) -> C"
   |> glance.module()
-  |> should.equal(Ok(Module(
-    [],
-    [],
-    [
-      TypeAlias(
-        name: "X",
-        publicity: Public,
-        parameters: [],
-        aliased: FunctionType(
-          [NamedType("A", None, []), NamedType("B", None, [])],
-          NamedType("C", None, []),
-        ),
+  |> should.be_ok
+  |> fn(m: Module) { m.type_aliases }
+  |> should.equal([
+    TypeAlias(
+      name: "X",
+      publicity: Public,
+      parameters: [],
+      aliased: FunctionType(
+        [NamedType("A", None, []), NamedType("B", None, [])],
+        NamedType("C", None, []),
       ),
-    ],
-    [],
-    [],
-  )))
+    ),
+  ])
 }
 
 pub fn import_test() {
   "import one"
   |> glance.module()
-  |> should.equal(Ok(Module([Import("one", None, [])], [], [], [], [])))
+  |> should.be_ok
+  |> fn(x: Module) { x.imports }
+  |> should.equal([Import("one", None, [])])
 }
 
 pub fn nested_import_test() {
@@ -717,4 +648,44 @@ pub fn trailing_comma_parameter_external_type_test() {
   |> should.be_ok
   |> fn(x: Module) { x.external_types }
   |> should.equal([ExternalType("Wibble", Private, ["a", "b", "c"])])
+}
+
+pub fn external_function_test() {
+  "external fn one(Nil, label: other.Two) -> Nil = \"one\" \"two\""
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.external_functions }
+  |> should.equal([
+    ExternalFunction(
+      name: "one",
+      publicity: Private,
+      parameters: [
+        Field(None, NamedType("Nil", None, [])),
+        Field(Some("label"), NamedType("Two", Some("other"), [])),
+      ],
+      return: NamedType("Nil", None, []),
+      module: "one",
+      function: "two",
+    ),
+  ])
+}
+
+pub fn pub_external_function_test() {
+  "pub external fn one(Nil, label: other.Two) -> Nil = \"one\" \"two\""
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.external_functions }
+  |> should.equal([
+    ExternalFunction(
+      name: "one",
+      publicity: Public,
+      parameters: [
+        Field(None, NamedType("Nil", None, [])),
+        Field(Some("label"), NamedType("Two", Some("other"), [])),
+      ],
+      return: NamedType("Nil", None, []),
+      module: "one",
+      function: "two",
+    ),
+  ])
 }

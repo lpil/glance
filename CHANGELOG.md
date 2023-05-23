@@ -2,7 +2,8 @@
 
 ## Unreleased
 
-- Esternal types can now be parsed.
+- External types can now be parsed.
+- External functions can now be parsed.
 
 ## 0.2.0 - 2023-05-19
 

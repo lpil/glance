@@ -7,7 +7,10 @@ A Gleam source code parser, in Gleam!
 
 Currently this library will parse the following:
 
+- Constants (discarding bit string segments)
 - Custom types.
+- External functions.
+- External types.
 - Imports.
 - Type aliases.
 

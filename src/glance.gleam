@@ -14,6 +14,18 @@ pub type Module {
     type_aliases: List(TypeAlias),
     constants: List(Constant),
     external_types: List(ExternalType),
+    external_functions: List(ExternalFunction),
+  )
+}
+
+pub type ExternalFunction {
+  ExternalFunction(
+    name: String,
+    publicity: Publicity,
+    parameters: List(Field(Type)),
+    return: Type,
+    module: String,
+    function: String,
   )
 }
 
@@ -106,11 +118,21 @@ pub fn module(src: String) -> Result(Module, Error) {
   glexer.new(src)
   |> glexer.lex
   |> list.filter(fn(pair) { pair.0 != t.CommentNormal })
-  |> slurp(Module([], [], [], [], []), _)
+  |> slurp(Module([], [], [], [], [], []), _)
 }
 
 fn push_constant(module: Module, constant: Constant) -> Module {
   Module(..module, constants: [constant, ..module.constants])
+}
+
+fn push_external_function(
+  module: Module,
+  external_function: ExternalFunction,
+) -> Module {
+  Module(
+    ..module,
+    external_functions: [external_function, ..module.external_functions],
+  )
 }
 
 fn push_external_type(module: Module, external_type: ExternalType) -> Module {
@@ -166,6 +188,17 @@ fn expect_name(
   }
 }
 
+fn expect_string(
+  tokens: Tokens,
+  next: fn(String, Tokens) -> Result(t, Error),
+) -> Result(t, Error) {
+  case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+    [#(t.String(s), _), ..tokens] -> next(s, tokens)
+    [#(other, position), ..] -> Error(UnexpectedToken(other, position))
+  }
+}
+
 fn until(
   limit: Token,
   acc: acc,
@@ -201,6 +234,12 @@ fn slurp(module: Module, tokens: Tokens) -> Result(Module, Error) {
     }
     [#(t.Const, _), ..tokens] -> {
       const_definition(module, Private, tokens)
+    }
+    [#(t.Pub, _), #(t.External, _), #(t.Fn, _), ..tokens] -> {
+      external_fn_definition(module, Public, tokens)
+    }
+    [#(t.External, _), #(t.Fn, _), ..tokens] -> {
+      external_fn_definition(module, Private, tokens)
     }
     [#(t.Pub, _), #(t.External, _), #(t.Type, _), ..tokens] -> {
       external_type_definition(module, Public, tokens)
@@ -317,6 +356,36 @@ fn unqualified_imports(
 
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
   }
+}
+
+fn external_fn_definition(
+  module: Module,
+  publicity: Publicity,
+  tokens: Tokens,
+) -> Result(Module, Error) {
+  // Name
+  use name, tokens <- expect_name(tokens)
+
+  // Parameters
+  use _, tokens <- expect(t.LeftParen, tokens)
+  let parser = field(_, of: type_)
+  let result = comma_delimited([], tokens, parser, t.RightParen)
+  use #(parameters, tokens) <- result.try(result)
+
+  // Return type
+  use _, tokens <- expect(t.RightArrow, tokens)
+  use #(return_type, tokens) <- result.try(type_(tokens))
+
+  // Implementation location
+  use _, tokens <- expect(t.Equal, tokens)
+  use mod, tokens <- expect_string(tokens)
+  use f, tokens <- expect_string(tokens)
+
+  let extern =
+    ExternalFunction(name, publicity, parameters, return_type, mod, f)
+  module
+  |> push_external_function(extern)
+  |> slurp(tokens)
 }
 
 fn external_type_definition(
