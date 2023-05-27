@@ -15,6 +15,7 @@ pub type Module {
     constants: List(Constant),
     external_types: List(ExternalType),
     external_functions: List(ExternalFunction),
+    functions: List(Function),
   )
 }
 
@@ -27,6 +28,28 @@ pub type ExternalFunction {
     module: String,
     function: String,
   )
+}
+
+pub type Function {
+  Function(
+    name: String,
+    publicity: Publicity,
+    parameters: List(FunctionParameter),
+    return: Option(Type),
+  )
+}
+
+pub type FunctionParameter {
+  FunctionParameter(
+    label: Option(String),
+    name: ParameterName,
+    type_: Option(Type),
+  )
+}
+
+pub type ParameterName {
+  NamedParameter(String)
+  DiscardedParameter(String)
 }
 
 pub type Import {
@@ -118,7 +141,7 @@ pub fn module(src: String) -> Result(Module, Error) {
   glexer.new(src)
   |> glexer.lex
   |> list.filter(fn(pair) { pair.0 != t.CommentNormal })
-  |> slurp(Module([], [], [], [], [], []), _)
+  |> slurp(Module([], [], [], [], [], [], []), _)
 }
 
 fn push_constant(module: Module, constant: Constant) -> Module {
@@ -133,6 +156,10 @@ fn push_external_function(
     ..module,
     external_functions: [external_function, ..module.external_functions],
   )
+}
+
+fn push_function(module: Module, function: Function) -> Module {
+  Module(..module, functions: [function, ..module.functions])
 }
 
 fn push_external_type(module: Module, external_type: ExternalType) -> Module {
@@ -240,6 +267,12 @@ fn slurp(module: Module, tokens: Tokens) -> Result(Module, Error) {
     }
     [#(t.External, _), #(t.Fn, _), ..tokens] -> {
       external_fn_definition(module, Private, tokens)
+    }
+    [#(t.Pub, _), #(t.Fn, _), #(t.Name(name), _), ..tokens] -> {
+      function_definition(module, Public, name, tokens)
+    }
+    [#(t.Fn, _), #(t.Name(name), _), ..tokens] -> {
+      function_definition(module, Private, name, tokens)
     }
     [#(t.Pub, _), #(t.External, _), #(t.Type, _), ..tokens] -> {
       external_type_definition(module, Public, tokens)
@@ -355,6 +388,64 @@ fn unqualified_imports(
     }
 
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
+  }
+}
+
+fn function_definition(
+  module: Module,
+  publicity: Publicity,
+  name: String,
+  tokens: Tokens,
+) -> Result(Module, Error) {
+  // Parameters
+  use _, tokens <- expect(t.LeftParen, tokens)
+  let result = comma_delimited([], tokens, function_parameter, t.RightParen)
+  use #(parameters, tokens) <- result.try(result)
+
+  // Return type
+  use #(return_type, tokens) <- result.try(case tokens {
+    [#(t.RightArrow, _), ..tokens] -> {
+      use #(return_type, tokens) <- result.try(type_(tokens))
+      Ok(#(Some(return_type), tokens))
+    }
+    _ -> Ok(#(None, tokens))
+  })
+
+  // We don't parse the body yet.
+
+  let function = Function(name, publicity, parameters, return_type)
+  module
+  |> push_function(function)
+  |> slurp(tokens)
+}
+
+fn function_parameter(
+  tokens: Tokens,
+) -> Result(#(FunctionParameter, Tokens), Error) {
+  let result = case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+    [#(t.Name(label), _), #(t.DiscardName(name), _), ..tokens] -> {
+      Ok(#(Some(label), DiscardedParameter(name), tokens))
+    }
+    [#(t.DiscardName(name), _), ..tokens] -> {
+      Ok(#(None, DiscardedParameter(name), tokens))
+    }
+    [#(t.Name(label), _), #(t.Name(name), _), ..tokens] -> {
+      Ok(#(Some(label), NamedParameter(name), tokens))
+    }
+    [#(t.Name(name), _), ..tokens] -> {
+      Ok(#(None, NamedParameter(name), tokens))
+    }
+    [#(token, position), ..] -> Error(UnexpectedToken(token, position))
+  }
+  use #(label, parameter, tokens) <- result.try(result)
+
+  case tokens {
+    [#(t.Colon, _), ..tokens] -> {
+      use #(type_, tokens) <- result.try(type_(tokens))
+      Ok(#(FunctionParameter(label, parameter, Some(type_)), tokens))
+    }
+    _ -> Ok(#(FunctionParameter(label, parameter, None), tokens))
   }
 }
 

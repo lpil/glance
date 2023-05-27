@@ -4,7 +4,8 @@ import gleam/option.{None, Some}
 import glance.{
   Constant, ConstantBitString, ConstantConstructor, ConstantFloat, ConstantInt,
   ConstantList, ConstantString, ConstantTuple, ConstantVariable, CustomType,
-  ExternalFunction, ExternalType, Field, FunctionType, Import, Module, NamedType,
+  DiscardedParameter, ExternalFunction, ExternalType, Field, Function,
+  FunctionParameter, FunctionType, Import, Module, NamedParameter, NamedType,
   Private, Public, TupleType, TypeAlias, UnqualifiedImport, VariableType,
   Variant,
 }
@@ -16,7 +17,7 @@ pub fn main() {
 pub fn empty_test() {
   ""
   |> glance.module()
-  |> should.equal(Ok(Module([], [], [], [], [], [])))
+  |> should.equal(Ok(Module([], [], [], [], [], [], [])))
 }
 
 pub fn public_enum_test() {
@@ -686,6 +687,71 @@ pub fn pub_external_function_test() {
       return: NamedType("Nil", None, []),
       module: "one",
       function: "two",
+    ),
+  ])
+}
+
+pub fn function_main_test() {
+  "pub fn main() {}"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(name: "main", publicity: Public, parameters: [], return: None),
+  ])
+}
+
+pub fn private_function_main_test() {
+  "fn main() {}"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(name: "main", publicity: Private, parameters: [], return: None),
+  ])
+}
+
+pub fn function_return_annotation_test() {
+  "fn main() -> Nil {}"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Private,
+      parameters: [],
+      return: Some(NamedType("Nil", None, [])),
+    ),
+  ])
+}
+
+pub fn function_parameters_test() {
+  "fn main(a, b: #(), c d, e f: G, h _i, j _k: L) {}"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Private,
+      parameters: [
+        FunctionParameter(None, NamedParameter("a"), None),
+        FunctionParameter(None, NamedParameter("b"), Some(TupleType([]))),
+        FunctionParameter(Some("c"), NamedParameter("d"), None),
+        FunctionParameter(
+          Some("e"),
+          NamedParameter("f"),
+          Some(NamedType("G", None, [])),
+        ),
+        FunctionParameter(Some("h"), DiscardedParameter("i"), None),
+        FunctionParameter(
+          Some("j"),
+          DiscardedParameter("k"),
+          Some(NamedType("L", None, [])),
+        ),
+      ],
+      return: None,
     ),
   ])
 }
