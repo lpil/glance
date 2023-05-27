@@ -7,8 +7,8 @@ import glance.{
   CustomType, DiscardedParameter, Expression, ExternalFunction, ExternalType,
   Field, Float, Fn, FnParameter, Function, FunctionParameter, FunctionType,
   Import, Int, List, Module, NamedParameter, NamedType, NegateBool, NegateInt,
-  Panic, Private, Public, String, Todo, Tuple, TupleType, TypeAlias,
-  UnqualifiedImport, Variable, VariableType, Variant,
+  Panic, Private, Public, RecordUpdate, String, Todo, Tuple, TupleType,
+  TypeAlias, UnqualifiedImport, Variable, VariableType, Variant,
 }
 
 pub fn main() {
@@ -1113,6 +1113,121 @@ pub fn expression_fn_discard_test() {
           [FnParameter(DiscardedParameter("x"), Some(VariableType("a")))],
           None,
           [Expression(Int("1"))],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn record_update_test() {
+  "pub fn main() { Wibble(..wibble, one: 1, two: 2) }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(RecordUpdate(
+          module: None,
+          constructor: "Wibble",
+          record: Variable("wibble"),
+          fields: [#("one", Int("1")), #("two", Int("2"))],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn record_update_qualified_test() {
+  "pub fn main() { wobble.Wibble(..wibble, one: 1, two: 2) }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(RecordUpdate(
+          module: Some("wobble"),
+          constructor: "Wibble",
+          record: Variable("wibble"),
+          fields: [#("one", Int("1")), #("two", Int("2"))],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn record_update_empty_test() {
+  "pub fn main() { Wibble(..wibble) }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(RecordUpdate(
+          module: None,
+          constructor: "Wibble",
+          record: Variable("wibble"),
+          fields: [],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn record_update_trailing_comma_test() {
+  "pub fn main() { Wibble(..wibble, one: 1, two: 2,) }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(RecordUpdate(
+          module: None,
+          constructor: "Wibble",
+          record: Variable("wibble"),
+          fields: [#("one", Int("1")), #("two", Int("2"))],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn record_update_empty_trailing_comma_test() {
+  "pub fn main() { Wibble(..wibble,) }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(RecordUpdate(
+          module: None,
+          constructor: "Wibble",
+          record: Variable("wibble"),
+          fields: [],
         )),
       ],
     ),

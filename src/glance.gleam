@@ -79,11 +79,6 @@ pub type Expression {
   // BitString(
   //     segments: List(UntypedExprBitStringSegment),
   // )
-  // RecordUpdate(
-  //     constructor: Expression,
-  //     spread: RecordUpdateSpread,
-  //     arguments: List(UntypedRecordUpdateArg),
-  // )
   Panic
   Int(String)
   Float(String)
@@ -99,6 +94,12 @@ pub type Expression {
     arguments: List(FnParameter),
     return_annotation: Option(Type),
     body: List(Statement),
+  )
+  RecordUpdate(
+    module: Option(String),
+    constructor: String,
+    record: Expression,
+    fields: List(#(String, Expression)),
   )
 }
 
@@ -530,6 +531,21 @@ fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
 
 fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
   case tokens {
+    [
+      #(t.Name(module), _),
+      #(t.Dot, _),
+      #(t.UpperName(constructor), _),
+      #(t.LeftParen, _),
+      #(t.DotDot, _),
+      ..tokens
+    ] -> record_update(Some(module), constructor, tokens)
+    [
+      #(t.UpperName(constructor), _),
+      #(t.LeftParen, _),
+      #(t.DotDot, _),
+      ..tokens
+    ] -> record_update(None, constructor, tokens)
+
     [#(t.Panic, _), ..tokens] -> Ok(#(Panic, tokens))
     [#(t.Int(value), _), ..tokens] -> Ok(#(Int(value), tokens))
     [#(t.Float(value), _), ..tokens] -> Ok(#(Float(value), tokens))
@@ -569,6 +585,41 @@ fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
       Ok(#(Block(statements), tokens))
     }
 
+    [#(other, position), ..] -> Error(UnexpectedToken(other, position))
+    [] -> Error(UnexpectedEndOfInput)
+  }
+}
+
+fn record_update(
+  module: Option(String),
+  constructor: String,
+  tokens: Tokens,
+) -> Result(#(Expression, Tokens), Error) {
+  use #(record, tokens) <- result.try(expression(tokens))
+
+  case tokens {
+    [#(t.RightParen, _), ..tokens] -> {
+      Ok(#(RecordUpdate(module, constructor, record, []), tokens))
+    }
+    [#(t.Comma, _), ..tokens] -> {
+      let result =
+        comma_delimited([], tokens, record_update_field, t.RightParen)
+      use #(fields, tokens) <- result.try(result)
+      Ok(#(RecordUpdate(module, constructor, record, fields), tokens))
+    }
+    [#(other, position), ..] -> Error(UnexpectedToken(other, position))
+    [] -> Error(UnexpectedEndOfInput)
+  }
+}
+
+fn record_update_field(
+  tokens: Tokens,
+) -> Result(#(#(String, Expression), Tokens), Error) {
+  case tokens {
+    [#(t.Name(name), _), #(t.Colon, _), ..tokens] -> {
+      use #(expression, tokens) <- result.try(expression(tokens))
+      Ok(#(#(name, expression), tokens))
+    }
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
     [] -> Error(UnexpectedEndOfInput)
   }
