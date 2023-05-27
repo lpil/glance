@@ -36,7 +36,79 @@ pub type Function {
     publicity: Publicity,
     parameters: List(FunctionParameter),
     return: Option(Type),
+    body: List(Statement),
   )
+}
+
+pub type Statement {
+  // Use
+  // Assignment
+  Expression(Expression)
+}
+
+pub type Expression {
+  // Block { statements: Vec1<Statement<(), Self>>, },
+  // Var { name: SmolStr, },
+  // FnCapture
+  // Fn {
+  //     arguments: Vec<Arg<()>>,
+  //     body: Vec1<UntypedStatement>,
+  //     return_annotation: Option<TypeAst>,
+  // },
+  // List {
+  //     elements: Vec<Self>,
+  //     tail: Option<Box<Self>>,
+  // },
+  // Call {
+  //     fun: Box<Self>,
+  //     arguments: Vec<CallArg<Self>>,
+  // },
+  // BinOp {
+  //     name: BinOp,
+  //     left: Box<Self>,
+  //     right: Box<Self>,
+  // },
+  // PipeLine {
+  //     expressions: Vec1<Self>,
+  // },
+  // Case {
+  //     subjects: Vec<Self>,
+  //     clauses: Vec<Clause<Self, (), ()>>,
+  // },
+  // FieldAccess {
+  //     label: SmolStr,
+  //     container: Box<Self>,
+  // },
+  // Tuple {
+  //     elems: Vec<Self>,
+  // },
+  // TupleIndex {
+  //     index: u64,
+  //     tuple: Box<Self>,
+  // },
+  // Todo {
+  //     kind: TodoKind,
+  //     label: Option<SmolStr>,
+  // },
+  // BitString {
+  //     segments: Vec<UntypedExprBitStringSegment>,
+  // },
+  // RecordUpdate {
+  //     constructor: Box<Self>,
+  //     spread: RecordUpdateSpread,
+  //     arguments: Vec<UntypedRecordUpdateArg>,
+  // },
+  // NegateBool {
+  //     value: Box<Self>,
+  // },
+  // NegateInt {
+  //     value: Box<Self>,
+  // },
+  Panic
+  Int(String)
+  Float(String)
+  String(String)
+  Variable(String)
 }
 
 pub type FunctionParameter {
@@ -412,11 +484,60 @@ fn function_definition(
   })
 
   // We don't parse the body yet.
+  use _, tokens <- expect(t.LeftBrace, tokens)
+  use #(statements, tokens) <- result.try(statements([], tokens))
 
-  let function = Function(name, publicity, parameters, return_type)
+  let function = Function(name, publicity, parameters, return_type, statements)
   module
   |> push_function(function)
   |> slurp(tokens)
+}
+
+fn statements(
+  acc: List(Statement),
+  tokens: Tokens,
+) -> Result(#(List(Statement), Tokens), Error) {
+  case tokens {
+    [#(t.RightBrace, _), ..tokens] -> Ok(#(list.reverse(acc), tokens))
+    _ -> {
+      use #(statement, tokens) <- result.try(statement(tokens))
+      statements([statement, ..acc], tokens)
+    }
+  }
+}
+
+fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
+  case tokens {
+    // [#(t.Let, _), ..tokens] -> {
+    //   use #(statement, tokens) <- result.try(let_statement(tokens))
+    //   Ok(#(statement, tokens))
+    // }
+    // [#(t.Return, _), ..tokens] -> {
+    //   use #(statement, tokens) <- result.try(return_statement(tokens))
+    //   Ok(#(statement, tokens))
+    // }
+    // [#(t.Name(name), _), ..tokens] -> {
+    //   use #(statement, tokens) <- result.try(expression_statement(tokens))
+    //   Ok(#(statement, tokens))
+    // }
+    tokens -> {
+      use #(expression, tokens) <- result.try(expression(tokens))
+      Ok(#(Expression(expression), tokens))
+    }
+  }
+}
+
+fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
+  case tokens {
+    [#(t.Panic, _), ..tokens] -> Ok(#(Panic, tokens))
+    [#(t.Int(value), _), ..tokens] -> Ok(#(Int(value), tokens))
+    [#(t.Float(value), _), ..tokens] -> Ok(#(Float(value), tokens))
+    [#(t.String(value), _), ..tokens] -> Ok(#(String(value), tokens))
+    [#(t.Name(name), _), ..tokens] -> Ok(#(Variable(name), tokens))
+
+    [#(other, position), ..] -> Error(UnexpectedToken(other, position))
+    [] -> Error(UnexpectedEndOfInput)
+  }
 }
 
 fn function_parameter(

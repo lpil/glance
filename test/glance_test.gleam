@@ -4,10 +4,10 @@ import gleam/option.{None, Some}
 import glance.{
   Constant, ConstantBitString, ConstantConstructor, ConstantFloat, ConstantInt,
   ConstantList, ConstantString, ConstantTuple, ConstantVariable, CustomType,
-  DiscardedParameter, ExternalFunction, ExternalType, Field, Function,
-  FunctionParameter, FunctionType, Import, Module, NamedParameter, NamedType,
-  Private, Public, TupleType, TypeAlias, UnqualifiedImport, VariableType,
-  Variant,
+  DiscardedParameter, Expression, ExternalFunction, ExternalType, Field, Float,
+  Function, FunctionParameter, FunctionType, Import, Int, Module, NamedParameter,
+  NamedType, Panic, Private, Public, String, TupleType, TypeAlias,
+  UnqualifiedImport, Variable, VariableType, Variant,
 }
 
 pub fn main() {
@@ -697,7 +697,13 @@ pub fn function_main_test() {
   |> should.be_ok
   |> fn(x: Module) { x.functions }
   |> should.equal([
-    Function(name: "main", publicity: Public, parameters: [], return: None),
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [],
+    ),
   ])
 }
 
@@ -707,7 +713,13 @@ pub fn private_function_main_test() {
   |> should.be_ok
   |> fn(x: Module) { x.functions }
   |> should.equal([
-    Function(name: "main", publicity: Private, parameters: [], return: None),
+    Function(
+      name: "main",
+      publicity: Private,
+      parameters: [],
+      return: None,
+      body: [],
+    ),
   ])
 }
 
@@ -722,6 +734,7 @@ pub fn function_return_annotation_test() {
       publicity: Private,
       parameters: [],
       return: Some(NamedType("Nil", None, [])),
+      body: [],
     ),
   ])
 }
@@ -752,6 +765,99 @@ pub fn function_parameters_test() {
         ),
       ],
       return: None,
+      body: [],
+    ),
+  ])
+}
+
+pub fn expression_int_test() {
+  "pub fn main() { 1 2 3 }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Expression(Int("1")), Expression(Int("2")), Expression(Int("3"))],
+    ),
+  ])
+}
+
+pub fn expression_float_test() {
+  "pub fn main() { 1.0 2.0 3.0 }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Float("1.0")),
+        Expression(Float("2.0")),
+        Expression(Float("3.0")),
+      ],
+    ),
+  ])
+}
+
+pub fn expression_string_test() {
+  "pub fn main() { \"10\" \"20\" \"30\" }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(String("10")),
+        Expression(String("20")),
+        Expression(String("30")),
+      ],
+    ),
+  ])
+}
+
+pub fn expression_variable_test() {
+  "pub fn main() { x y z }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Variable("x")),
+        Expression(Variable("y")),
+        Expression(Variable("z")),
+      ],
+    ),
+  ])
+}
+
+pub fn expression_panic_test() {
+  "pub fn main() { panic panic }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Expression(Panic), Expression(Panic)],
     ),
   ])
 }
