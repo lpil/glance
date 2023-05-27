@@ -68,10 +68,6 @@ pub type Expression {
   //     subjects: List(Expression),
   //     clauses: List(Clause),
   // )
-  // FieldAccess(
-  //     label: String,
-  //     container: Expression,
-  // )
   // TupleIndex(
   //     index: u64,
   //     tuple: Expression,
@@ -101,6 +97,7 @@ pub type Expression {
     record: Expression,
     fields: List(#(String, Expression)),
   )
+  FieldAccess(container: Expression, label: String)
 }
 
 pub type FnParameter {
@@ -530,7 +527,7 @@ fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
 }
 
 fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
-  case tokens {
+  use #(parsed, tokens) <- result.try(case tokens {
     [
       #(t.Name(module), _),
       #(t.Dot, _),
@@ -587,6 +584,23 @@ fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
 
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
     [] -> Error(UnexpectedEndOfInput)
+  })
+
+  after_expression(parsed, tokens)
+}
+
+fn after_expression(
+  parsed: Expression,
+  tokens: Tokens,
+) -> Result(#(Expression, Tokens), Error) {
+  case tokens {
+    // Record or module access
+    [#(t.Dot, _), #(t.Name(label), _), ..tokens]
+    | [#(t.Dot, _), #(t.UpperName(label), _), ..tokens] -> {
+      after_expression(FieldAccess(parsed, label), tokens)
+    }
+
+    _ -> Ok(#(parsed, tokens))
   }
 }
 

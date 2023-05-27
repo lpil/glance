@@ -5,10 +5,10 @@ import glance.{
   Block, Constant, ConstantBitString, ConstantConstructor, ConstantFloat,
   ConstantInt, ConstantList, ConstantString, ConstantTuple, ConstantVariable,
   CustomType, DiscardedParameter, Expression, ExternalFunction, ExternalType,
-  Field, Float, Fn, FnParameter, Function, FunctionParameter, FunctionType,
-  Import, Int, List, Module, NamedParameter, NamedType, NegateBool, NegateInt,
-  Panic, Private, Public, RecordUpdate, String, Todo, Tuple, TupleType,
-  TypeAlias, UnqualifiedImport, Variable, VariableType, Variant,
+  Field, FieldAccess, Float, Fn, FnParameter, Function, FunctionParameter,
+  FunctionType, Import, Int, List, Module, NamedParameter, NamedType, NegateBool,
+  NegateInt, Panic, Private, Public, RecordUpdate, String, Todo, Tuple,
+  TupleType, TypeAlias, UnqualifiedImport, Variable, VariableType, Variant,
 }
 
 pub fn main() {
@@ -1228,6 +1228,66 @@ pub fn record_update_empty_trailing_comma_test() {
           constructor: "Wibble",
           record: Variable("wibble"),
           fields: [],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn field_access_test() {
+  "pub fn main() { wobble.wibble }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(FieldAccess(container: Variable("wobble"), label: "wibble")),
+      ],
+    ),
+  ])
+}
+
+pub fn field_access_upper_test() {
+  "pub fn main() { wobble.Wibble }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(FieldAccess(container: Variable("wobble"), label: "Wibble")),
+      ],
+    ),
+  ])
+}
+
+pub fn field_access_recursive_test() {
+  "pub fn main() { one.two.three.four }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(FieldAccess(
+          container: FieldAccess(
+            container: FieldAccess(container: Variable("one"), label: "two"),
+            label: "three",
+          ),
+          label: "four",
         )),
       ],
     ),
