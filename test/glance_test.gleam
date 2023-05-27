@@ -2,12 +2,13 @@ import gleeunit
 import gleeunit/should
 import gleam/option.{None, Some}
 import glance.{
-  Constant, ConstantBitString, ConstantConstructor, ConstantFloat, ConstantInt,
-  ConstantList, ConstantString, ConstantTuple, ConstantVariable, CustomType,
-  DiscardedParameter, Expression, ExternalFunction, ExternalType, Field, Float,
-  Function, FunctionParameter, FunctionType, Import, Int, Module, NamedParameter,
-  NamedType, NegateBool, NegateInt, Panic, Private, Public, String, TupleType,
-  TypeAlias, UnqualifiedImport, Variable, VariableType, Variant,
+  Block, Constant, ConstantBitString, ConstantConstructor, ConstantFloat,
+  ConstantInt, ConstantList, ConstantString, ConstantTuple, ConstantVariable,
+  CustomType, DiscardedParameter, Expression, ExternalFunction, ExternalType,
+  Field, Float, Function, FunctionParameter, FunctionType, Import, Int, Module,
+  NamedParameter, NamedType, NegateBool, NegateInt, Panic, Private, Public,
+  String, Todo, Tuple, TupleType, TypeAlias, UnqualifiedImport, Variable,
+  VariableType, Variant,
 }
 
 pub fn main() {
@@ -890,6 +891,92 @@ pub fn expression_negate_bool_test() {
       parameters: [],
       return: None,
       body: [Expression(NegateBool(Variable("x")))],
+    ),
+  ])
+}
+
+pub fn expression_block_test() {
+  "pub fn main() { { x y z } }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Block([
+          Expression(Variable("x")),
+          Expression(Variable("y")),
+          Expression(Variable("z")),
+        ])),
+      ],
+    ),
+  ])
+}
+
+pub fn expression_todo_test() {
+  "pub fn main() { todo }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Expression(Todo(None))],
+    ),
+  ])
+}
+
+pub fn expression_todo_message_test() {
+  "pub fn main() { todo(\"huh\") }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Expression(Todo(Some("huh")))],
+    ),
+  ])
+}
+
+pub fn expression_tuple_test() {
+  "pub fn main() { #(1, 2, 3) }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Expression(Tuple([Int("1"), Int("2"), Int("3")]))],
+    ),
+  ])
+}
+
+pub fn expression_tuple_trailing_comma_test() {
+  "pub fn main() { #(1, 2, 3, ) }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Expression(Tuple([Int("1"), Int("2"), Int("3")]))],
     ),
   ])
 }

@@ -47,7 +47,6 @@ pub type Statement {
 }
 
 pub type Expression {
-  // Block(statements: List(Statement))
   // FnCapture(
   //     arguments_before: List(Arg<()>),
   //     arguments_after: List(Arg<()>),
@@ -82,14 +81,10 @@ pub type Expression {
   //     label: String,
   //     container: Expression,
   // )
-  // Tuple(
-  //     elems: List(Expression),
-  // )
   // TupleIndex(
   //     index: u64,
   //     tuple: Expression,
   // )
-  // Todo(Option(String))
   // BitString(
   //     segments: List(UntypedExprBitStringSegment),
   // )
@@ -105,6 +100,9 @@ pub type Expression {
   Variable(String)
   NegateInt(Expression)
   NegateBool(Expression)
+  Block(List(Statement))
+  Todo(Option(String))
+  Tuple(List(Expression))
 }
 
 pub type FunctionParameter {
@@ -531,6 +529,21 @@ fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
     [#(t.String(value), _), ..tokens] -> Ok(#(String(value), tokens))
     [#(t.Name(name), _), ..tokens] -> Ok(#(Variable(name), tokens))
 
+    [
+      #(t.Todo, _),
+      #(t.LeftParen, _),
+      #(t.String(value), _),
+      #(t.RightParen, _),
+      ..tokens
+    ] -> Ok(#(Todo(Some(value)), tokens))
+    [#(t.Todo, _), ..tokens] -> Ok(#(Todo(None), tokens))
+
+    [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> {
+      let result = comma_delimited([], tokens, expression, t.RightParen)
+      use #(expressions, tokens) <- result.try(result)
+      Ok(#(Tuple(expressions), tokens))
+    }
+
     [#(t.Bang, _), ..tokens] -> {
       use #(expression, tokens) <- result.try(expression(tokens))
       Ok(#(NegateBool(expression), tokens))
@@ -539,6 +552,11 @@ fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
     [#(t.Minus, _), ..tokens] -> {
       use #(expression, tokens) <- result.try(expression(tokens))
       Ok(#(NegateInt(expression), tokens))
+    }
+
+    [#(t.LeftBrace, _), ..tokens] -> {
+      use #(statements, tokens) <- result.try(statements([], tokens))
+      Ok(#(Block(statements), tokens))
     }
 
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
