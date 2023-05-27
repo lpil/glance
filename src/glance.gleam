@@ -57,10 +57,6 @@ pub type Expression {
   //     body: List(UntypedStatement>,
   //     return_annotation: Option<TypeAst>,
   // )
-  // List(
-  //     elements: List(Expression),
-  //     tail: Option<Expression>,
-  // )
   // Call(
   //     fun: Expression,
   //     arguments: List(CallArg<Expression>),
@@ -103,6 +99,7 @@ pub type Expression {
   Block(List(Statement))
   Todo(Option(String))
   Tuple(List(Expression))
+  List(elements: List(Expression), rest: Option(Expression))
 }
 
 pub type FunctionParameter {
@@ -529,6 +526,8 @@ fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
     [#(t.String(value), _), ..tokens] -> Ok(#(String(value), tokens))
     [#(t.Name(name), _), ..tokens] -> Ok(#(Variable(name), tokens))
 
+    [#(t.LeftSquare, _), ..tokens] -> list([], tokens)
+
     [
       #(t.Todo, _),
       #(t.LeftParen, _),
@@ -561,6 +560,40 @@ fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
 
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
     [] -> Error(UnexpectedEndOfInput)
+  }
+}
+
+fn list(
+  acc: List(Expression),
+  tokens: Tokens,
+) -> Result(#(Expression, Tokens), Error) {
+  case tokens {
+    [#(t.RightSquare, _), ..tokens] ->
+      Ok(#(List(list.reverse(acc), None), tokens))
+
+    [#(t.Comma, _), #(t.RightSquare, _), ..tokens] if acc != [] ->
+      Ok(#(List(list.reverse(acc), None), tokens))
+
+    _ -> {
+      use #(element, tokens) <- result.try(expression(tokens))
+      let acc = [element, ..acc]
+      case tokens {
+        [#(t.RightSquare, _), ..tokens]
+        | [#(t.Comma, _), #(t.RightSquare, _), ..tokens] ->
+          Ok(#(List(list.reverse(acc), None), tokens))
+
+        [#(t.Comma, _), #(t.DotDot, _), ..tokens] -> {
+          use #(rest, tokens) <- result.try(expression(tokens))
+          use _, tokens <- expect(t.RightSquare, tokens)
+          Ok(#(List(list.reverse(acc), Some(rest)), tokens))
+        }
+
+        [#(t.Comma, _), ..tokens] -> list(acc, tokens)
+
+        [#(other, position), ..] -> Error(UnexpectedToken(other, position))
+        [] -> Error(UnexpectedEndOfInput)
+      }
+    }
   }
 }
 

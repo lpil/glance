@@ -5,9 +5,9 @@ import glance.{
   Block, Constant, ConstantBitString, ConstantConstructor, ConstantFloat,
   ConstantInt, ConstantList, ConstantString, ConstantTuple, ConstantVariable,
   CustomType, DiscardedParameter, Expression, ExternalFunction, ExternalType,
-  Field, Float, Function, FunctionParameter, FunctionType, Import, Int, Module,
-  NamedParameter, NamedType, NegateBool, NegateInt, Panic, Private, Public,
-  String, Todo, Tuple, TupleType, TypeAlias, UnqualifiedImport, Variable,
+  Field, Float, Function, FunctionParameter, FunctionType, Import, Int, List,
+  Module, NamedParameter, NamedType, NegateBool, NegateInt, Panic, Private,
+  Public, String, Todo, Tuple, TupleType, TypeAlias, UnqualifiedImport, Variable,
   VariableType, Variant,
 }
 
@@ -977,6 +977,56 @@ pub fn expression_tuple_trailing_comma_test() {
       parameters: [],
       return: None,
       body: [Expression(Tuple([Int("1"), Int("2"), Int("3")]))],
+    ),
+  ])
+}
+
+pub fn expression_list_test() {
+  "pub fn main() { [1, 2, 3] }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Expression(List([Int("1"), Int("2"), Int("3")], None))],
+    ),
+  ])
+}
+
+pub fn expression_list_trailing_comma_test() {
+  "pub fn main() { [1, 2, 3, ] }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Expression(List([Int("1"), Int("2"), Int("3")], None))],
+    ),
+  ])
+}
+
+pub fn expression_list_prefix_test() {
+  "pub fn main() { [1, 2, 3, ..x] }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(List([Int("1"), Int("2"), Int("3")], Some(Variable("x")))),
+      ],
     ),
   ])
 }
