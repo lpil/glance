@@ -6,8 +6,8 @@ import glance.{
   ConstantList, ConstantString, ConstantTuple, ConstantVariable, CustomType,
   DiscardedParameter, Expression, ExternalFunction, ExternalType, Field, Float,
   Function, FunctionParameter, FunctionType, Import, Int, Module, NamedParameter,
-  NamedType, Panic, Private, Public, String, TupleType, TypeAlias,
-  UnqualifiedImport, Variable, VariableType, Variant,
+  NamedType, NegateBool, NegateInt, Panic, Private, Public, String, TupleType,
+  TypeAlias, UnqualifiedImport, Variable, VariableType, Variant,
 }
 
 pub fn main() {
@@ -858,6 +858,38 @@ pub fn expression_panic_test() {
       parameters: [],
       return: None,
       body: [Expression(Panic), Expression(Panic)],
+    ),
+  ])
+}
+
+pub fn expression_negate_int_test() {
+  "pub fn main() { -x }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Expression(NegateInt(Variable("x")))],
+    ),
+  ])
+}
+
+pub fn expression_negate_bool_test() {
+  "pub fn main() { !x }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Expression(NegateBool(Variable("x")))],
     ),
   ])
 }

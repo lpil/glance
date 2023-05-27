@@ -47,68 +47,64 @@ pub type Statement {
 }
 
 pub type Expression {
-  // Block { statements: Vec1<Statement<(), Self>>, },
-  // Var { name: SmolStr, },
-  // FnCapture
-  // Fn {
-  //     arguments: Vec<Arg<()>>,
-  //     body: Vec1<UntypedStatement>,
+  // Block(statements: List(Statement))
+  // FnCapture(
+  //     arguments_before: List(Arg<()>),
+  //     arguments_after: List(Arg<()>),
+  //     function: Expression,
+  // )
+  // Fn(
+  //     arguments: List(Arg<()>),
+  //     body: List(UntypedStatement>,
   //     return_annotation: Option<TypeAst>,
-  // },
-  // List {
-  //     elements: Vec<Self>,
-  //     tail: Option<Box<Self>>,
-  // },
-  // Call {
-  //     fun: Box<Self>,
-  //     arguments: Vec<CallArg<Self>>,
-  // },
-  // BinOp {
+  // )
+  // List(
+  //     elements: List(Expression),
+  //     tail: Option<Expression>,
+  // )
+  // Call(
+  //     fun: Expression,
+  //     arguments: List(CallArg<Expression>),
+  // )
+  // BinOp(
   //     name: BinOp,
-  //     left: Box<Self>,
-  //     right: Box<Self>,
-  // },
-  // PipeLine {
-  //     expressions: Vec1<Self>,
-  // },
-  // Case {
-  //     subjects: Vec<Self>,
-  //     clauses: Vec<Clause<Self, (), ()>>,
-  // },
-  // FieldAccess {
-  //     label: SmolStr,
-  //     container: Box<Self>,
-  // },
-  // Tuple {
-  //     elems: Vec<Self>,
-  // },
-  // TupleIndex {
+  //     left: Expression,
+  //     right: Expression,
+  // )
+  // PipeLine(
+  //     expressions: List(Expression>,
+  // )
+  // Case(
+  //     subjects: List(Expression),
+  //     clauses: List(Clause),
+  // )
+  // FieldAccess(
+  //     label: String,
+  //     container: Expression,
+  // )
+  // Tuple(
+  //     elems: List(Expression),
+  // )
+  // TupleIndex(
   //     index: u64,
-  //     tuple: Box<Self>,
-  // },
-  // Todo {
-  //     kind: TodoKind,
-  //     label: Option<SmolStr>,
-  // },
-  // BitString {
-  //     segments: Vec<UntypedExprBitStringSegment>,
-  // },
-  // RecordUpdate {
-  //     constructor: Box<Self>,
+  //     tuple: Expression,
+  // )
+  // Todo(Option(String))
+  // BitString(
+  //     segments: List(UntypedExprBitStringSegment),
+  // )
+  // RecordUpdate(
+  //     constructor: Expression,
   //     spread: RecordUpdateSpread,
-  //     arguments: Vec<UntypedRecordUpdateArg>,
-  // },
-  // NegateBool {
-  //     value: Box<Self>,
-  // },
-  // NegateInt {
-  //     value: Box<Self>,
-  // },
+  //     arguments: List(UntypedRecordUpdateArg),
+  // )
   Panic
   Int(String)
   Float(String)
   String(String)
   Variable(String)
+  NegateInt(Expression)
+  NegateBool(Expression)
 }
 
 pub type FunctionParameter {
@@ -534,6 +530,16 @@ fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
     [#(t.Float(value), _), ..tokens] -> Ok(#(Float(value), tokens))
     [#(t.String(value), _), ..tokens] -> Ok(#(String(value), tokens))
     [#(t.Name(name), _), ..tokens] -> Ok(#(Variable(name), tokens))
+
+    [#(t.Bang, _), ..tokens] -> {
+      use #(expression, tokens) <- result.try(expression(tokens))
+      Ok(#(NegateBool(expression), tokens))
+    }
+
+    [#(t.Minus, _), ..tokens] -> {
+      use #(expression, tokens) <- result.try(expression(tokens))
+      Ok(#(NegateInt(expression), tokens))
+    }
 
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
     [] -> Error(UnexpectedEndOfInput)
