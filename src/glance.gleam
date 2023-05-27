@@ -52,11 +52,6 @@ pub type Expression {
   //     arguments_after: List(Arg<()>),
   //     function: Expression,
   // )
-  // Fn(
-  //     arguments: List(Arg<()>),
-  //     body: List(UntypedStatement>,
-  //     return_annotation: Option<TypeAst>,
-  // )
   // Call(
   //     fun: Expression,
   //     arguments: List(CallArg<Expression>),
@@ -100,6 +95,15 @@ pub type Expression {
   Todo(Option(String))
   Tuple(List(Expression))
   List(elements: List(Expression), rest: Option(Expression))
+  Fn(
+    arguments: List(FnParameter),
+    return_annotation: Option(Type),
+    body: List(Statement),
+  )
+}
+
+pub type FnParameter {
+  FnParameter(name: ParameterName, type_: Option(Type))
 }
 
 pub type FunctionParameter {
@@ -466,15 +470,9 @@ fn function_definition(
   use #(parameters, tokens) <- result.try(result)
 
   // Return type
-  use #(return_type, tokens) <- result.try(case tokens {
-    [#(t.RightArrow, _), ..tokens] -> {
-      use #(return_type, tokens) <- result.try(type_(tokens))
-      Ok(#(Some(return_type), tokens))
-    }
-    _ -> Ok(#(None, tokens))
-  })
+  use #(return_type, tokens) <- result.try(optional_return_annotation(tokens))
 
-  // We don't parse the body yet.
+  // The function body
   use _, tokens <- expect(t.LeftBrace, tokens)
   use #(statements, tokens) <- result.try(statements([], tokens))
 
@@ -482,6 +480,18 @@ fn function_definition(
   module
   |> push_function(function)
   |> slurp(tokens)
+}
+
+fn optional_return_annotation(
+  tokens: Tokens,
+) -> Result(#(Option(Type), Tokens), Error) {
+  case tokens {
+    [#(t.RightArrow, _), ..tokens] -> {
+      use #(return_type, tokens) <- result.try(type_(tokens))
+      Ok(#(Some(return_type), tokens))
+    }
+    _ -> Ok(#(None, tokens))
+  }
 }
 
 fn statements(
@@ -527,6 +537,7 @@ fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
     [#(t.Name(name), _), ..tokens] -> Ok(#(Variable(name), tokens))
 
     [#(t.LeftSquare, _), ..tokens] -> list([], tokens)
+    [#(t.Fn, _), ..tokens] -> fn_(tokens)
 
     [
       #(t.Todo, _),
@@ -563,6 +574,22 @@ fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
   }
 }
 
+fn fn_(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
+  // Parameters
+  use _, tokens <- expect(t.LeftParen, tokens)
+  let result = comma_delimited([], tokens, fn_parameter, t.RightParen)
+  use #(parameters, tokens) <- result.try(result)
+
+  // Return type
+  use #(return, tokens) <- result.try(optional_return_annotation(tokens))
+
+  // The function body
+  use _, tokens <- expect(t.LeftBrace, tokens)
+  use #(body, tokens) <- result.try(statements([], tokens))
+
+  Ok(#(Fn(parameters, return, body), tokens))
+}
+
 fn list(
   acc: List(Expression),
   tokens: Tokens,
@@ -597,10 +624,26 @@ fn list(
   }
 }
 
+fn fn_parameter(tokens: Tokens) -> Result(#(FnParameter, Tokens), Error) {
+  use #(name, tokens) <- result.try(case tokens {
+    [#(t.Name(name), _), ..tokens] -> {
+      Ok(#(NamedParameter(name), tokens))
+    }
+    [#(t.DiscardName(name), _), ..tokens] -> {
+      Ok(#(DiscardedParameter(name), tokens))
+    }
+    [#(other, position), ..] -> Error(UnexpectedToken(other, position))
+    [] -> Error(UnexpectedEndOfInput)
+  })
+
+  use #(type_, tokens) <- result.try(optional_type_annotation(tokens))
+  Ok(#(FnParameter(name, type_), tokens))
+}
+
 fn function_parameter(
   tokens: Tokens,
 ) -> Result(#(FunctionParameter, Tokens), Error) {
-  let result = case tokens {
+  use #(label, parameter, tokens) <- result.try(case tokens {
     [] -> Error(UnexpectedEndOfInput)
     [#(t.Name(label), _), #(t.DiscardName(name), _), ..tokens] -> {
       Ok(#(Some(label), DiscardedParameter(name), tokens))
@@ -615,16 +658,12 @@ fn function_parameter(
       Ok(#(None, NamedParameter(name), tokens))
     }
     [#(token, position), ..] -> Error(UnexpectedToken(token, position))
-  }
-  use #(label, parameter, tokens) <- result.try(result)
+  })
 
-  case tokens {
-    [#(t.Colon, _), ..tokens] -> {
-      use #(type_, tokens) <- result.try(type_(tokens))
-      Ok(#(FunctionParameter(label, parameter, Some(type_)), tokens))
-    }
-    _ -> Ok(#(FunctionParameter(label, parameter, None), tokens))
-  }
+  // Annotation
+  use #(type_, tokens) <- result.try(optional_type_annotation(tokens))
+
+  Ok(#(FunctionParameter(label, parameter, type_), tokens))
 }
 
 fn external_fn_definition(
@@ -679,13 +718,7 @@ fn const_definition(
   use name, tokens <- expect_name(tokens)
 
   // Optional type annotation
-  use #(annotation, tokens) <- result.try(case tokens {
-    [#(t.Colon, _), ..tokens] -> {
-      use #(annotation, tokens) <- result.map(type_(tokens))
-      #(Some(annotation), tokens)
-    }
-    _ -> Ok(#(None, tokens))
-  })
+  use #(annotation, tokens) <- result.try(optional_type_annotation(tokens))
 
   // = ConstantExpression
   use _, tokens <- expect(t.Equal, tokens)
@@ -695,6 +728,18 @@ fn const_definition(
   module
   |> push_constant(Constant(name, publicity, annotation, expression))
   |> slurp(tokens)
+}
+
+fn optional_type_annotation(
+  tokens: Tokens,
+) -> Result(#(Option(Type), Tokens), Error) {
+  case tokens {
+    [#(t.Colon, _), ..tokens] -> {
+      use #(annotation, tokens) <- result.map(type_(tokens))
+      #(Some(annotation), tokens)
+    }
+    _ -> Ok(#(None, tokens))
+  }
 }
 
 fn constant_expression(

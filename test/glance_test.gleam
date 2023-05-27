@@ -5,10 +5,10 @@ import glance.{
   Block, Constant, ConstantBitString, ConstantConstructor, ConstantFloat,
   ConstantInt, ConstantList, ConstantString, ConstantTuple, ConstantVariable,
   CustomType, DiscardedParameter, Expression, ExternalFunction, ExternalType,
-  Field, Float, Function, FunctionParameter, FunctionType, Import, Int, List,
-  Module, NamedParameter, NamedType, NegateBool, NegateInt, Panic, Private,
-  Public, String, Todo, Tuple, TupleType, TypeAlias, UnqualifiedImport, Variable,
-  VariableType, Variant,
+  Field, Float, Fn, FnParameter, Function, FunctionParameter, FunctionType,
+  Import, Int, List, Module, NamedParameter, NamedType, NegateBool, NegateInt,
+  Panic, Private, Public, String, Todo, Tuple, TupleType, TypeAlias,
+  UnqualifiedImport, Variable, VariableType, Variant,
 }
 
 pub fn main() {
@@ -1026,6 +1026,94 @@ pub fn expression_list_prefix_test() {
       return: None,
       body: [
         Expression(List([Int("1"), Int("2"), Int("3")], Some(Variable("x")))),
+      ],
+    ),
+  ])
+}
+
+pub fn expression_fn_test() {
+  "pub fn main() { fn(x) { x } }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Fn(
+          [FnParameter(NamedParameter("x"), None)],
+          None,
+          [Expression(Variable("x"))],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn expression_fn_return_test() {
+  "pub fn main() { fn(x) -> a { 1 x } }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Fn(
+          [FnParameter(NamedParameter("x"), None)],
+          Some(VariableType("a")),
+          [Expression(Int("1")), Expression(Variable("x"))],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn expression_fn_annotated_parens_test() {
+  "pub fn main() { fn(x: a) { x } }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Fn(
+          [FnParameter(NamedParameter("x"), Some(VariableType("a")))],
+          None,
+          [Expression(Variable("x"))],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn expression_fn_discard_test() {
+  "pub fn main() { fn(_x: a) { 1 } }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Fn(
+          [FnParameter(DiscardedParameter("x"), Some(VariableType("a")))],
+          None,
+          [Expression(Int("1"))],
+        )),
       ],
     ),
   ])
