@@ -52,10 +52,6 @@ pub type Expression {
   //     arguments_after: List(Arg<()>),
   //     function: Expression,
   // )
-  // Call(
-  //     fun: Expression,
-  //     arguments: List(CallArg<Expression>),
-  // )
   // BinOp(
   //     name: BinOp,
   //     left: Expression,
@@ -98,6 +94,7 @@ pub type Expression {
     fields: List(#(String, Expression)),
   )
   FieldAccess(container: Expression, label: String)
+  Call(function: Expression, arguments: List(Field(Expression)))
 }
 
 pub type FnParameter {
@@ -598,6 +595,14 @@ fn after_expression(
     [#(t.Dot, _), #(t.Name(label), _), ..tokens]
     | [#(t.Dot, _), #(t.UpperName(label), _), ..tokens] -> {
       after_expression(FieldAccess(parsed, label), tokens)
+    }
+
+    // Function call
+    [#(t.LeftParen, _), ..tokens] -> {
+      let result =
+        comma_delimited([], tokens, field(_, expression), t.RightParen)
+      use #(arguments, tokens) <- result.try(result)
+      after_expression(Call(parsed, arguments), tokens)
     }
 
     _ -> Ok(#(parsed, tokens))

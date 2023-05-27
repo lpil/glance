@@ -2,7 +2,7 @@ import gleeunit
 import gleeunit/should
 import gleam/option.{None, Some}
 import glance.{
-  Block, Constant, ConstantBitString, ConstantConstructor, ConstantFloat,
+  Block, Call, Constant, ConstantBitString, ConstantConstructor, ConstantFloat,
   ConstantInt, ConstantList, ConstantString, ConstantTuple, ConstantVariable,
   CustomType, DiscardedParameter, Expression, ExternalFunction, ExternalType,
   Field, FieldAccess, Float, Fn, FnParameter, Function, FunctionParameter,
@@ -1288,6 +1288,112 @@ pub fn field_access_recursive_test() {
             label: "three",
           ),
           label: "four",
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn call_test() {
+  "pub fn main() { wobble(1, 2, 3) }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Call(
+          function: Variable("wobble"),
+          arguments: [
+            Field(None, Int("1")),
+            Field(None, Int("2")),
+            Field(None, Int("3")),
+          ],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn call_labelled_test() {
+  "pub fn main() { wobble(1, one: 2, two: 3) }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Call(
+          function: Variable("wobble"),
+          arguments: [
+            Field(None, Int("1")),
+            Field(Some("one"), Int("2")),
+            Field(Some("two"), Int("3")),
+          ],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn call_field_test() {
+  "pub fn main() { wibble.wobble(1, 2, 3) }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Call(
+          function: FieldAccess(container: Variable("wibble"), label: "wobble"),
+          arguments: [
+            Field(None, Int("1")),
+            Field(None, Int("2")),
+            Field(None, Int("3")),
+          ],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn call_recursive_test() {
+  "pub fn main() { wobble(1, 2, 3)()() }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Call(
+          function: Call(
+            function: Call(
+              function: Variable("wobble"),
+              arguments: [
+                Field(None, Int("1")),
+                Field(None, Int("2")),
+                Field(None, Int("3")),
+              ],
+            ),
+            arguments: [],
+          ),
+          arguments: [],
         )),
       ],
     ),
