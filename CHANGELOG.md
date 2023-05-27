@@ -4,7 +4,7 @@
 
 - Functions can now be parsed. Their body is discarded.
 
-## 0.2.0 - 2023-05-23
+## 0.3.0 - 2023-05-23
 
 - External types can now be parsed.
 - External functions can now be parsed.
