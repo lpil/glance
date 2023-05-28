@@ -9,9 +9,10 @@ import glance.{
   Field, FieldAccess, Float, FloatOption, Fn, FnCapture, FnParameter, Function,
   FunctionParameter, FunctionType, Import, Int, IntOption, Let, List,
   LittleOption, Module, NamedParameter, NamedType, NativeOption, NegateBool,
-  NegateInt, Panic, PatternVariable, Private, Public, RecordUpdate, SignedOption,
-  SizeOption, SizeValueOption, String, Todo, Tuple, TupleIndex, TupleType,
-  TypeAlias, UnitOption, UnqualifiedImport, UnsignedOption, Utf16CodepointOption,
+  NegateInt, Panic, PatternDiscard, PatternFloat, PatternInt, PatternString,
+  PatternVariable, Private, Public, RecordUpdate, SignedOption, SizeOption,
+  SizeValueOption, String, Todo, Tuple, TupleIndex, TupleType, TypeAlias,
+  UnitOption, UnqualifiedImport, UnsignedOption, Utf16CodepointOption,
   Utf16Option, Utf32CodepointOption, Utf32Option, Utf8CodepointOption,
   Utf8Option, Variable, VariableType, Variant,
 }
@@ -1735,6 +1736,89 @@ pub fn assignment_test() {
         Assignment(Let, PatternVariable("x"), None, Int("1")),
         Expression(Int("2")),
       ],
+    ),
+  ])
+}
+
+pub fn assert_test() {
+  "pub fn main() { let assert x = 1 2 }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Assignment(Assert, PatternVariable("x"), None, Int("1")),
+        Expression(Int("2")),
+      ],
+    ),
+  ])
+}
+
+pub fn int_pattern_test() {
+  "pub fn main() { let 123 = 1 }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Assignment(Let, PatternInt("123"), None, Int("1"))],
+    ),
+  ])
+}
+
+pub fn float_pattern_test() {
+  "pub fn main() { let 1.3 = 1 }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Assignment(Let, PatternFloat("1.3"), None, Int("1"))],
+    ),
+  ])
+}
+
+pub fn string_pattern_test() {
+  "pub fn main() { let \"123\" = 1 }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Assignment(Let, PatternString("123"), None, Int("1"))],
+    ),
+  ])
+}
+
+pub fn discard_pattern_test() {
+  "pub fn main() { let _nah = 1 }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Assignment(Let, PatternDiscard("nah"), None, Int("1"))],
     ),
   ])
 }

@@ -59,11 +59,7 @@ pub type AssignmentKind {
 }
 
 pub type Pattern {
-  // PatternInt(value: String)
-  // PatternFloat(value: String)
-  // PatternString(value: String)
   // PatternAssign(name: String, pattern: Pattern)
-  // PatternDiscard(name: String)
   // PatternList(elements: List(Pattern), tail: Option(Pattern))
   // PatternTuple(elems: List(Pattern))
   // PatternBitString(segments: List(#(Pattern, BitStringSegmentOption(Pattern))))
@@ -75,6 +71,10 @@ pub type Pattern {
   //   constructor: String,
   //   with_spread: Bool,
   // )
+  PatternInt(value: String)
+  PatternFloat(value: String)
+  PatternString(value: String)
+  PatternDiscard(name: String)
   PatternVariable(name: String)
 }
 
@@ -557,15 +557,8 @@ fn statements(
 
 fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
   case tokens {
-    [#(t.Let, _), ..tokens] -> assignment(tokens)
-    // [#(t.Return, _), ..tokens] -> {
-    //   use #(statement, tokens) <- result.try(return_statement(tokens))
-    //   Ok(#(statement, tokens))
-    // }
-    // [#(t.Name(name), _), ..tokens] -> {
-    //   use #(statement, tokens) <- result.try(expression_statement(tokens))
-    //   Ok(#(statement, tokens))
-    // }
+    [#(t.Let, _), #(t.Assert, _), ..tokens] -> assignment(Assert, tokens)
+    [#(t.Let, _), ..tokens] -> assignment(Let, tokens)
     tokens -> {
       use #(expression, tokens) <- result.try(expression(tokens))
       Ok(#(Expression(expression), tokens))
@@ -573,12 +566,11 @@ fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
   }
 }
 
-fn assignment(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
+fn assignment(
+  kind: AssignmentKind,
+  tokens: Tokens,
+) -> Result(#(Statement, Tokens), Error) {
   use #(pattern, tokens) <- result.try(pattern(tokens))
-  let #(kind, tokens) = case tokens {
-    [#(t.Assert, _), ..tokens] -> #(Assert, tokens)
-    _ -> #(Let, tokens)
-  }
   use _, tokens <- expect(t.Equal, tokens)
   use #(annotation, tokens) <- result.try(optional_type_annotation(tokens))
   use #(expression, tokens) <- result.try(expression(tokens))
@@ -588,6 +580,10 @@ fn assignment(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
 
 fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
   case tokens {
+    [#(t.Int(value), _), ..tokens] -> Ok(#(PatternInt(value), tokens))
+    [#(t.Float(value), _), ..tokens] -> Ok(#(PatternFloat(value), tokens))
+    [#(t.String(value), _), ..tokens] -> Ok(#(PatternString(value), tokens))
+    [#(t.DiscardName(name), _), ..tokens] -> Ok(#(PatternDiscard(name), tokens))
     [#(t.Name(name), _), ..tokens] -> Ok(#(PatternVariable(name), tokens))
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
     [] -> Error(UnexpectedEndOfInput)
