@@ -227,11 +227,11 @@ pub type TypeAlias {
   )
 }
 
-// TODO: opaque types
 pub type CustomType {
   CustomType(
     name: String,
     publicity: Publicity,
+    opaque_: Bool,
     parameters: List(String),
     variants: List(Variant),
   )
@@ -375,10 +375,13 @@ fn slurp(module: Module, tokens: Tokens) -> Result(Module, Error) {
       import_statement(module, tokens)
     }
     [#(t.Pub, _), #(t.Type, _), ..tokens] -> {
-      type_definition(module, Public, tokens)
+      type_definition(module, Public, False, tokens)
+    }
+    [#(t.Pub, _), #(t.Opaque, _), #(t.Type, _), ..tokens] -> {
+      type_definition(module, Public, True, tokens)
     }
     [#(t.Type, _), ..tokens] -> {
-      type_definition(module, Private, tokens)
+      type_definition(module, Private, False, tokens)
     }
     [#(t.Pub, _), #(t.Const, _), ..tokens] -> {
       const_definition(module, Public, tokens)
@@ -1314,6 +1317,7 @@ fn constant_list(tokens: Tokens) -> Result(#(ConstantExpression, Tokens), Error)
 fn type_definition(
   module: Module,
   publicity: Publicity,
+  opaque_: Bool,
   tokens: Tokens,
 ) -> Result(Module, Error) {
   // Name(a, b, c)
@@ -1326,7 +1330,7 @@ fn type_definition(
       type_alias(module, name, parameters, publicity, tokens)
     }
     [#(t.LeftBrace, _), ..tokens] -> {
-      custom_type(module, name, parameters, publicity, tokens)
+      custom_type(module, name, parameters, publicity, opaque_, tokens)
     }
   }
 }
@@ -1402,10 +1406,11 @@ fn custom_type(
   name: String,
   parameters: List(String),
   publicity: Publicity,
+  opaque_: Bool,
   tokens: Tokens,
 ) -> Result(Module, Error) {
   // <variant>.. }
-  let ct = CustomType(name, publicity, parameters, [])
+  let ct = CustomType(name, publicity, opaque_, parameters, [])
   use #(ct, tokens) <- result.try(variants(ct, tokens))
 
   // Continue to the next statement

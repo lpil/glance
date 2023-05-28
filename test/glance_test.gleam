@@ -39,6 +39,7 @@ pub fn public_enum_test() {
     CustomType(
       name: "Cardinal",
       publicity: Public,
+      opaque_: False,
       parameters: [],
       variants: [
         Variant("North", []),
@@ -61,6 +62,7 @@ pub fn private_enum_test() {
     CustomType(
       name: "Cardinal",
       publicity: Private,
+      opaque_: False,
       parameters: [],
       variants: [
         Variant("North", []),
@@ -83,6 +85,7 @@ pub fn phantom_test() {
     CustomType(
       name: "Spooky",
       publicity: Public,
+      opaque_: False,
       parameters: ["t"],
       variants: [Variant("Spooky", [])],
     ),
@@ -100,6 +103,7 @@ pub fn phantom_multiple_test() {
     CustomType(
       name: "Spooky",
       publicity: Public,
+      opaque_: False,
       parameters: ["t", "u"],
       variants: [Variant("Spooky", [])],
     ),
@@ -117,6 +121,7 @@ pub fn box_test() {
     CustomType(
       name: "Box",
       publicity: Public,
+      opaque_: False,
       parameters: ["x"],
       variants: [Variant("Box", [Field(None, VariableType("x"))])],
     ),
@@ -134,6 +139,7 @@ pub fn multiple_fields_test() {
     CustomType(
       name: "Box",
       publicity: Public,
+      opaque_: False,
       parameters: ["x", "y", "z"],
       variants: [
         Variant(
@@ -160,6 +166,7 @@ pub fn trailing_comma_in_parameters_test() {
     CustomType(
       name: "Box",
       publicity: Public,
+      opaque_: False,
       parameters: ["x"],
       variants: [Variant("Box", [])],
     ),
@@ -177,6 +184,7 @@ pub fn empty_parameter_list_test() {
     CustomType(
       name: "Box",
       publicity: Public,
+      opaque_: False,
       parameters: [],
       variants: [Variant("Box", [])],
     ),
@@ -194,6 +202,25 @@ pub fn empty_fields_list_test() {
     CustomType(
       name: "Box",
       publicity: Public,
+      opaque_: False,
+      parameters: [],
+      variants: [Variant("Box", [])],
+    ),
+  ])
+}
+
+pub fn opaque_test() {
+  "pub opaque type Box {
+    Box()
+  }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.custom_types }
+  |> should.equal([
+    CustomType(
+      name: "Box",
+      publicity: Public,
+      opaque_: True,
       parameters: [],
       variants: [Variant("Box", [])],
     ),
@@ -211,6 +238,7 @@ pub fn fields_trailing_comma_test() {
     CustomType(
       name: "Box",
       publicity: Public,
+      opaque_: False,
       parameters: ["a"],
       variants: [Variant("Box", [Field(None, VariableType("a"))])],
     ),
@@ -228,6 +256,7 @@ pub fn labelled_fields_test() {
     CustomType(
       name: "Box",
       publicity: Public,
+      opaque_: False,
       parameters: ["a"],
       variants: [
         Variant(
@@ -253,6 +282,7 @@ pub fn phantom_trailing_comma_test() {
     CustomType(
       name: "Spooky",
       publicity: Public,
+      opaque_: False,
       parameters: ["t", "u"],
       variants: [Variant("Spooky", [])],
     ),
@@ -278,6 +308,7 @@ pub fn comment_discarding_test() {
     CustomType(
       name: "Spooky",
       publicity: Public,
+      opaque_: False,
       parameters: ["t", "u"],
       variants: [Variant("Spooky", [])],
     ),
