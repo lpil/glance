@@ -44,8 +44,38 @@ pub type Function {
 
 pub type Statement {
   // Use
-  // Assignment
+  Assignment(
+    kind: AssignmentKind,
+    pattern: Pattern,
+    annotation: Option(Type),
+    value: Expression,
+  )
   Expression(Expression)
+}
+
+pub type AssignmentKind {
+  Let
+  Assert
+}
+
+pub type Pattern {
+  // PatternInt(value: String)
+  // PatternFloat(value: String)
+  // PatternString(value: String)
+  // PatternAssign(name: String, pattern: Pattern)
+  // PatternDiscard(name: String)
+  // PatternList(elements: List(Pattern), tail: Option(Pattern))
+  // PatternTuple(elems: List(Pattern))
+  // PatternBitString(segments: List(#(Pattern, BitStringSegmentOption(Pattern))))
+  // PatternConcatenate(left: String, right: ParameterName)
+  // PatternConstructor(
+  //   name: String,
+  //   arguments: List(Field(Pattern)),
+  //   module: Option(String),
+  //   constructor: String,
+  //   with_spread: Bool,
+  // )
+  PatternVariable(name: String)
 }
 
 pub type Expression {
@@ -527,10 +557,7 @@ fn statements(
 
 fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
   case tokens {
-    // [#(t.Let, _), ..tokens] -> {
-    //   use #(statement, tokens) <- result.try(let_statement(tokens))
-    //   Ok(#(statement, tokens))
-    // }
+    [#(t.Let, _), ..tokens] -> assignment(tokens)
     // [#(t.Return, _), ..tokens] -> {
     //   use #(statement, tokens) <- result.try(return_statement(tokens))
     //   Ok(#(statement, tokens))
@@ -543,6 +570,27 @@ fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
       use #(expression, tokens) <- result.try(expression(tokens))
       Ok(#(Expression(expression), tokens))
     }
+  }
+}
+
+fn assignment(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
+  use #(pattern, tokens) <- result.try(pattern(tokens))
+  let #(kind, tokens) = case tokens {
+    [#(t.Assert, _), ..tokens] -> #(Assert, tokens)
+    _ -> #(Let, tokens)
+  }
+  use _, tokens <- expect(t.Equal, tokens)
+  use #(annotation, tokens) <- result.try(optional_type_annotation(tokens))
+  use #(expression, tokens) <- result.try(expression(tokens))
+  let statement = Assignment(kind, pattern, annotation, expression)
+  Ok(#(statement, tokens))
+}
+
+fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
+  case tokens {
+    [#(t.Name(name), _), ..tokens] -> Ok(#(PatternVariable(name), tokens))
+    [#(other, position), ..] -> Error(UnexpectedToken(other, position))
+    [] -> Error(UnexpectedEndOfInput)
   }
 }
 

@@ -2,18 +2,18 @@ import gleeunit
 import gleeunit/should
 import gleam/option.{None, Some}
 import glance.{
-  BigOption, BinaryOption, BitString, BitStringOption, Block, Call, Constant,
-  ConstantBitString, ConstantConstructor, ConstantFloat, ConstantInt,
-  ConstantList, ConstantString, ConstantTuple, ConstantVariable, CustomType,
-  DiscardedParameter, Expression, ExternalFunction, ExternalType, Field,
-  FieldAccess, Float, FloatOption, Fn, FnCapture, FnParameter, Function,
-  FunctionParameter, FunctionType, Import, Int, IntOption, List, LittleOption,
-  Module, NamedParameter, NamedType, NativeOption, NegateBool, NegateInt, Panic,
-  Private, Public, RecordUpdate, SignedOption, SizeOption, SizeValueOption,
-  String, Todo, Tuple, TupleIndex, TupleType, TypeAlias, UnitOption,
-  UnqualifiedImport, UnsignedOption, Utf16CodepointOption, Utf16Option,
-  Utf32CodepointOption, Utf32Option, Utf8CodepointOption, Utf8Option, Variable,
-  VariableType, Variant,
+  Assert, Assignment, BigOption, BinaryOption, BitString, BitStringOption, Block,
+  Call, Constant, ConstantBitString, ConstantConstructor, ConstantFloat,
+  ConstantInt, ConstantList, ConstantString, ConstantTuple, ConstantVariable,
+  CustomType, DiscardedParameter, Expression, ExternalFunction, ExternalType,
+  Field, FieldAccess, Float, FloatOption, Fn, FnCapture, FnParameter, Function,
+  FunctionParameter, FunctionType, Import, Int, IntOption, Let, List,
+  LittleOption, Module, NamedParameter, NamedType, NativeOption, NegateBool,
+  NegateInt, Panic, PatternVariable, Private, Public, RecordUpdate, SignedOption,
+  SizeOption, SizeValueOption, String, Todo, Tuple, TupleIndex, TupleType,
+  TypeAlias, UnitOption, UnqualifiedImport, UnsignedOption, Utf16CodepointOption,
+  Utf16Option, Utf32CodepointOption, Utf32Option, Utf8CodepointOption,
+  Utf8Option, Variable, VariableType, Variant,
 }
 
 pub fn main() {
@@ -1715,6 +1715,25 @@ binary-int-float-bit_string-utf8-utf16-utf32-utf8_codepoint-utf16_codepoint-utf3
             ],
           ),
         ])),
+      ],
+    ),
+  ])
+}
+
+pub fn assignment_test() {
+  "pub fn main() { let x = 1 2 }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Assignment(Let, PatternVariable("x"), None, Int("1")),
+        Expression(Int("2")),
       ],
     ),
   ])
