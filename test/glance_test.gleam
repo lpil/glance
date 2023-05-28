@@ -2,13 +2,17 @@ import gleeunit
 import gleeunit/should
 import gleam/option.{None, Some}
 import glance.{
-  Block, Call, Constant, ConstantBitString, ConstantConstructor, ConstantFloat,
-  ConstantInt, ConstantList, ConstantString, ConstantTuple, ConstantVariable,
-  CustomType, DiscardedParameter, Expression, ExternalFunction, ExternalType,
-  Field, FieldAccess, Float, Fn, FnCapture, FnParameter, Function,
-  FunctionParameter, FunctionType, Import, Int, List, Module, NamedParameter,
-  NamedType, NegateBool, NegateInt, Panic, Private, Public, RecordUpdate, String,
-  Todo, Tuple, TupleIndex, TupleType, TypeAlias, UnqualifiedImport, Variable,
+  BigOption, BinaryOption, BitString, BitStringOption, Block, Call, Constant,
+  ConstantBitString, ConstantConstructor, ConstantFloat, ConstantInt,
+  ConstantList, ConstantString, ConstantTuple, ConstantVariable, CustomType,
+  DiscardedParameter, Expression, ExternalFunction, ExternalType, Field,
+  FieldAccess, Float, FloatOption, Fn, FnCapture, FnParameter, Function,
+  FunctionParameter, FunctionType, Import, Int, IntOption, List, LittleOption,
+  Module, NamedParameter, NamedType, NativeOption, NegateBool, NegateInt, Panic,
+  Private, Public, RecordUpdate, SignedOption, SizeOption, SizeValueOption,
+  String, Todo, Tuple, TupleIndex, TupleType, TypeAlias, UnitOption,
+  UnqualifiedImport, UnsignedOption, Utf16CodepointOption, Utf16Option,
+  Utf32CodepointOption, Utf32Option, Utf8CodepointOption, Utf8Option, Variable,
   VariableType, Variant,
 }
 
@@ -1559,6 +1563,148 @@ pub fn function_capture_immediate_call_test() {
           ),
           arguments: [],
         )),
+      ],
+    ),
+  ])
+}
+
+pub fn bit_string_empty_test() {
+  "pub fn main() { <<>> }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Expression(BitString([]))],
+    ),
+  ])
+}
+
+pub fn bit_string_numbers_test() {
+  "pub fn main() { <<1, 2, 3>> }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(BitString([#(Int("1"), []), #(Int("2"), []), #(Int("3"), [])])),
+      ],
+    ),
+  ])
+}
+
+pub fn bit_string_sizes_test() {
+  "pub fn main() { <<1, 2:4, 5:8>> }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(BitString([
+          #(Int("1"), []),
+          #(Int("2"), [SizeOption(4)]),
+          #(Int("5"), [SizeOption(8)]),
+        ])),
+      ],
+    ),
+  ])
+}
+
+pub fn bit_string_value_sizes_test() {
+  "pub fn main() { <<1, 2:size(5), 5:size(x)>> }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(BitString([
+          #(Int("1"), []),
+          #(Int("2"), [SizeValueOption(Int("5"))]),
+          #(Int("5"), [SizeValueOption(Variable("x"))]),
+        ])),
+      ],
+    ),
+  ])
+}
+
+pub fn bit_string_units_test() {
+  "pub fn main() { <<1, 2:unit(5), 5:unit(3)>> }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(BitString([
+          #(Int("1"), []),
+          #(Int("2"), [UnitOption(5)]),
+          #(Int("5"), [UnitOption(3)]),
+        ])),
+      ],
+    ),
+  ])
+}
+
+pub fn bit_string_others_test() {
+  "pub fn main() { <<1, 2:
+binary-int-float-bit_string-utf8-utf16-utf32-utf8_codepoint-utf16_codepoint-utf32_codepoint-signed-unsigned-big-little-native
+>> }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(BitString([
+          #(Int("1"), []),
+          #(
+            Int("2"),
+            [
+              BinaryOption,
+              IntOption,
+              FloatOption,
+              BitStringOption,
+              Utf8Option,
+              Utf16Option,
+              Utf32Option,
+              Utf8CodepointOption,
+              Utf16CodepointOption,
+              Utf32CodepointOption,
+              SignedOption,
+              UnsignedOption,
+              BigOption,
+              LittleOption,
+              NativeOption,
+            ],
+          ),
+        ])),
       ],
     ),
   ])

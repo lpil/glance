@@ -1,10 +1,10 @@
+// TODO: opaque types
 import gleam/int
 import gleam/list
 import gleam/option.{None, Option, Some}
 import glexer/token.{Token} as t
 import glexer.{Position}
 import gleam/result
-import gleam/io
 
 type Tokens =
   List(#(Token, Position))
@@ -61,9 +61,6 @@ pub type Expression {
   //     subjects: List(Expression),
   //     clauses: List(Clause),
   // )
-  // BitString(
-  //     segments: List(UntypedExprBitStringSegment),
-  // )
   Panic
   Int(String)
   Float(String)
@@ -94,6 +91,30 @@ pub type Expression {
     arguments_before: List(Field(Expression)),
     arguments_after: List(Field(Expression)),
   )
+  BitString(
+    segments: List(#(Expression, List(BitStringSegmentOption(Expression)))),
+  )
+}
+
+pub type BitStringSegmentOption(t) {
+  BinaryOption
+  IntOption
+  FloatOption
+  BitStringOption
+  Utf8Option
+  Utf16Option
+  Utf32Option
+  Utf8CodepointOption
+  Utf16CodepointOption
+  Utf32CodepointOption
+  SignedOption
+  UnsignedOption
+  BigOption
+  LittleOption
+  NativeOption
+  SizeValueOption(t)
+  SizeOption(Int)
+  UnitOption(Int)
 }
 
 pub type FnParameter {
@@ -578,11 +599,105 @@ fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
       Ok(#(Block(statements), tokens))
     }
 
+    [#(t.LessLess, _), ..tokens] -> {
+      let parser = bit_string_segment(expression, _)
+      let result = comma_delimited([], tokens, parser, t.GreaterGreater)
+      use #(segments, tokens) <- result.try(result)
+      Ok(#(BitString(segments), tokens))
+    }
+
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
     [] -> Error(UnexpectedEndOfInput)
   })
 
   after_expression(parsed, tokens)
+}
+
+fn bit_string_segment(
+  parser: fn(Tokens) -> Result(#(t, Tokens), Error),
+  tokens: Tokens,
+) -> Result(#(#(t, List(BitStringSegmentOption(t))), Tokens), Error) {
+  use #(value, tokens) <- result.try(parser(tokens))
+  let result = optional_bit_string_segment_options(parser, tokens)
+  use #(options, tokens) <- result.try(result)
+  Ok(#(#(value, options), tokens))
+}
+
+fn optional_bit_string_segment_options(
+  parser: fn(Tokens) -> Result(#(t, Tokens), Error),
+  tokens: Tokens,
+) -> Result(#(List(BitStringSegmentOption(t)), Tokens), Error) {
+  case tokens {
+    [#(t.Colon, _), ..tokens] -> bit_string_segment_options(parser, [], tokens)
+    _ -> Ok(#([], tokens))
+  }
+}
+
+fn bit_string_segment_options(
+  parser: fn(Tokens) -> Result(#(t, Tokens), Error),
+  options: List(BitStringSegmentOption(t)),
+  tokens: Tokens,
+) -> Result(#(List(BitStringSegmentOption(t)), Tokens), Error) {
+  use #(option, tokens) <- result.try(case tokens {
+    // Size as just an int
+    [#(t.Int(i), position), ..tokens] -> {
+      case int.parse(i) {
+        Ok(i) -> Ok(#(SizeOption(i), tokens))
+        Error(_) -> Error(UnexpectedToken(t.Int(i), position))
+      }
+    }
+
+    // Size as an expression
+    [#(t.Name("size"), _), #(t.LeftParen, _), ..tokens] -> {
+      use #(value, tokens) <- result.try(parser(tokens))
+      use _, tokens <- expect(t.RightParen, tokens)
+      Ok(#(SizeValueOption(value), tokens))
+    }
+
+    // Unit
+    [
+      #(t.Name("unit"), position),
+      #(t.LeftParen, _),
+      #(t.Int(i), _),
+      #(t.RightParen, _),
+      ..tokens
+    ] -> {
+      case int.parse(i) {
+        Ok(i) -> Ok(#(UnitOption(i), tokens))
+        Error(_) -> Error(UnexpectedToken(t.Int(i), position))
+      }
+    }
+
+    [#(t.Name("binary"), _), ..tokens] -> Ok(#(BinaryOption, tokens))
+    [#(t.Name("int"), _), ..tokens] -> Ok(#(IntOption, tokens))
+    [#(t.Name("float"), _), ..tokens] -> Ok(#(FloatOption, tokens))
+    [#(t.Name("bit_string"), _), ..tokens] -> Ok(#(BitStringOption, tokens))
+    [#(t.Name("utf8"), _), ..tokens] -> Ok(#(Utf8Option, tokens))
+    [#(t.Name("utf16"), _), ..tokens] -> Ok(#(Utf16Option, tokens))
+    [#(t.Name("utf32"), _), ..tokens] -> Ok(#(Utf32Option, tokens))
+    [#(t.Name("utf8_codepoint"), _), ..tokens] ->
+      Ok(#(Utf8CodepointOption, tokens))
+    [#(t.Name("utf16_codepoint"), _), ..tokens] ->
+      Ok(#(Utf16CodepointOption, tokens))
+    [#(t.Name("utf32_codepoint"), _), ..tokens] ->
+      Ok(#(Utf32CodepointOption, tokens))
+    [#(t.Name("signed"), _), ..tokens] -> Ok(#(SignedOption, tokens))
+    [#(t.Name("unsigned"), _), ..tokens] -> Ok(#(UnsignedOption, tokens))
+    [#(t.Name("big"), _), ..tokens] -> Ok(#(BigOption, tokens))
+    [#(t.Name("little"), _), ..tokens] -> Ok(#(LittleOption, tokens))
+    [#(t.Name("native"), _), ..tokens] -> Ok(#(NativeOption, tokens))
+
+    [#(other, position), ..] -> Error(UnexpectedToken(other, position))
+    [] -> Error(UnexpectedEndOfInput)
+  })
+
+  let options = [option, ..options]
+
+  case tokens {
+    [#(t.Minus, _), ..tokens] ->
+      bit_string_segment_options(parser, options, tokens)
+    _ -> Ok(#(list.reverse(options), tokens))
+  }
 }
 
 fn after_expression(
