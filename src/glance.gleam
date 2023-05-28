@@ -1,8 +1,10 @@
+import gleam/int
 import gleam/list
 import gleam/option.{None, Option, Some}
 import glexer/token.{Token} as t
 import glexer.{Position}
 import gleam/result
+import gleam/io
 
 type Tokens =
   List(#(Token, Position))
@@ -47,11 +49,6 @@ pub type Statement {
 }
 
 pub type Expression {
-  // FnCapture(
-  //     arguments_before: List(Arg<()>),
-  //     arguments_after: List(Arg<()>),
-  //     function: Expression,
-  // )
   // BinOp(
   //     name: BinOp,
   //     left: Expression,
@@ -63,10 +60,6 @@ pub type Expression {
   // Case(
   //     subjects: List(Expression),
   //     clauses: List(Clause),
-  // )
-  // TupleIndex(
-  //     index: u64,
-  //     tuple: Expression,
   // )
   // BitString(
   //     segments: List(UntypedExprBitStringSegment),
@@ -95,6 +88,12 @@ pub type Expression {
   )
   FieldAccess(container: Expression, label: String)
   Call(function: Expression, arguments: List(Field(Expression)))
+  TupleIndex(tuple: Expression, index: Int)
+  FnCapture(
+    function: Expression,
+    arguments_before: List(Field(Expression)),
+    arguments_after: List(Field(Expression)),
+  )
 }
 
 pub type FnParameter {
@@ -597,15 +596,96 @@ fn after_expression(
       after_expression(FieldAccess(parsed, label), tokens)
     }
 
+    // Tuple index
+    [#(t.Dot, _), #(t.Int(value) as token, position), ..tokens] -> {
+      case int.parse(value) {
+        Ok(i) -> after_expression(TupleIndex(parsed, i), tokens)
+        Error(_) -> Error(UnexpectedToken(token, position))
+      }
+    }
+
     // Function call
     [#(t.LeftParen, _), ..tokens] -> {
-      let result =
-        comma_delimited([], tokens, field(_, expression), t.RightParen)
-      use #(arguments, tokens) <- result.try(result)
-      after_expression(Call(parsed, arguments), tokens)
+      call([], parsed, tokens)
     }
 
     _ -> Ok(#(parsed, tokens))
+  }
+}
+
+fn call(
+  arguments: List(Field(Expression)),
+  function: Expression,
+  tokens: Tokens,
+) -> Result(#(Expression, Tokens), Error) {
+  case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+
+    [#(t.RightParen, _), ..tokens] -> {
+      let call = Call(function, list.reverse(arguments))
+      after_expression(call, tokens)
+    }
+
+    [#(t.DiscardName(""), _), #(t.Comma, _), #(t.RightParen, _), ..tokens]
+    | [#(t.DiscardName(""), _), #(t.RightParen, _), ..tokens] -> {
+      let capture = FnCapture(function, list.reverse(arguments), [])
+      after_expression(capture, tokens)
+    }
+
+    [#(t.DiscardName(""), _), #(t.Comma, _), ..tokens]
+    | [#(t.DiscardName(""), _), ..tokens] -> {
+      fn_capture(function, list.reverse(arguments), [], tokens)
+    }
+
+    _ -> {
+      use #(argument, tokens) <- result.try(field(tokens, expression))
+      let arguments = [argument, ..arguments]
+      case tokens {
+        [#(t.Comma, _), ..tokens] -> {
+          call(arguments, function, tokens)
+        }
+        [#(t.RightParen, _), ..tokens] -> {
+          let call = Call(function, list.reverse(arguments))
+          after_expression(call, tokens)
+        }
+        [#(other, position), ..] -> {
+          Error(UnexpectedToken(other, position))
+        }
+      }
+    }
+  }
+}
+
+fn fn_capture(
+  function: Expression,
+  before: List(Field(Expression)),
+  after: List(Field(Expression)),
+  tokens: Tokens,
+) -> Result(#(Expression, Tokens), Error) {
+  case tokens {
+    [] -> Error(UnexpectedEndOfInput)
+
+    [#(t.RightParen, _), ..tokens] -> {
+      let capture = FnCapture(function, before, list.reverse(after))
+      after_expression(capture, tokens)
+    }
+
+    _ -> {
+      use #(argument, tokens) <- result.try(field(tokens, expression))
+      let after = [argument, ..after]
+      case tokens {
+        [#(t.Comma, _), ..tokens] -> {
+          fn_capture(function, before, after, tokens)
+        }
+        [#(t.RightParen, _), ..tokens] -> {
+          let call = FnCapture(function, before, list.reverse(after))
+          after_expression(call, tokens)
+        }
+        [#(other, position), ..] -> {
+          Error(UnexpectedToken(other, position))
+        }
+      }
+    }
   }
 }
 

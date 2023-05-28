@@ -5,10 +5,11 @@ import glance.{
   Block, Call, Constant, ConstantBitString, ConstantConstructor, ConstantFloat,
   ConstantInt, ConstantList, ConstantString, ConstantTuple, ConstantVariable,
   CustomType, DiscardedParameter, Expression, ExternalFunction, ExternalType,
-  Field, FieldAccess, Float, Fn, FnParameter, Function, FunctionParameter,
-  FunctionType, Import, Int, List, Module, NamedParameter, NamedType, NegateBool,
-  NegateInt, Panic, Private, Public, RecordUpdate, String, Todo, Tuple,
-  TupleType, TypeAlias, UnqualifiedImport, Variable, VariableType, Variant,
+  Field, FieldAccess, Float, Fn, FnCapture, FnParameter, Function,
+  FunctionParameter, FunctionType, Import, Int, List, Module, NamedParameter,
+  NamedType, NegateBool, NegateInt, Panic, Private, Public, RecordUpdate, String,
+  Todo, Tuple, TupleIndex, TupleType, TypeAlias, UnqualifiedImport, Variable,
+  VariableType, Variant,
 }
 
 pub fn main() {
@@ -1392,6 +1393,169 @@ pub fn call_recursive_test() {
               ],
             ),
             arguments: [],
+          ),
+          arguments: [],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn tuple_index_test() {
+  "pub fn main() { wobble.12 }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Expression(TupleIndex(tuple: Variable("wobble"), index: 12))],
+    ),
+  ])
+}
+
+pub fn function_capture_pointless_test() {
+  "pub fn main() { wibble(_) }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(FnCapture(
+          arguments_before: [],
+          arguments_after: [],
+          function: Variable("wibble"),
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn function_capture_before_test() {
+  "pub fn main() { wibble(1,2,3,_) }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(FnCapture(
+          arguments_before: [
+            Field(None, Int("1")),
+            Field(None, Int("2")),
+            Field(None, Int("3")),
+          ],
+          arguments_after: [],
+          function: Variable("wibble"),
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn function_capture_after_test() {
+  "pub fn main() { wibble(_,1,2,3) }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(FnCapture(
+          arguments_before: [],
+          arguments_after: [
+            Field(None, Int("1")),
+            Field(None, Int("2")),
+            Field(None, Int("3")),
+          ],
+          function: Variable("wibble"),
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn function_capture_after_trailing_comma_test() {
+  "pub fn main() { wibble(_,1,2,3,) }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(FnCapture(
+          arguments_before: [],
+          arguments_after: [
+            Field(None, Int("1")),
+            Field(None, Int("2")),
+            Field(None, Int("3")),
+          ],
+          function: Variable("wibble"),
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn function_capture_both_test() {
+  "pub fn main() { wibble(1, 2, _, 3) }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(FnCapture(
+          arguments_before: [Field(None, Int("1")), Field(None, Int("2"))],
+          arguments_after: [Field(None, Int("3"))],
+          function: Variable("wibble"),
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn function_capture_immediate_call_test() {
+  "pub fn main() { wibble(_)() }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Call(
+          function: FnCapture(
+            arguments_before: [],
+            arguments_after: [],
+            function: Variable("wibble"),
           ),
           arguments: [],
         )),
