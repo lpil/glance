@@ -1,4 +1,3 @@
-// TODO: opaque types
 import gleam/int
 import gleam/list
 import gleam/option.{None, Option, Some}
@@ -43,6 +42,7 @@ pub type Function {
 }
 
 pub type Statement {
+  // TODO: use
   // Use
   Assignment(
     kind: AssignmentKind,
@@ -80,17 +80,15 @@ pub type Pattern {
 }
 
 pub type Expression {
+  // TODO: binary operators
   // BinOp(
   //     name: BinOp,
   //     left: Expression,
   //     right: Expression,
   // )
+  // TODO: pipe operator
   // PipeLine(
   //     expressions: List(Expression>,
-  // )
-  // Case(
-  //     subjects: List(Expression),
-  //     clauses: List(Clause),
   // )
   Panic
   Int(String)
@@ -124,6 +122,17 @@ pub type Expression {
   )
   BitString(
     segments: List(#(Expression, List(BitStringSegmentOption(Expression)))),
+  )
+
+  Case(subjects: List(Expression), clauses: List(Clause))
+}
+
+pub type Clause {
+  Clause(
+    patterns: List(List(Pattern)),
+    // TODO: guard
+    // guard: Option(GuardExpression),
+    body: Expression,
   )
 }
 
@@ -219,6 +228,7 @@ pub type TypeAlias {
   )
 }
 
+// TODO: opaque types
 pub type CustomType {
   CustomType(
     name: String,
@@ -252,7 +262,6 @@ pub type Error {
   UnexpectedToken(token: Token, position: Position)
 }
 
-// TODO: document
 pub fn module(src: String) -> Result(Module, Error) {
   glexer.new(src)
   |> glexer.lex
@@ -702,6 +711,7 @@ fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
     [#(t.Name(name), _), ..tokens] -> Ok(#(Variable(name), tokens))
 
     [#(t.Fn, _), ..tokens] -> fn_(tokens)
+    [#(t.Case, _), ..tokens] -> case_(tokens)
 
     [
       #(t.Todo, _),
@@ -975,6 +985,61 @@ fn record_update_field(
     }
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
     [] -> Error(UnexpectedEndOfInput)
+  }
+}
+
+fn case_(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
+  use #(subjects, tokens) <- result.try(case_subjects([], tokens))
+  use _, tokens <- expect(t.LeftBrace, tokens)
+  use #(clauses, tokens) <- result.try(case_clauses([], tokens))
+  Ok(#(Case(subjects, clauses), tokens))
+}
+
+fn case_subjects(
+  subjects: List(Expression),
+  tokens: Tokens,
+) -> Result(#(List(Expression), Tokens), Error) {
+  use #(subject, tokens) <- result.try(expression(tokens))
+  let subjects = [subject, ..subjects]
+  case tokens {
+    [#(t.Comma, _), ..tokens] -> case_subjects(subjects, tokens)
+    _ -> Ok(#(list.reverse(subjects), tokens))
+  }
+}
+
+fn case_clauses(
+  clauses: List(Clause),
+  tokens: Tokens,
+) -> Result(#(List(Clause), Tokens), Error) {
+  use #(clause, tokens) <- result.try(case_clause(tokens))
+  let clauses = [clause, ..clauses]
+  case tokens {
+    [#(t.RightBrace, _), ..tokens] -> Ok(#(list.reverse(clauses), tokens))
+    _ -> case_clauses(clauses, tokens)
+  }
+}
+
+fn case_clause(tokens: Tokens) -> Result(#(Clause, Tokens), Error) {
+  let multipatterns = delimited([], _, pattern, t.Comma)
+  let result = delimited([], tokens, multipatterns, t.VBar)
+  use #(patterns, tokens) <- result.try(result)
+  use _, tokens <- expect(t.RightArrow, tokens)
+  use #(expression, tokens) <- result.map(expression(tokens))
+  #(Clause(patterns, expression), tokens)
+}
+
+fn delimited(
+  acc: List(t),
+  tokens: Tokens,
+  parser: fn(Tokens) -> Result(#(t, Tokens), Error),
+  delimeter: Token,
+) -> Result(#(List(t), Tokens), Error) {
+  use #(t, tokens) <- result.try(parser(tokens))
+  let acc = [t, ..acc]
+  case tokens {
+    [#(token, _), ..tokens] if token == delimeter ->
+      delimited(acc, tokens, parser, delimeter)
+    _ -> Ok(#(list.reverse(acc), tokens))
   }
 }
 

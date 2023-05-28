@@ -3,13 +3,13 @@ import gleeunit/should
 import gleam/option.{None, Some}
 import glance.{
   Assert, Assignment, BigOption, BinaryOption, BitString, BitStringOption, Block,
-  Call, Constant, ConstantBitString, ConstantConstructor, ConstantFloat,
-  ConstantInt, ConstantList, ConstantString, ConstantTuple, ConstantVariable,
-  CustomType, Discarded, Expression, ExternalFunction, ExternalType, Field,
-  FieldAccess, Float, FloatOption, Fn, FnCapture, FnParameter, Function,
-  FunctionParameter, FunctionType, Import, Int, IntOption, Let, List,
-  LittleOption, Module, Named, NamedType, NativeOption, NegateBool, NegateInt,
-  Panic, PatternAssignment, PatternBitString, PatternConcatenate,
+  Call, Case, Clause, Constant, ConstantBitString, ConstantConstructor,
+  ConstantFloat, ConstantInt, ConstantList, ConstantString, ConstantTuple,
+  ConstantVariable, CustomType, Discarded, Expression, ExternalFunction,
+  ExternalType, Field, FieldAccess, Float, FloatOption, Fn, FnCapture,
+  FnParameter, Function, FunctionParameter, FunctionType, Import, Int, IntOption,
+  Let, List, LittleOption, Module, Named, NamedType, NativeOption, NegateBool,
+  NegateInt, Panic, PatternAssignment, PatternBitString, PatternConcatenate,
   PatternConstructor, PatternDiscard, PatternFloat, PatternInt, PatternList,
   PatternString, PatternTuple, PatternVariable, Private, Public, RecordUpdate,
   SignedOption, SizeOption, SizeValueOption, String, Todo, Tuple, TupleIndex,
@@ -2135,6 +2135,118 @@ pub fn constructor_pattern_qualified_test() {
           None,
           Variable("x"),
         ),
+      ],
+    ),
+  ])
+}
+
+pub fn case_test() {
+  "pub fn main() { case x { y -> 1 } }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Case(
+          [Variable("x")],
+          [Clause([[PatternVariable("y")]], Int("1"))],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn case_multi_test() {
+  "pub fn main() { case x, y, z { a, b, c -> 1 } }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Case(
+          [Variable("x"), Variable("y"), Variable("z")],
+          [
+            Clause(
+              [
+                [
+                  PatternVariable("a"),
+                  PatternVariable("b"),
+                  PatternVariable("c"),
+                ],
+              ],
+              Int("1"),
+            ),
+          ],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn case_alternatives_test() {
+  "pub fn main() { case x, y { a, b | c, d -> 1 } }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Case(
+          [Variable("x"), Variable("y")],
+          [
+            Clause(
+              [
+                [PatternVariable("a"), PatternVariable("b")],
+                [PatternVariable("c"), PatternVariable("d")],
+              ],
+              Int("1"),
+            ),
+          ],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn case_clauses_test() {
+  "pub fn main() { case x, y { a, b | c, d -> 1 e, f -> 123 } }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Case(
+          [Variable("x"), Variable("y")],
+          [
+            Clause(
+              [
+                [PatternVariable("a"), PatternVariable("b")],
+                [PatternVariable("c"), PatternVariable("d")],
+              ],
+              Int("1"),
+            ),
+            Clause([[PatternVariable("e"), PatternVariable("f")]], Int("123")),
+          ],
+        )),
       ],
     ),
   ])
