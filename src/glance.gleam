@@ -42,8 +42,7 @@ pub type Function {
 }
 
 pub type Statement {
-  // TODO: use
-  // Use
+  Use(patterns: List(Pattern), function: Expression)
   Assignment(
     kind: AssignmentKind,
     pattern: Pattern,
@@ -569,11 +568,19 @@ fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
   case tokens {
     [#(t.Let, _), #(t.Assert, _), ..tokens] -> assignment(Assert, tokens)
     [#(t.Let, _), ..tokens] -> assignment(Let, tokens)
+    [#(t.Use, _), ..tokens] -> use_(tokens)
     tokens -> {
       use #(expression, tokens) <- result.try(expression(tokens))
       Ok(#(Expression(expression), tokens))
     }
   }
+}
+
+fn use_(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
+  use #(patterns, tokens) <- result.try(delimited([], tokens, pattern, t.Comma))
+  use _, tokens <- expect(t.LeftArrow, tokens)
+  use #(function, tokens) <- result.try(expression(tokens))
+  Ok(#(Use(patterns, function), tokens))
 }
 
 fn assignment(

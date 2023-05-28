@@ -13,7 +13,7 @@ import glance.{
   PatternConstructor, PatternDiscard, PatternFloat, PatternInt, PatternList,
   PatternString, PatternTuple, PatternVariable, Private, Public, RecordUpdate,
   SignedOption, SizeOption, SizeValueOption, String, Todo, Tuple, TupleIndex,
-  TupleType, TypeAlias, UnitOption, UnqualifiedImport, UnsignedOption,
+  TupleType, TypeAlias, UnitOption, UnqualifiedImport, UnsignedOption, Use,
   Utf16CodepointOption, Utf16Option, Utf32CodepointOption, Utf32Option,
   Utf8CodepointOption, Utf8Option, Variable, VariableType, Variant,
 }
@@ -2247,6 +2247,43 @@ pub fn case_clauses_test() {
             Clause([[PatternVariable("e"), PatternVariable("f")]], Int("123")),
           ],
         )),
+      ],
+    ),
+  ])
+}
+
+pub fn use_test() {
+  "pub fn main() { use x <- y }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Use([PatternVariable("x")], Variable("y"))],
+    ),
+  ])
+}
+
+pub fn use_multiple_test() {
+  "pub fn main() { use x, y, z <- f }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Use(
+          [PatternVariable("x"), PatternVariable("y"), PatternVariable("z")],
+          Variable("f"),
+        ),
       ],
     ),
   ])
