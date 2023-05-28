@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Functions can now be parsed. Their body is discarded.
+- All Gleam code can now be parsed.
 
 ## 0.3.0 - 2023-05-23
 

@@ -618,11 +618,21 @@ pub fn constant_labelled_constructor_test() {
 }
 
 pub fn constant_bit_string_test() {
-  "const x = <<1, 2.0>>"
+  "const x = <<1:2, 2.0>>"
   |> glance.module()
   |> should.be_ok
   |> fn(x: Module) { x.constants }
-  |> should.equal([Constant("x", Private, None, ConstantBitString)])
+  |> should.equal([
+    Constant(
+      "x",
+      Private,
+      None,
+      ConstantBitString([
+        #(ConstantInt("1"), [SizeOption(2)]),
+        #(ConstantFloat("2.0"), []),
+      ]),
+    ),
+  ])
 }
 
 pub fn external_type_test() {

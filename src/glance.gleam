@@ -143,8 +143,6 @@ pub type Import {
 }
 
 pub type ConstantExpression {
-  // TODO: define bitstring segments
-  ConstantBitString
   ConstantInt(String)
   ConstantFloat(String)
   ConstantString(String)
@@ -155,6 +153,11 @@ pub type ConstantExpression {
     name: String,
     module: Option(String),
     parameters: List(Field(ConstantExpression)),
+  )
+  ConstantBitString(
+    segments: List(
+      #(ConstantExpression, List(BitStringSegmentOption(ConstantExpression))),
+    ),
   )
 }
 
@@ -1030,11 +1033,10 @@ fn constant_expression(
 fn constant_bit_string(
   tokens: Tokens,
 ) -> Result(#(ConstantExpression, Tokens), Error) {
-  case tokens {
-    [] -> Error(UnexpectedEndOfInput)
-    [#(t.GreaterGreater, _), ..tokens] -> Ok(#(ConstantBitString, tokens))
-    [_, ..tokens] -> constant_bit_string(tokens)
-  }
+  let parser = bit_string_segment(constant_expression, _)
+  let result = comma_delimited([], tokens, parser, t.GreaterGreater)
+  use #(segments, tokens) <- result.try(result)
+  Ok(#(ConstantBitString(segments), tokens))
 }
 
 fn constant_constructor(

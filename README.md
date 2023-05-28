@@ -5,19 +5,6 @@
 
 A Gleam source code parser, in Gleam!
 
-Currently this library will parse the following:
-
-- Constants (discarding bit string segments).
-- Custom types.
-- External functions.
-- External types.
-- Functions (discarding their body).
-- Imports.
-- Type aliases.
-
-All other Gleam syntax is skipped over.
-
-
 ## Usage
 
 Add the package to your Gleam project:
