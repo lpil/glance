@@ -5,16 +5,17 @@ import glance.{
   Assert, Assignment, BigOption, BinaryOption, BitString, BitStringOption, Block,
   Call, Constant, ConstantBitString, ConstantConstructor, ConstantFloat,
   ConstantInt, ConstantList, ConstantString, ConstantTuple, ConstantVariable,
-  CustomType, DiscardedParameter, Expression, ExternalFunction, ExternalType,
-  Field, FieldAccess, Float, FloatOption, Fn, FnCapture, FnParameter, Function,
+  CustomType, Discarded, Expression, ExternalFunction, ExternalType, Field,
+  FieldAccess, Float, FloatOption, Fn, FnCapture, FnParameter, Function,
   FunctionParameter, FunctionType, Import, Int, IntOption, Let, List,
-  LittleOption, Module, NamedParameter, NamedType, NativeOption, NegateBool,
-  NegateInt, Panic, PatternDiscard, PatternFloat, PatternInt, PatternString,
-  PatternVariable, Private, Public, RecordUpdate, SignedOption, SizeOption,
-  SizeValueOption, String, Todo, Tuple, TupleIndex, TupleType, TypeAlias,
-  UnitOption, UnqualifiedImport, UnsignedOption, Utf16CodepointOption,
-  Utf16Option, Utf32CodepointOption, Utf32Option, Utf8CodepointOption,
-  Utf8Option, Variable, VariableType, Variant,
+  LittleOption, Module, Named, NamedType, NativeOption, NegateBool, NegateInt,
+  Panic, PatternAssignment, PatternBitString, PatternConcatenate,
+  PatternConstructor, PatternDiscard, PatternFloat, PatternInt, PatternList,
+  PatternString, PatternTuple, PatternVariable, Private, Public, RecordUpdate,
+  SignedOption, SizeOption, SizeValueOption, String, Todo, Tuple, TupleIndex,
+  TupleType, TypeAlias, UnitOption, UnqualifiedImport, UnsignedOption,
+  Utf16CodepointOption, Utf16Option, Utf32CodepointOption, Utf32Option,
+  Utf8CodepointOption, Utf8Option, Variable, VariableType, Variant,
 }
 
 pub fn main() {
@@ -766,18 +767,14 @@ pub fn function_parameters_test() {
       name: "main",
       publicity: Private,
       parameters: [
-        FunctionParameter(None, NamedParameter("a"), None),
-        FunctionParameter(None, NamedParameter("b"), Some(TupleType([]))),
-        FunctionParameter(Some("c"), NamedParameter("d"), None),
-        FunctionParameter(
-          Some("e"),
-          NamedParameter("f"),
-          Some(NamedType("G", None, [])),
-        ),
-        FunctionParameter(Some("h"), DiscardedParameter("i"), None),
+        FunctionParameter(None, Named("a"), None),
+        FunctionParameter(None, Named("b"), Some(TupleType([]))),
+        FunctionParameter(Some("c"), Named("d"), None),
+        FunctionParameter(Some("e"), Named("f"), Some(NamedType("G", None, []))),
+        FunctionParameter(Some("h"), Discarded("i"), None),
         FunctionParameter(
           Some("j"),
-          DiscardedParameter("k"),
+          Discarded("k"),
           Some(NamedType("L", None, [])),
         ),
       ],
@@ -1060,7 +1057,7 @@ pub fn expression_fn_test() {
       return: None,
       body: [
         Expression(Fn(
-          [FnParameter(NamedParameter("x"), None)],
+          [FnParameter(Named("x"), None)],
           None,
           [Expression(Variable("x"))],
         )),
@@ -1082,7 +1079,7 @@ pub fn expression_fn_return_test() {
       return: None,
       body: [
         Expression(Fn(
-          [FnParameter(NamedParameter("x"), None)],
+          [FnParameter(Named("x"), None)],
           Some(VariableType("a")),
           [Expression(Int("1")), Expression(Variable("x"))],
         )),
@@ -1104,7 +1101,7 @@ pub fn expression_fn_annotated_parens_test() {
       return: None,
       body: [
         Expression(Fn(
-          [FnParameter(NamedParameter("x"), Some(VariableType("a")))],
+          [FnParameter(Named("x"), Some(VariableType("a")))],
           None,
           [Expression(Variable("x"))],
         )),
@@ -1126,7 +1123,7 @@ pub fn expression_fn_discard_test() {
       return: None,
       body: [
         Expression(Fn(
-          [FnParameter(DiscardedParameter("x"), Some(VariableType("a")))],
+          [FnParameter(Discarded("x"), Some(VariableType("a")))],
           None,
           [Expression(Int("1"))],
         )),
@@ -1819,6 +1816,326 @@ pub fn discard_pattern_test() {
       parameters: [],
       return: None,
       body: [Assignment(Let, PatternDiscard("nah"), None, Int("1"))],
+    ),
+  ])
+}
+
+pub fn tuple_pattern_test() {
+  "pub fn main() { let #(_, _) = 1 }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Assignment(
+          Let,
+          PatternTuple([PatternDiscard(""), PatternDiscard("")]),
+          None,
+          Int("1"),
+        ),
+      ],
+    ),
+  ])
+}
+
+pub fn tuple_pattern_trailing_comma_test() {
+  "pub fn main() { let #(_, _,) = 1 }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Assignment(
+          Let,
+          PatternTuple([PatternDiscard(""), PatternDiscard("")]),
+          None,
+          Int("1"),
+        ),
+      ],
+    ),
+  ])
+}
+
+pub fn bit_string_pattern_test() {
+  "pub fn main() { let <<1, 2:4>> = 1 }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Assignment(
+          Let,
+          PatternBitString([
+            #(PatternInt("1"), []),
+            #(PatternInt("2"), [SizeOption(4)]),
+          ]),
+          None,
+          Int("1"),
+        ),
+      ],
+    ),
+  ])
+}
+
+pub fn concatenate_discard_pattern_test() {
+  "pub fn main() { let \"ok\" <> _nah = 1 }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Assignment(
+          Let,
+          PatternConcatenate("ok", Discarded("nah")),
+          None,
+          Int("1"),
+        ),
+      ],
+    ),
+  ])
+}
+
+pub fn concatenate_pattern_test() {
+  "pub fn main() { let \"ok\" <> yah = 1 }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Assignment(Let, PatternConcatenate("ok", Named("yah")), None, Int("1")),
+      ],
+    ),
+  ])
+}
+
+pub fn assignment_pattern_test() {
+  "pub fn main() { let x as y = 1 }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Assignment(
+          Let,
+          PatternAssignment(PatternVariable("x"), "y"),
+          None,
+          Int("1"),
+        ),
+      ],
+    ),
+  ])
+}
+
+pub fn list_pattern_test() {
+  "pub fn main() { let [1, 2] = x }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Assignment(
+          Let,
+          PatternList([PatternInt("1"), PatternInt("2")], None),
+          None,
+          Variable("x"),
+        ),
+      ],
+    ),
+  ])
+}
+
+pub fn list_rest_pattern_test() {
+  "pub fn main() { let [1, 2, ..y] = x }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Assignment(
+          Let,
+          PatternList(
+            [PatternInt("1"), PatternInt("2")],
+            Some(PatternVariable("y")),
+          ),
+          None,
+          Variable("x"),
+        ),
+      ],
+    ),
+  ])
+}
+
+pub fn constructor_pattern_test() {
+  "pub fn main() { let None = x }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Assignment(
+          Let,
+          PatternConstructor(None, "None", [], False),
+          None,
+          Variable("x"),
+        ),
+      ],
+    ),
+  ])
+}
+
+pub fn constructor_pattern_args_test() {
+  "pub fn main() { let Thing(1, 2) = x }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Assignment(
+          Let,
+          PatternConstructor(
+            None,
+            "Thing",
+            [Field(None, PatternInt("1")), Field(None, PatternInt("2"))],
+            False,
+          ),
+          None,
+          Variable("x"),
+        ),
+      ],
+    ),
+  ])
+}
+
+pub fn constructor_pattern_spread_test() {
+  "pub fn main() { let Thing(1, 2, ..) = x }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Assignment(
+          Let,
+          PatternConstructor(
+            None,
+            "Thing",
+            [Field(None, PatternInt("1")), Field(None, PatternInt("2"))],
+            True,
+          ),
+          None,
+          Variable("x"),
+        ),
+      ],
+    ),
+  ])
+}
+
+pub fn constructor_pattern_labels_test() {
+  "pub fn main() { let Thing(1, x: 2, ..) = x }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Assignment(
+          Let,
+          PatternConstructor(
+            None,
+            "Thing",
+            [Field(None, PatternInt("1")), Field(Some("x"), PatternInt("2"))],
+            True,
+          ),
+          None,
+          Variable("x"),
+        ),
+      ],
+    ),
+  ])
+}
+
+pub fn constructor_pattern_qualified_test() {
+  "pub fn main() { let wobble.Thing(1, x: 2, ..) = x }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Assignment(
+          Let,
+          PatternConstructor(
+            Some("wobble"),
+            "Thing",
+            [Field(None, PatternInt("1")), Field(Some("x"), PatternInt("2"))],
+            True,
+          ),
+          None,
+          Variable("x"),
+        ),
+      ],
     ),
   ])
 }

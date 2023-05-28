@@ -59,23 +59,24 @@ pub type AssignmentKind {
 }
 
 pub type Pattern {
-  // PatternAssign(name: String, pattern: Pattern)
-  // PatternList(elements: List(Pattern), tail: Option(Pattern))
-  // PatternTuple(elems: List(Pattern))
-  // PatternBitString(segments: List(#(Pattern, BitStringSegmentOption(Pattern))))
-  // PatternConcatenate(left: String, right: ParameterName)
-  // PatternConstructor(
-  //   name: String,
-  //   arguments: List(Field(Pattern)),
-  //   module: Option(String),
-  //   constructor: String,
-  //   with_spread: Bool,
-  // )
   PatternInt(value: String)
   PatternFloat(value: String)
   PatternString(value: String)
   PatternDiscard(name: String)
   PatternVariable(name: String)
+  PatternTuple(elems: List(Pattern))
+  PatternList(elements: List(Pattern), tail: Option(Pattern))
+  PatternAssignment(pattern: Pattern, name: String)
+  PatternConcatenate(left: String, right: AssignmentName)
+  PatternBitString(
+    segments: List(#(Pattern, List(BitStringSegmentOption(Pattern)))),
+  )
+  PatternConstructor(
+    module: Option(String),
+    constructor: String,
+    arguments: List(Field(Pattern)),
+    with_spread: Bool,
+  )
 }
 
 pub type Expression {
@@ -148,20 +149,20 @@ pub type BitStringSegmentOption(t) {
 }
 
 pub type FnParameter {
-  FnParameter(name: ParameterName, type_: Option(Type))
+  FnParameter(name: AssignmentName, type_: Option(Type))
 }
 
 pub type FunctionParameter {
   FunctionParameter(
     label: Option(String),
-    name: ParameterName,
+    name: AssignmentName,
     type_: Option(Type),
   )
 }
 
-pub type ParameterName {
-  NamedParameter(String)
-  DiscardedParameter(String)
+pub type AssignmentName {
+  Named(String)
+  Discarded(String)
 }
 
 pub type Import {
@@ -578,15 +579,102 @@ fn assignment(
   Ok(#(statement, tokens))
 }
 
-fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
+fn pattern_constructor(
+  module: Option(String),
+  constructor: String,
+  tokens: Tokens,
+) -> Result(#(Pattern, Tokens), Error) {
   case tokens {
+    [#(t.LeftParen, _), ..tokens] -> {
+      let result = pattern_constructor_arguments([], tokens)
+      use #(patterns, spread, tokens) <- result.try(result)
+      let arguments = list.reverse(patterns)
+      let pattern = PatternConstructor(module, constructor, arguments, spread)
+      Ok(#(pattern, tokens))
+    }
+    _ -> {
+      let pattern = PatternConstructor(module, constructor, [], False)
+      Ok(#(pattern, tokens))
+    }
+  }
+}
+
+fn pattern_constructor_arguments(
+  arguments: List(Field(Pattern)),
+  tokens: Tokens,
+) -> Result(#(List(Field(Pattern)), Bool, Tokens), Error) {
+  case tokens {
+    [#(t.RightParen, _), ..tokens] -> Ok(#(arguments, False, tokens))
+
+    [#(t.DotDot, _), #(t.RightParen, _), ..tokens] ->
+      Ok(#(arguments, True, tokens))
+
+    tokens -> {
+      use #(pattern, tokens) <- result.try(field(tokens, pattern))
+      let arguments = [pattern, ..arguments]
+
+      case tokens {
+        [#(t.RightParen, _), ..tokens] -> Ok(#(arguments, False, tokens))
+
+        [#(t.Comma, _), #(t.DotDot, _), #(t.RightParen, _), ..tokens] ->
+          Ok(#(arguments, True, tokens))
+
+        [#(t.Comma, _), ..tokens] ->
+          pattern_constructor_arguments(arguments, tokens)
+
+        [#(token, position), ..] -> Error(UnexpectedToken(token, position))
+        [] -> Error(UnexpectedEndOfInput)
+      }
+    }
+  }
+}
+
+fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
+  use #(pattern, tokens) <- result.try(case tokens {
+    [#(t.UpperName(name), _), ..tokens] ->
+      pattern_constructor(None, name, tokens)
+    [#(t.Name(module), _), #(t.Dot, _), #(t.UpperName(name), _), ..tokens] ->
+      pattern_constructor(Some(module), name, tokens)
+
+    [#(t.String(v), _), #(t.LessGreater, _), #(t.Name(n), _), ..tokens] ->
+      Ok(#(PatternConcatenate(v, Named(n)), tokens))
+
+    [#(t.String(v), _), #(t.LessGreater, _), #(t.DiscardName(n), _), ..tokens] ->
+      Ok(#(PatternConcatenate(v, Discarded(n)), tokens))
+
     [#(t.Int(value), _), ..tokens] -> Ok(#(PatternInt(value), tokens))
     [#(t.Float(value), _), ..tokens] -> Ok(#(PatternFloat(value), tokens))
     [#(t.String(value), _), ..tokens] -> Ok(#(PatternString(value), tokens))
     [#(t.DiscardName(name), _), ..tokens] -> Ok(#(PatternDiscard(name), tokens))
     [#(t.Name(name), _), ..tokens] -> Ok(#(PatternVariable(name), tokens))
+
+    [#(t.LeftSquare, _), ..tokens] -> {
+      use #(elements, rest, tokens) <- result.map(list(pattern, [], tokens))
+      #(PatternList(elements, rest), tokens)
+    }
+
+    [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> {
+      let result = comma_delimited([], tokens, pattern, t.RightParen)
+      use #(patterns, tokens) <- result.try(result)
+      Ok(#(PatternTuple(patterns), tokens))
+    }
+
+    [#(t.LessLess, _), ..tokens] -> {
+      let parser = bit_string_segment(pattern, _)
+      let result = comma_delimited([], tokens, parser, t.GreaterGreater)
+      use #(segments, tokens) <- result.try(result)
+      Ok(#(PatternBitString(segments), tokens))
+    }
+
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
     [] -> Error(UnexpectedEndOfInput)
+  })
+
+  case tokens {
+    [#(t.As, _), #(t.Name(name), _), ..tokens] -> {
+      Ok(#(PatternAssignment(pattern, name), tokens))
+    }
+    _ -> Ok(#(pattern, tokens))
   }
 }
 
@@ -613,7 +701,6 @@ fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
     [#(t.String(value), _), ..tokens] -> Ok(#(String(value), tokens))
     [#(t.Name(name), _), ..tokens] -> Ok(#(Variable(name), tokens))
 
-    [#(t.LeftSquare, _), ..tokens] -> list([], tokens)
     [#(t.Fn, _), ..tokens] -> fn_(tokens)
 
     [
@@ -625,32 +712,37 @@ fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
     ] -> Ok(#(Todo(Some(value)), tokens))
     [#(t.Todo, _), ..tokens] -> Ok(#(Todo(None), tokens))
 
+    [#(t.LeftSquare, _), ..tokens] -> {
+      use #(elements, rest, tokens) <- result.map(list(expression, [], tokens))
+      #(List(elements, rest), tokens)
+    }
+
     [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> {
       let result = comma_delimited([], tokens, expression, t.RightParen)
-      use #(expressions, tokens) <- result.try(result)
-      Ok(#(Tuple(expressions), tokens))
+      use #(expressions, tokens) <- result.map(result)
+      #(Tuple(expressions), tokens)
     }
 
     [#(t.Bang, _), ..tokens] -> {
-      use #(expression, tokens) <- result.try(expression(tokens))
-      Ok(#(NegateBool(expression), tokens))
+      use #(expression, tokens) <- result.map(expression(tokens))
+      #(NegateBool(expression), tokens)
     }
 
     [#(t.Minus, _), ..tokens] -> {
-      use #(expression, tokens) <- result.try(expression(tokens))
-      Ok(#(NegateInt(expression), tokens))
+      use #(expression, tokens) <- result.map(expression(tokens))
+      #(NegateInt(expression), tokens)
     }
 
     [#(t.LeftBrace, _), ..tokens] -> {
-      use #(statements, tokens) <- result.try(statements([], tokens))
-      Ok(#(Block(statements), tokens))
+      use #(statements, tokens) <- result.map(statements([], tokens))
+      #(Block(statements), tokens)
     }
 
     [#(t.LessLess, _), ..tokens] -> {
       let parser = bit_string_segment(expression, _)
       let result = comma_delimited([], tokens, parser, t.GreaterGreater)
-      use #(segments, tokens) <- result.try(result)
-      Ok(#(BitString(segments), tokens))
+      use #(segments, tokens) <- result.map(result)
+      #(BitString(segments), tokens)
     }
 
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
@@ -903,31 +995,31 @@ fn fn_(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
 }
 
 fn list(
-  acc: List(Expression),
+  parser: fn(Tokens) -> Result(#(t, Tokens), Error),
+  acc: List(t),
   tokens: Tokens,
-) -> Result(#(Expression, Tokens), Error) {
+) -> Result(#(List(t), Option(t), Tokens), Error) {
   case tokens {
-    [#(t.RightSquare, _), ..tokens] ->
-      Ok(#(List(list.reverse(acc), None), tokens))
+    [#(t.RightSquare, _), ..tokens] -> Ok(#(list.reverse(acc), None, tokens))
 
     [#(t.Comma, _), #(t.RightSquare, _), ..tokens] if acc != [] ->
-      Ok(#(List(list.reverse(acc), None), tokens))
+      Ok(#(list.reverse(acc), None, tokens))
 
     _ -> {
-      use #(element, tokens) <- result.try(expression(tokens))
+      use #(element, tokens) <- result.try(parser(tokens))
       let acc = [element, ..acc]
       case tokens {
         [#(t.RightSquare, _), ..tokens]
         | [#(t.Comma, _), #(t.RightSquare, _), ..tokens] ->
-          Ok(#(List(list.reverse(acc), None), tokens))
+          Ok(#(list.reverse(acc), None, tokens))
 
         [#(t.Comma, _), #(t.DotDot, _), ..tokens] -> {
-          use #(rest, tokens) <- result.try(expression(tokens))
+          use #(rest, tokens) <- result.try(parser(tokens))
           use _, tokens <- expect(t.RightSquare, tokens)
-          Ok(#(List(list.reverse(acc), Some(rest)), tokens))
+          Ok(#(list.reverse(acc), Some(rest), tokens))
         }
 
-        [#(t.Comma, _), ..tokens] -> list(acc, tokens)
+        [#(t.Comma, _), ..tokens] -> list(parser, acc, tokens)
 
         [#(other, position), ..] -> Error(UnexpectedToken(other, position))
         [] -> Error(UnexpectedEndOfInput)
@@ -939,10 +1031,10 @@ fn list(
 fn fn_parameter(tokens: Tokens) -> Result(#(FnParameter, Tokens), Error) {
   use #(name, tokens) <- result.try(case tokens {
     [#(t.Name(name), _), ..tokens] -> {
-      Ok(#(NamedParameter(name), tokens))
+      Ok(#(Named(name), tokens))
     }
     [#(t.DiscardName(name), _), ..tokens] -> {
-      Ok(#(DiscardedParameter(name), tokens))
+      Ok(#(Discarded(name), tokens))
     }
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
     [] -> Error(UnexpectedEndOfInput)
@@ -958,16 +1050,16 @@ fn function_parameter(
   use #(label, parameter, tokens) <- result.try(case tokens {
     [] -> Error(UnexpectedEndOfInput)
     [#(t.Name(label), _), #(t.DiscardName(name), _), ..tokens] -> {
-      Ok(#(Some(label), DiscardedParameter(name), tokens))
+      Ok(#(Some(label), Discarded(name), tokens))
     }
     [#(t.DiscardName(name), _), ..tokens] -> {
-      Ok(#(None, DiscardedParameter(name), tokens))
+      Ok(#(None, Discarded(name), tokens))
     }
     [#(t.Name(label), _), #(t.Name(name), _), ..tokens] -> {
-      Ok(#(Some(label), NamedParameter(name), tokens))
+      Ok(#(Some(label), Named(name), tokens))
     }
     [#(t.Name(name), _), ..tokens] -> {
-      Ok(#(None, NamedParameter(name), tokens))
+      Ok(#(None, Named(name), tokens))
     }
     [#(token, position), ..] -> Error(UnexpectedToken(token, position))
   })
