@@ -156,6 +156,64 @@ pub type BitStringSegmentOption(t) {
   UnitOption(Int)
 }
 
+pub type BinaryOperator {
+  // Boolean logic
+  And
+  Or
+
+  // Equality
+  Eq
+  NotEq
+
+  // Order comparison
+  LtInt
+  LtEqInt
+  LtFloat
+  LtEqFloat
+  GtEqInt
+  GtInt
+  GtEqFloat
+  GtFloat
+
+  // Functions
+  Pipe
+
+  // Maths
+  AddInt
+  AddFloat
+  SubInt
+  SubFloat
+  MultInt
+  MultFloat
+  DivInt
+  DivFloat
+  RemainderInt
+
+  // Strings
+  Concatenate
+}
+
+pub fn precedence(operator: BinaryOperator) -> Int {
+  // Ensure that this matches the other precedence function for guards
+  case operator {
+    Or -> 1
+    And -> 2
+    Eq | NotEq -> 3
+    LtInt
+    | LtEqInt
+    | LtFloat
+    | LtEqFloat
+    | GtEqInt
+    | GtInt
+    | GtEqFloat
+    | GtFloat -> 4
+    Concatenate -> 5
+    Pipe -> 6
+    AddInt | AddFloat | SubInt | SubFloat -> 7
+    MultInt | MultFloat | DivInt | DivFloat | RemainderInt -> 8
+  }
+}
+
 pub type FnParameter {
   FnParameter(name: AssignmentName, type_: Option(Type))
 }
@@ -698,6 +756,70 @@ fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
 }
 
 fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
+  expression_loop(tokens, [], [], 0, 0)
+}
+
+fn expression_loop(
+  tokens: List(#(Token, Position)),
+  operator_stack: List(BinaryOperator),
+  value_stack: List(Expression),
+  last_operator_start: Int,
+  last_operator_end: Int,
+) -> Result(#(Expression, Tokens), Error) {
+  case expression_unit(tokens) {
+    Error(error) -> Error(error)
+    Ok(#(Some(expression), tokens)) -> Ok(#(expression, tokens))
+    Ok(#(None, [])) -> Error(UnexpectedEndOfInput)
+    Ok(#(None, [#(token, position), ..])) ->
+      Error(UnexpectedToken(token, position))
+  }
+  //     case self.parse_expression_unit()? {
+  //         Some(unit) => estack.push(unit),
+  //         _ if estack.is_empty() => return Ok(None),
+  //         _ => {
+  //             return parse_error(
+  //                 ParseErrorType::OpNakedRight,
+  //                 SrcSpan {
+  //                     start: last_op_start,
+  //                     end: last_op_end,
+  //                 },
+  //             );
+  //         }
+  //     }
+
+  //     if let Some((op_s, t, op_e)) = self.tok0.take() {
+  //         if let Some(p) = precedence(&t) {
+  //             // Is Op
+  //             let _ = self.next_tok();
+  //             last_op_start = op_s;
+  //             last_op_end = op_e;
+  //             let _ = handle_op(
+  //                 Some(((op_s, t, op_e), p)),
+  //                 &mut opstack,
+  //                 &mut estack,
+  //                 &do_reduce_expression,
+  //             );
+  //         } else {
+  //             // Is not Op
+  //             self.tok0 = Some((op_s, t, op_e));
+  //             break;
+  //         }
+  //     } else {
+  //         break;
+  //     }
+  // }
+
+  // Ok(handle_op(
+  //     None,
+  //     &mut opstack,
+  //     &mut estack,
+  //     &do_reduce_expression,
+  // ))
+}
+
+fn expression_unit(
+  tokens: Tokens,
+) -> Result(#(Option(Expression), Tokens), Error) {
   use #(parsed, tokens) <- result.try(case tokens {
     [
       #(t.Name(module), _),
@@ -714,11 +836,11 @@ fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
       ..tokens
     ] -> record_update(None, constructor, tokens)
 
-    [#(t.Panic, _), ..tokens] -> Ok(#(Panic, tokens))
-    [#(t.Int(value), _), ..tokens] -> Ok(#(Int(value), tokens))
-    [#(t.Float(value), _), ..tokens] -> Ok(#(Float(value), tokens))
-    [#(t.String(value), _), ..tokens] -> Ok(#(String(value), tokens))
-    [#(t.Name(name), _), ..tokens] -> Ok(#(Variable(name), tokens))
+    [#(t.Panic, _), ..tokens] -> Ok(#(Some(Panic), tokens))
+    [#(t.Int(value), _), ..tokens] -> Ok(#(Some(Int(value)), tokens))
+    [#(t.Float(value), _), ..tokens] -> Ok(#(Some(Float(value)), tokens))
+    [#(t.String(value), _), ..tokens] -> Ok(#(Some(String(value)), tokens))
+    [#(t.Name(name), _), ..tokens] -> Ok(#(Some(Variable(name)), tokens))
 
     [#(t.Fn, _), ..tokens] -> fn_(tokens)
     [#(t.Case, _), ..tokens] -> case_(tokens)
@@ -729,47 +851,54 @@ fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
       #(t.String(value), _),
       #(t.RightParen, _),
       ..tokens
-    ] -> Ok(#(Todo(Some(value)), tokens))
-    [#(t.Todo, _), ..tokens] -> Ok(#(Todo(None), tokens))
+    ] -> Ok(#(Some(Todo(Some(value))), tokens))
+    [#(t.Todo, _), ..tokens] -> Ok(#(Some(Todo(None)), tokens))
 
     [#(t.LeftSquare, _), ..tokens] -> {
       use #(elements, rest, tokens) <- result.map(list(expression, [], tokens))
-      #(List(elements, rest), tokens)
+      #(Some(List(elements, rest)), tokens)
     }
 
     [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> {
       let result = comma_delimited([], tokens, expression, t.RightParen)
       use #(expressions, tokens) <- result.map(result)
-      #(Tuple(expressions), tokens)
+      #(Some(Tuple(expressions)), tokens)
     }
 
     [#(t.Bang, _), ..tokens] -> {
       use #(expression, tokens) <- result.map(expression(tokens))
-      #(NegateBool(expression), tokens)
+      #(Some(NegateBool(expression)), tokens)
     }
 
     [#(t.Minus, _), ..tokens] -> {
       use #(expression, tokens) <- result.map(expression(tokens))
-      #(NegateInt(expression), tokens)
+      #(Some(NegateInt(expression)), tokens)
     }
 
     [#(t.LeftBrace, _), ..tokens] -> {
       use #(statements, tokens) <- result.map(statements([], tokens))
-      #(Block(statements), tokens)
+      #(Some(Block(statements)), tokens)
     }
 
     [#(t.LessLess, _), ..tokens] -> {
       let parser = bit_string_segment(expression, _)
       let result = comma_delimited([], tokens, parser, t.GreaterGreater)
       use #(segments, tokens) <- result.map(result)
-      #(BitString(segments), tokens)
+      #(Some(BitString(segments)), tokens)
     }
 
-    [#(other, position), ..] -> Error(UnexpectedToken(other, position))
-    [] -> Error(UnexpectedEndOfInput)
+    _ -> Ok(#(None, tokens))
   })
 
-  after_expression(parsed, tokens)
+  case parsed {
+    Some(expression) -> {
+      case after_expression(expression, tokens) {
+        Ok(#(expression, tokens)) -> Ok(#(Some(expression), tokens))
+        Error(error) -> Error(error)
+      }
+    }
+    None -> Ok(#(None, tokens))
+  }
 }
 
 fn bit_string_segment(
@@ -967,21 +1096,20 @@ fn record_update(
   module: Option(String),
   constructor: String,
   tokens: Tokens,
-) -> Result(#(Expression, Tokens), Error) {
+) -> Result(#(Option(Expression), Tokens), Error) {
   use #(record, tokens) <- result.try(expression(tokens))
 
   case tokens {
     [#(t.RightParen, _), ..tokens] -> {
-      Ok(#(RecordUpdate(module, constructor, record, []), tokens))
+      Ok(#(Some(RecordUpdate(module, constructor, record, [])), tokens))
     }
     [#(t.Comma, _), ..tokens] -> {
       let result =
         comma_delimited([], tokens, record_update_field, t.RightParen)
       use #(fields, tokens) <- result.try(result)
-      Ok(#(RecordUpdate(module, constructor, record, fields), tokens))
+      Ok(#(Some(RecordUpdate(module, constructor, record, fields)), tokens))
     }
-    [#(other, position), ..] -> Error(UnexpectedToken(other, position))
-    [] -> Error(UnexpectedEndOfInput)
+    _ -> Ok(#(None, tokens))
   }
 }
 
@@ -998,11 +1126,11 @@ fn record_update_field(
   }
 }
 
-fn case_(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
+fn case_(tokens: Tokens) -> Result(#(Option(Expression), Tokens), Error) {
   use #(subjects, tokens) <- result.try(case_subjects([], tokens))
   use _, tokens <- expect(t.LeftBrace, tokens)
   use #(clauses, tokens) <- result.try(case_clauses([], tokens))
-  Ok(#(Case(subjects, clauses), tokens))
+  Ok(#(Some(Case(subjects, clauses)), tokens))
 }
 
 fn case_subjects(
@@ -1053,7 +1181,7 @@ fn delimited(
   }
 }
 
-fn fn_(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
+fn fn_(tokens: Tokens) -> Result(#(Option(Expression), Tokens), Error) {
   // Parameters
   use _, tokens <- expect(t.LeftParen, tokens)
   let result = comma_delimited([], tokens, fn_parameter, t.RightParen)
@@ -1066,7 +1194,7 @@ fn fn_(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
   use _, tokens <- expect(t.LeftBrace, tokens)
   use #(body, tokens) <- result.try(statements([], tokens))
 
-  Ok(#(Fn(parameters, return, body), tokens))
+  Ok(#(Some(Fn(parameters, return, body)), tokens))
 }
 
 fn list(
