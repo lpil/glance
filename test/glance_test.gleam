@@ -2,20 +2,20 @@ import gleeunit
 import gleeunit/should
 import gleam/option.{None, Some}
 import glance.{
-  Assert, Assignment, BigOption, BinaryOption, BitString, BitStringOption, Block,
-  Call, Case, Clause, Constant, ConstantBitString, ConstantConstructor,
-  ConstantFloat, ConstantInt, ConstantList, ConstantString, ConstantTuple,
-  ConstantVariable, CustomType, Discarded, Expression, ExternalFunction,
-  ExternalType, Field, FieldAccess, Float, FloatOption, Fn, FnCapture,
-  FnParameter, Function, FunctionParameter, FunctionType, Import, Int, IntOption,
-  Let, List, LittleOption, Module, Named, NamedType, NativeOption, NegateBool,
-  NegateInt, Panic, PatternAssignment, PatternBitString, PatternConcatenate,
-  PatternConstructor, PatternDiscard, PatternFloat, PatternInt, PatternList,
-  PatternString, PatternTuple, PatternVariable, Private, Public, RecordUpdate,
-  SignedOption, SizeOption, SizeValueOption, String, Todo, Tuple, TupleIndex,
-  TupleType, TypeAlias, UnitOption, UnqualifiedImport, UnsignedOption, Use,
-  Utf16CodepointOption, Utf16Option, Utf32CodepointOption, Utf32Option,
-  Utf8CodepointOption, Utf8Option, Variable, VariableType, Variant,
+  And, Assert, Assignment, BigOption, BinaryOperator, BinaryOption, BitString,
+  BitStringOption, Block, Call, Case, Clause, Constant, ConstantBitString,
+  ConstantConstructor, ConstantFloat, ConstantInt, ConstantList, ConstantString,
+  ConstantTuple, ConstantVariable, CustomType, Discarded, Expression,
+  ExternalFunction, ExternalType, Field, FieldAccess, Float, FloatOption, Fn,
+  FnCapture, FnParameter, Function, FunctionParameter, FunctionType, Import, Int,
+  IntOption, Let, List, LittleOption, Module, Named, NamedType, NativeOption,
+  NegateBool, NegateInt, Panic, PatternAssignment, PatternBitString,
+  PatternConcatenate, PatternConstructor, PatternDiscard, PatternFloat,
+  PatternInt, PatternList, PatternString, PatternTuple, PatternVariable, Private,
+  Public, RecordUpdate, SignedOption, SizeOption, SizeValueOption, String, Todo,
+  Tuple, TupleIndex, TupleType, TypeAlias, UnitOption, UnqualifiedImport,
+  UnsignedOption, Use, Utf16CodepointOption, Utf16Option, Utf32CodepointOption,
+  Utf32Option, Utf8CodepointOption, Utf8Option, Variable, VariableType, Variant,
 }
 
 pub fn main() {
@@ -2316,6 +2316,22 @@ pub fn use_multiple_test() {
           Variable("f"),
         ),
       ],
+    ),
+  ])
+}
+
+pub fn and_test() {
+  "pub fn main() { x && y }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Expression(BinaryOperator(And, Variable("x"), Variable("y")))],
     ),
   ])
 }
