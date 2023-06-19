@@ -79,12 +79,6 @@ pub type Pattern {
 }
 
 pub type Expression {
-  // TODO: binary operators
-  // BinOp(
-  //     name: BinOp,
-  //     left: Expression,
-  //     right: Expression,
-  // )
   // TODO: pipe operator
   // PipeLine(
   //     expressions: List(Expression>,
@@ -124,6 +118,7 @@ pub type Expression {
   )
 
   Case(subjects: List(Expression), clauses: List(Clause))
+  BinaryOperator(name: BinaryOperator, left: Expression, right: Expression)
 }
 
 pub type Clause {
@@ -756,65 +751,132 @@ fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
 }
 
 fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
-  expression_loop(tokens, [], [], 0, 0)
+  expression_loop(tokens, [], [])
+}
+
+fn unexpected_error(tokens: Tokens) -> Result(a, Error) {
+  case tokens {
+    [#(token, position), ..] -> Error(UnexpectedToken(token, position))
+    [] -> Error(UnexpectedEndOfInput)
+  }
+}
+
+fn binary_operator(token: Token) -> Result(BinaryOperator, Nil) {
+  case token {
+    t.AmperAmper -> Ok(And)
+    t.EqualEqual -> Ok(Eq)
+    t.Greater -> Ok(GtInt)
+    t.GreaterDot -> Ok(GtFloat)
+    t.GreaterEqual -> Ok(GtEqInt)
+    t.GreaterEqualDot -> Ok(GtEqFloat)
+    t.Less -> Ok(LtInt)
+    t.LessDot -> Ok(LtFloat)
+    t.LessEqual -> Ok(LtEqInt)
+    t.LessEqualDot -> Ok(LtEqFloat)
+    t.LessGreater -> Ok(Concatenate)
+    t.Minus -> Ok(SubInt)
+    t.MinusDot -> Ok(SubFloat)
+    t.NotEqual -> Ok(NotEq)
+    t.Percent -> Ok(RemainderInt)
+    t.VBar -> Ok(Or)
+    t.Pipe -> Ok(Pipe)
+    t.Plus -> Ok(AddInt)
+    t.PlusDot -> Ok(AddFloat)
+    t.Slash -> Ok(DivInt)
+    t.SlashDot -> Ok(DivFloat)
+    t.Star -> Ok(MultInt)
+    t.StarDot -> Ok(MultFloat)
+    _ -> Error(Nil)
+  }
+}
+
+fn pop_binary_operator(tokens: Tokens) -> Result(#(BinaryOperator, Tokens), Nil) {
+  case tokens {
+    [#(token, _), ..tokens] -> {
+      use op <- result.map(binary_operator(token))
+      #(op, tokens)
+    }
+    [] -> Error(Nil)
+  }
 }
 
 fn expression_loop(
   tokens: List(#(Token, Position)),
-  operator_stack: List(BinaryOperator),
-  value_stack: List(Expression),
-  last_operator_start: Int,
-  last_operator_end: Int,
+  operators: List(BinaryOperator),
+  values: List(Expression),
 ) -> Result(#(Expression, Tokens), Error) {
-  case expression_unit(tokens) {
-    Error(error) -> Error(error)
-    Ok(#(Some(expression), tokens)) -> Ok(#(expression, tokens))
-    Ok(#(None, [])) -> Error(UnexpectedEndOfInput)
-    Ok(#(None, [#(token, position), ..])) ->
-      Error(UnexpectedToken(token, position))
-  }
-  //     case self.parse_expression_unit()? {
-  //         Some(unit) => estack.push(unit),
-  //         _ if estack.is_empty() => return Ok(None),
-  //         _ => {
-  //             return parse_error(
-  //                 ParseErrorType::OpNakedRight,
-  //                 SrcSpan {
-  //                     start: last_op_start,
-  //                     end: last_op_end,
-  //                 },
-  //             );
-  //         }
-  //     }
+  use #(expression, tokens) <- result.try(expression_unit(tokens))
 
-  //     if let Some((op_s, t, op_e)) = self.tok0.take() {
-  //         if let Some(p) = precedence(&t) {
-  //             // Is Op
-  //             let _ = self.next_tok();
-  //             last_op_start = op_s;
-  //             last_op_end = op_e;
-  //             let _ = handle_op(
-  //                 Some(((op_s, t, op_e), p)),
-  //                 &mut opstack,
-  //                 &mut estack,
-  //                 &do_reduce_expression,
-  //             );
-  //         } else {
-  //             // Is not Op
-  //             self.tok0 = Some((op_s, t, op_e));
-  //             break;
+  case expression {
+    None -> unexpected_error(tokens)
+    Some(e) -> {
+      let values = [e, ..values]
+      case pop_binary_operator(tokens) {
+        Ok(#(operator, tokens)) -> {
+          // TODO: I think this handle_operator may be two different functions
+          // that have been squished together. The ignore return value, the
+          // optional argument, and the internal panic are all suspicious.
+          let #(_, operators, values) =
+            handle_operator(Some(operator), operators, values)
+          expression_loop(tokens, operators, values)
+        }
+        _ ->
+          case handle_operator(None, operators, values).0 {
+            None -> unexpected_error(tokens)
+            Some(expression) -> Ok(#(expression, tokens))
+          }
+      }
+    }
+  }
+}
+
+/// Simple-Precedence-Parser, handle seeing an operator or end
+fn handle_operator(
+  next: Option(BinaryOperator),
+  operators: List(BinaryOperator),
+  values: List(Expression),
+) -> #(Option(Expression), List(BinaryOperator), List(Expression)) {
+  // let mut next_op = next_op;
+  // loop {
+  //     match (opstack.pop(), next_op.take()) {
+  //         (Some((op, _)), None) => do_reduce(op, estack),
+
+  //         (Some((opl, pl)), Some((opr, pr))) => {
+  //             match pl.cmp(&pr) {
+  //                 // all ops are left associative
+  //                 Ordering::Greater | Ordering::Equal => {
+  //                     do_reduce(opl, estack);
+  //                     next_op = Some((opr, pr));
+  //                 }
+  //                 Ordering::Less => {
+  //                     opstack.push((opl, pl));
+  //                     opstack.push((opr, pr));
+  //                     break;
+  //                 }
+  //             }
   //         }
-  //     } else {
-  //         break;
   //     }
   // }
+  // None
+  case operators, values, next {
+    [], _, Some(operator) -> #(None, [operator, ..operators], values)
 
-  // Ok(handle_op(
-  //     None,
-  //     &mut opstack,
-  //     &mut estack,
-  //     &do_reduce_expression,
-  // ))
+    [operator, ..operators], _, None -> {
+      #(None, operators, reduce_expression(operator, values))
+    }
+
+    [], [expression], None -> #(Some(expression), operators, values)
+    [], [], None -> #(None, operators, values)
+    // Expression not full reduced
+    [], _, None -> panic
+  }
+}
+
+fn reduce_expression(
+  operator: BinaryOperator,
+  values: List(Expression),
+) -> List(Expression) {
+  todo
 }
 
 fn expression_unit(
