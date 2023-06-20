@@ -301,8 +301,15 @@ pub type Error {
 pub fn module(src: String) -> Result(Module, Error) {
   glexer.new(src)
   |> glexer.lex
-  |> list.filter(fn(pair) { pair.0 != t.CommentNormal })
+  |> list.filter(fn(pair) { !is_whitespace(pair.0) })
   |> slurp(Module([], [], [], [], [], [], []), [], _)
+}
+
+fn is_whitespace(token: Token) -> Bool {
+  case token {
+    t.EmptyLine | t.CommentNormal | t.CommentModule | t.CommentDoc(_) -> True
+    _ -> False
+  }
 }
 
 fn push_constant(
@@ -312,7 +319,10 @@ fn push_constant(
 ) -> Module {
   Module(
     ..module,
-    constants: [Definition(attributes, constant), ..module.constants],
+    constants: [
+      Definition(list.reverse(attributes), constant),
+      ..module.constants
+    ],
   )
 }
 
@@ -324,7 +334,7 @@ fn push_external_function(
   Module(
     ..module,
     external_functions: [
-      Definition(attributes, external_function),
+      Definition(list.reverse(attributes), external_function),
       ..module.external_functions
     ],
   )
@@ -337,7 +347,10 @@ fn push_function(
 ) -> Module {
   Module(
     ..module,
-    functions: [Definition(attributes, function), ..module.functions],
+    functions: [
+      Definition(list.reverse(attributes), function),
+      ..module.functions
+    ],
   )
 }
 
@@ -349,7 +362,7 @@ fn push_external_type(
   Module(
     ..module,
     external_types: [
-      Definition(attributes, external_type),
+      Definition(list.reverse(attributes), external_type),
       ..module.external_types
     ],
   )
@@ -364,7 +377,10 @@ fn push_custom_type(
     CustomType(..custom_type, variants: list.reverse(custom_type.variants))
   Module(
     ..module,
-    custom_types: [Definition(attributes, custom_type), ..module.custom_types],
+    custom_types: [
+      Definition(list.reverse(attributes), custom_type),
+      ..module.custom_types
+    ],
   )
 }
 
@@ -375,7 +391,10 @@ fn push_type_alias(
 ) -> Module {
   Module(
     ..module,
-    type_aliases: [Definition(attributes, type_alias), ..module.type_aliases],
+    type_aliases: [
+      Definition(list.reverse(attributes), type_alias),
+      ..module.type_aliases
+    ],
   )
 }
 
@@ -447,12 +466,25 @@ fn until(
   }
 }
 
+fn attribute(tokens: Tokens) -> Result(#(Attribute, Tokens), Error) {
+  use name, tokens <- expect_name(tokens)
+  use _, tokens <- expect(t.LeftParen, tokens)
+  let result = comma_delimited([], tokens, expression, t.RightParen)
+  use #(parameters, tokens) <- result.try(result)
+  Ok(#(Attribute(name, parameters), tokens))
+}
+
 fn slurp(
   module: Module,
   attributes: List(Attribute),
   tokens: Tokens,
 ) -> Result(Module, Error) {
   case tokens {
+    [#(t.At, _), ..tokens] -> {
+      use #(attribute, tokens) <- result.try(attribute(tokens))
+      slurp(module, [attribute, ..attributes], tokens)
+    }
+
     [#(t.Import, _), ..tokens] -> {
       let result = import_statement(module, attributes, tokens)
       use #(module, tokens) <- result.try(result)
@@ -514,8 +546,8 @@ fn slurp(
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
-    [_, ..] -> unexpected_error(tokens)
     [] -> Ok(module)
+    tokens -> unexpected_error(tokens)
   }
 }
 
@@ -528,7 +560,7 @@ fn import_statement(
   use #(unqualified, tokens) <- result.try(optional_unqualified_imports(tokens))
   let #(alias, tokens) = optional_module_alias(tokens)
   let import_ = Import(module_name, alias, unqualified)
-  let definition = Definition(attributes, import_)
+  let definition = Definition(list.reverse(attributes), import_)
   let module = Module(..module, imports: [definition, ..module.imports])
   Ok(#(module, tokens))
 }

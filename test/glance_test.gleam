@@ -2,10 +2,10 @@ import gleeunit
 import gleeunit/should
 import gleam/option.{None, Some}
 import glance.{
-  AddInt, And, Assert, Assignment, BigOption, BinaryOperator, BinaryOption,
-  BitString, BitStringOption, Block, Call, Case, Clause, Constant, CustomType,
-  Definition, Discarded, Expression, ExternalFunction, ExternalType, Field,
-  FieldAccess, Float, FloatOption, Fn, FnCapture, FnParameter, Function,
+  AddInt, And, Assert, Assignment, Attribute, BigOption, BinaryOperator,
+  BinaryOption, BitString, BitStringOption, Block, Call, Case, Clause, Constant,
+  CustomType, Definition, Discarded, Expression, ExternalFunction, ExternalType,
+  Field, FieldAccess, Float, FloatOption, Fn, FnCapture, FnParameter, Function,
   FunctionParameter, FunctionType, Import, Int, IntOption, Let, List,
   LittleOption, Module, MultInt, Named, NamedType, NativeOption, NegateBool,
   NegateInt, Panic, PatternAssignment, PatternBitString, PatternConcatenate,
@@ -2863,6 +2863,63 @@ pub fn guard_test() {
 
 pub fn nil_test() {
   "pub fn main() { Nil }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [Expression(Variable("Nil"))],
+      ),
+    ),
+  ])
+}
+
+pub fn attributes_test() {
+  "
+@thingbobby(erlang, \"one\", \"two\")
+@thingbobby(javascript, \"three\", \"four\")
+pub fn main() { Nil }
+"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [
+        Attribute(
+          "thingbobby",
+          [Variable("erlang"), String("one"), String("two")],
+        ),
+        Attribute(
+          "thingbobby",
+          [Variable("javascript"), String("three"), String("four")],
+        ),
+      ],
+      Function(
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [Expression(Variable("Nil"))],
+      ),
+    ),
+  ])
+}
+
+pub fn comments_test() {
+  "/// Module comment
+
+// Comment
+
+/// Doc comment
+pub fn main() { Nil }
+"
   |> glance.module()
   |> should.be_ok
   |> fn(x: Module) { x.functions }
