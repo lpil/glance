@@ -79,10 +79,6 @@ pub type Pattern {
 }
 
 pub type Expression {
-  // TODO: pipe operator
-  // PipeLine(
-  //     expressions: List(Expression>,
-  // )
   Panic
   Int(String)
   Float(String)

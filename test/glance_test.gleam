@@ -12,9 +12,9 @@ import glance.{
   Named, NamedType, NativeOption, NegateBool, NegateInt, Panic,
   PatternAssignment, PatternBitString, PatternConcatenate, PatternConstructor,
   PatternDiscard, PatternFloat, PatternInt, PatternList, PatternString,
-  PatternTuple, PatternVariable, Private, Public, RecordUpdate, SignedOption,
-  SizeOption, SizeValueOption, String, Todo, Tuple, TupleIndex, TupleType,
-  TypeAlias, UnitOption, UnqualifiedImport, UnsignedOption, Use,
+  PatternTuple, PatternVariable, Pipe, Private, Public, RecordUpdate,
+  SignedOption, SizeOption, SizeValueOption, String, Todo, Tuple, TupleIndex,
+  TupleType, TypeAlias, UnitOption, UnqualifiedImport, UnsignedOption, Use,
   Utf16CodepointOption, Utf16Option, Utf32CodepointOption, Utf32Option,
   Utf8CodepointOption, Utf8Option, Variable, VariableType, Variant,
 }
@@ -2459,6 +2459,32 @@ pub fn add_mult_block_test() {
             Expression(BinaryOperator(AddInt, Variable("x"), Variable("y"))),
           ]),
           Variable("z"),
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn pipe_test() {
+  "pub fn main() { x |> y(1) |> z(2, 3) }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(BinaryOperator(
+          Pipe,
+          BinaryOperator(
+            Pipe,
+            Variable("x"),
+            Call(Variable("y"), [Field(None, Int("1"))]),
+          ),
+          Call(Variable("z"), [Field(None, Int("2")), Field(None, Int("3"))]),
         )),
       ],
     ),
