@@ -41,16 +41,19 @@ This program print this to the console:
   
 ```gleam
 [
-  CustomType(
-    name: "Cardinal",
-    publicity: Public,
-    parameters: [],
-    variants: [
-      Variant("North", []),
-      Variant("East", []),
-      Variant("South", []),
-      Variant("West", []),
-    ],
+  Definition(
+    [],
+    CustomType(
+      name: "Cardinal",
+      publicity: Public,
+      parameters: [],
+      variants: [
+        Variant("North", []),
+        Variant("East", []),
+        Variant("South", []),
+        Variant("West", []),
+      ],
+    ),
   ),
 ]
 ```
