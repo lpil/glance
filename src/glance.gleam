@@ -813,12 +813,11 @@ fn expression_loop(
       let values = [e, ..values]
       case pop_binary_operator(tokens) {
         Ok(#(operator, tokens)) -> {
-          // TODO: I think this handle_operator may be two different functions
-          // that have been squished together. The ignore return value, the
-          // optional argument, and the internal panic are all suspicious.
-          let #(_, operators, values) =
-            handle_operator(Some(operator), operators, values)
-          expression_loop(tokens, operators, values)
+          case handle_operator(Some(operator), operators, values) {
+            #(Some(expression), _, _) -> Ok(#(expression, tokens))
+            #(None, operators, values) ->
+              expression_loop(tokens, operators, values)
+          }
         }
         _ ->
           case handle_operator(None, operators, values).0 {
@@ -836,47 +835,31 @@ fn handle_operator(
   operators: List(BinaryOperator),
   values: List(Expression),
 ) -> #(Option(Expression), List(BinaryOperator), List(Expression)) {
-  // let mut next_op = next_op;
-  // loop {
-  //     match (opstack.pop(), next_op.take()) {
-  //         (Some((op, _)), None) => do_reduce(op, estack),
+  case next, operators, values {
+    Some(operator), [], _ -> #(None, [operator, ..operators], values)
 
-  //         (Some((opl, pl)), Some((opr, pr))) => {
-  //             match pl.cmp(&pr) {
-  //                 // all ops are left associative
-  //                 Ordering::Greater | Ordering::Equal => {
-  //                     do_reduce(opl, estack);
-  //                     next_op = Some((opr, pr));
-  //                 }
-  //                 Ordering::Less => {
-  //                     opstack.push((opl, pl));
-  //                     opstack.push((opr, pr));
-  //                     break;
-  //                 }
-  //             }
-  //         }
-  //     }
-  // }
-  // None
-  case operators, values, next {
-    [], _, Some(operator) -> #(None, [operator, ..operators], values)
-
-    [operator, ..operators], _, None -> {
-      #(None, operators, reduce_expression(operator, values))
+    Some(next), [previous, ..operators], [a, b, ..rest_values] -> {
+      case precedence(previous) >= precedence(next) {
+        True -> {
+          let values = [BinaryOperator(previous, b, a), ..rest_values]
+          handle_operator(Some(next), operators, values)
+        }
+        False -> {
+          #(None, [next, previous, ..operators], values)
+        }
+      }
     }
 
-    [], [expression], None -> #(Some(expression), operators, values)
-    [], [], None -> #(None, operators, values)
-    // Expression not full reduced
-    [], _, None -> panic
-  }
-}
+    None, [operator, ..operators], [a, b, ..values] -> {
+      let values = [BinaryOperator(operator, b, a), ..values]
+      handle_operator(None, operators, values)
+    }
 
-fn reduce_expression(
-  operator: BinaryOperator,
-  values: List(Expression),
-) -> List(Expression) {
-  todo
+    None, [], [expression] -> #(Some(expression), operators, values)
+    None, [], [] -> #(None, operators, values)
+    // Expression not full reduced
+    None, [], _ -> panic
+  }
 }
 
 fn expression_unit(
