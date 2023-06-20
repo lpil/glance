@@ -16,6 +16,7 @@ import glance.{
   UnsignedOption, Use, Utf16CodepointOption, Utf16Option, Utf32CodepointOption,
   Utf32Option, Utf8CodepointOption, Utf8Option, Variable, VariableType, Variant,
 }
+import simplifile
 
 pub fn main() {
   gleeunit.main()
@@ -2912,6 +2913,44 @@ pub fn main() { Nil }
   ])
 }
 
+pub fn discard_list_rest_test() {
+  "pub fn main() { case x { [x, ..] -> Nil } }
+"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [
+          Expression(Case(
+            [Variable("x")],
+            [
+              Clause(
+                [
+                  [
+                    PatternList(
+                      [PatternVariable("x")],
+                      Some(PatternDiscard("")),
+                    ),
+                  ],
+                ],
+                None,
+                Variable("Nil"),
+              ),
+            ],
+          )),
+        ],
+      ),
+    ),
+  ])
+}
+
 pub fn comments_test() {
   "/// Module comment
 
@@ -2935,4 +2974,9 @@ pub fn main() { Nil }
       ),
     ),
   ])
+}
+
+pub fn parse_self_test() {
+  let assert Ok(src) = simplifile.read("src/glance.gleam")
+  let assert Ok(_) = glance.module(src)
 }

@@ -15,3 +15,4 @@ glexer = "~> 0.5"
 
 [dev-dependencies]
 gleeunit = "~> 0.10"
+simplifile = "~> 0.1"

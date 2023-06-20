@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.4.1 - 2023-06-20
+
+- Fixed a bug where list patterns with a discarded remainder would fail to
+  parse.
+
 ## v0.4.0 - 2023-06-20
 
 - All Gleam code can now be parsed.

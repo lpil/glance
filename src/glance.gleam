@@ -814,7 +814,8 @@ fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
     [#(t.Name(name), _), ..tokens] -> Ok(#(PatternVariable(name), tokens))
 
     [#(t.LeftSquare, _), ..tokens] -> {
-      use #(elements, rest, tokens) <- result.map(list(pattern, [], tokens))
+      let result = list(pattern, Some(PatternDiscard("")), [], tokens)
+      use #(elements, rest, tokens) <- result.map(result)
       #(PatternList(elements, rest), tokens)
     }
 
@@ -995,7 +996,8 @@ fn expression_unit(
     [#(t.Todo, _), ..tokens] -> Ok(#(Some(Todo(None)), tokens))
 
     [#(t.LeftSquare, _), ..tokens] -> {
-      use #(elements, rest, tokens) <- result.map(list(expression, [], tokens))
+      let result = list(expression, None, [], tokens)
+      use #(elements, rest, tokens) <- result.map(result)
       #(Some(List(elements, rest)), tokens)
     }
 
@@ -1352,6 +1354,7 @@ fn fn_(tokens: Tokens) -> Result(#(Option(Expression), Tokens), Error) {
 
 fn list(
   parser: fn(Tokens) -> Result(#(t, Tokens), Error),
+  discard: Option(t),
   acc: List(t),
   tokens: Tokens,
 ) -> Result(#(List(t), Option(t), Tokens), Error) {
@@ -1369,13 +1372,20 @@ fn list(
         | [#(t.Comma, _), #(t.RightSquare, _), ..tokens] ->
           Ok(#(list.reverse(acc), None, tokens))
 
+        [#(t.Comma, _), #(t.DotDot, _), #(t.RightSquare, _) as close, ..tokens] -> {
+          case discard {
+            None -> unexpected_error([close, ..tokens])
+            Some(discard) -> Ok(#(list.reverse(acc), Some(discard), tokens))
+          }
+        }
+
         [#(t.Comma, _), #(t.DotDot, _), ..tokens] -> {
           use #(rest, tokens) <- result.try(parser(tokens))
           use _, tokens <- expect(t.RightSquare, tokens)
           Ok(#(list.reverse(acc), Some(rest), tokens))
         }
 
-        [#(t.Comma, _), ..tokens] -> list(parser, acc, tokens)
+        [#(t.Comma, _), ..tokens] -> list(parser, discard, acc, tokens)
 
         [#(other, position), ..] -> Error(UnexpectedToken(other, position))
         [] -> Error(UnexpectedEndOfInput)
