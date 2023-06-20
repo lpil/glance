@@ -3,9 +3,7 @@ import gleeunit/should
 import gleam/option.{None, Some}
 import glance.{
   AddInt, And, Assert, Assignment, BigOption, BinaryOperator, BinaryOption,
-  BitString, BitStringOption, Block, Call, Case, Clause, Constant,
-  ConstantBitString, ConstantConstructor, ConstantFloat, ConstantInt,
-  ConstantList, ConstantString, ConstantTuple, ConstantVariable, CustomType,
+  BitString, BitStringOption, Block, Call, Case, Clause, Constant, CustomType,
   Discarded, Expression, ExternalFunction, ExternalType, Field, FieldAccess,
   Float, FloatOption, Fn, FnCapture, FnParameter, Function, FunctionParameter,
   FunctionType, Import, Int, IntOption, Let, List, LittleOption, Module, MultInt,
@@ -469,7 +467,7 @@ pub fn constant_int_test() {
   |> glance.module()
   |> should.be_ok
   |> fn(x: Module) { x.constants }
-  |> should.equal([Constant("x", Private, None, ConstantInt("123"))])
+  |> should.equal([Constant("x", Private, None, Int("123"))])
 }
 
 pub fn constant_float_test() {
@@ -477,7 +475,7 @@ pub fn constant_float_test() {
   |> glance.module()
   |> should.be_ok
   |> fn(x: Module) { x.constants }
-  |> should.equal([Constant("x", Private, None, ConstantFloat("1.1"))])
+  |> should.equal([Constant("x", Private, None, Float("1.1"))])
 }
 
 pub fn constant_string_test() {
@@ -485,7 +483,7 @@ pub fn constant_string_test() {
   |> glance.module()
   |> should.be_ok
   |> fn(x: Module) { x.constants }
-  |> should.equal([Constant("x", Private, None, ConstantString("123"))])
+  |> should.equal([Constant("x", Private, None, String("123"))])
 }
 
 pub fn constant_variable_test() {
@@ -493,7 +491,7 @@ pub fn constant_variable_test() {
   |> glance.module()
   |> should.be_ok
   |> fn(x: Module) { x.constants }
-  |> should.equal([Constant("x", Private, None, ConstantVariable("y"))])
+  |> should.equal([Constant("x", Private, None, Variable("y"))])
 }
 
 pub fn constant_pub_int_test() {
@@ -501,7 +499,7 @@ pub fn constant_pub_int_test() {
   |> glance.module()
   |> should.be_ok
   |> fn(x: Module) { x.constants }
-  |> should.equal([Constant("x", Public, None, ConstantInt("123"))])
+  |> should.equal([Constant("x", Public, None, Int("123"))])
 }
 
 pub fn constant_annotated_int_test() {
@@ -510,7 +508,7 @@ pub fn constant_annotated_int_test() {
   |> should.be_ok
   |> fn(x: Module) { x.constants }
   |> should.equal([
-    Constant("x", Public, Some(NamedType("Int", None, [])), ConstantInt("123")),
+    Constant("x", Public, Some(NamedType("Int", None, [])), Int("123")),
   ])
 }
 
@@ -520,12 +518,7 @@ pub fn constant_tuple_test() {
   |> should.be_ok
   |> fn(x: Module) { x.constants }
   |> should.equal([
-    Constant(
-      "x",
-      Private,
-      None,
-      ConstantTuple([ConstantInt("1"), ConstantFloat("2.0"), ConstantInt("3")]),
-    ),
+    Constant("x", Private, None, Tuple([Int("1"), Float("2.0"), Int("3")])),
   ])
 }
 
@@ -535,12 +528,7 @@ pub fn constant_tuple_trailing_comma_test() {
   |> should.be_ok
   |> fn(x: Module) { x.constants }
   |> should.equal([
-    Constant(
-      "x",
-      Private,
-      None,
-      ConstantTuple([ConstantInt("1"), ConstantFloat("2.0"), ConstantInt("3")]),
-    ),
+    Constant("x", Private, None, Tuple([Int("1"), Float("2.0"), Int("3")])),
   ])
 }
 
@@ -549,7 +537,7 @@ pub fn constant_empty_tuple_test() {
   |> glance.module()
   |> should.be_ok
   |> fn(x: Module) { x.constants }
-  |> should.equal([Constant("x", Private, None, ConstantTuple([]))])
+  |> should.equal([Constant("x", Private, None, Tuple([]))])
 }
 
 pub fn constant_list_test() {
@@ -558,12 +546,7 @@ pub fn constant_list_test() {
   |> should.be_ok
   |> fn(x: Module) { x.constants }
   |> should.equal([
-    Constant(
-      "x",
-      Private,
-      None,
-      ConstantList([ConstantInt("1"), ConstantFloat("2.0"), ConstantInt("3")]),
-    ),
+    Constant("x", Private, None, List([Int("1"), Float("2.0"), Int("3")], None)),
   ])
 }
 
@@ -573,12 +556,7 @@ pub fn constant_list_trailing_comma_test() {
   |> should.be_ok
   |> fn(x: Module) { x.constants }
   |> should.equal([
-    Constant(
-      "x",
-      Private,
-      None,
-      ConstantList([ConstantInt("1"), ConstantFloat("2.0"), ConstantInt("3")]),
-    ),
+    Constant("x", Private, None, List([Int("1"), Float("2.0"), Int("3")], None)),
   ])
 }
 
@@ -587,7 +565,7 @@ pub fn constant_empty_list_test() {
   |> glance.module()
   |> should.be_ok
   |> fn(x: Module) { x.constants }
-  |> should.equal([Constant("x", Private, None, ConstantList([]))])
+  |> should.equal([Constant("x", Private, None, List([], None))])
 }
 
 pub fn constant_enum_constructor_test() {
@@ -595,9 +573,7 @@ pub fn constant_enum_constructor_test() {
   |> glance.module()
   |> should.be_ok
   |> fn(x: Module) { x.constants }
-  |> should.equal([
-    Constant("x", Private, None, ConstantConstructor("Nil", None, [])),
-  ])
+  |> should.equal([Constant("x", Private, None, Variable("Nil"))])
 }
 
 pub fn constant_qualified_enum_constructor_test() {
@@ -606,7 +582,7 @@ pub fn constant_qualified_enum_constructor_test() {
   |> should.be_ok
   |> fn(x: Module) { x.constants }
   |> should.equal([
-    Constant("x", Private, None, ConstantConstructor("Nil", Some("wibble"), [])),
+    Constant("x", Private, None, FieldAccess(Variable("wibble"), "Nil")),
   ])
 }
 
@@ -620,11 +596,7 @@ pub fn constant_constructor_test() {
       "x",
       Private,
       None,
-      ConstantConstructor(
-        "Box",
-        None,
-        [Field(None, ConstantInt("1")), Field(None, ConstantFloat("2.0"))],
-      ),
+      Call(Variable("Box"), [Field(None, Int("1")), Field(None, Float("2.0"))]),
     ),
   ])
 }
@@ -639,13 +611,9 @@ pub fn constant_labelled_constructor_test() {
       "x",
       Private,
       None,
-      ConstantConstructor(
-        "Box",
-        None,
-        [
-          Field(None, ConstantInt("1")),
-          Field(Some("wobber"), ConstantFloat("2.0")),
-        ],
+      Call(
+        Variable("Box"),
+        [Field(None, Int("1")), Field(Some("wobber"), Float("2.0"))],
       ),
     ),
   ])
@@ -661,10 +629,7 @@ pub fn constant_bit_string_test() {
       "x",
       Private,
       None,
-      ConstantBitString([
-        #(ConstantInt("1"), [SizeOption(2)]),
-        #(ConstantFloat("2.0"), []),
-      ]),
+      BitString([#(Int("1"), [SizeOption(2)]), #(Float("2.0"), [])]),
     ),
   ])
 }
@@ -2186,7 +2151,7 @@ pub fn case_test() {
       body: [
         Expression(Case(
           [Variable("x")],
-          [Clause([[PatternVariable("y")]], Int("1"))],
+          [Clause([[PatternVariable("y")]], None, Int("1"))],
         )),
       ],
     ),
@@ -2216,6 +2181,7 @@ pub fn case_multi_test() {
                   PatternVariable("c"),
                 ],
               ],
+              None,
               Int("1"),
             ),
           ],
@@ -2245,6 +2211,7 @@ pub fn case_alternatives_test() {
                 [PatternVariable("a"), PatternVariable("b")],
                 [PatternVariable("c"), PatternVariable("d")],
               ],
+              None,
               Int("1"),
             ),
           ],
@@ -2274,9 +2241,14 @@ pub fn case_clauses_test() {
                 [PatternVariable("a"), PatternVariable("b")],
                 [PatternVariable("c"), PatternVariable("d")],
               ],
+              None,
               Int("1"),
             ),
-            Clause([[PatternVariable("e"), PatternVariable("f")]], Int("123")),
+            Clause(
+              [[PatternVariable("e"), PatternVariable("f")]],
+              None,
+              Int("123"),
+            ),
           ],
         )),
       ],
@@ -2487,6 +2459,43 @@ pub fn pipe_test() {
           Call(Variable("z"), [Field(None, Int("2")), Field(None, Int("3"))]),
         )),
       ],
+    ),
+  ])
+}
+
+pub fn guard_test() {
+  "pub fn main() { case x { y if z -> 1 } }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [
+        Expression(Case(
+          [Variable("x")],
+          [Clause([[PatternVariable("y")]], Some(Variable("z")), Int("1"))],
+        )),
+      ],
+    ),
+  ])
+}
+
+pub fn nil_test() {
+  "pub fn main() { Nil }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Function(
+      name: "main",
+      publicity: Public,
+      parameters: [],
+      return: None,
+      body: [Expression(Variable("Nil"))],
     ),
   ])
 }

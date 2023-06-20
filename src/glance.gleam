@@ -120,8 +120,7 @@ pub type Expression {
 pub type Clause {
   Clause(
     patterns: List(List(Pattern)),
-    // TODO: guard
-    // guard: Option(GuardExpression),
+    guard: Option(Expression),
     body: Expression,
   )
 }
@@ -230,31 +229,12 @@ pub type Import {
   )
 }
 
-pub type ConstantExpression {
-  ConstantInt(String)
-  ConstantFloat(String)
-  ConstantString(String)
-  ConstantVariable(String)
-  ConstantTuple(List(ConstantExpression))
-  ConstantList(List(ConstantExpression))
-  ConstantConstructor(
-    name: String,
-    module: Option(String),
-    parameters: List(Field(ConstantExpression)),
-  )
-  ConstantBitString(
-    segments: List(
-      #(ConstantExpression, List(BitStringSegmentOption(ConstantExpression))),
-    ),
-  )
-}
-
 pub type Constant {
   Constant(
     name: String,
     publicity: Publicity,
     annotation: Option(Type),
-    value: ConstantExpression,
+    value: Expression,
   )
 }
 
@@ -877,6 +857,8 @@ fn expression_unit(
       ..tokens
     ] -> record_update(None, constructor, tokens)
 
+    [#(t.UpperName(name), _), ..tokens] -> Ok(#(Some(Variable(name)), tokens))
+
     [#(t.Panic, _), ..tokens] -> Ok(#(Some(Panic), tokens))
     [#(t.Int(value), _), ..tokens] -> Ok(#(Some(Int(value)), tokens))
     [#(t.Float(value), _), ..tokens] -> Ok(#(Some(Float(value)), tokens))
@@ -1202,9 +1184,22 @@ fn case_clause(tokens: Tokens) -> Result(#(Clause, Tokens), Error) {
   let multipatterns = delimited([], _, pattern, t.Comma)
   let result = delimited([], tokens, multipatterns, t.VBar)
   use #(patterns, tokens) <- result.try(result)
+  use #(guard, tokens) <- result.try(optional_clause_guard(tokens))
   use _, tokens <- expect(t.RightArrow, tokens)
   use #(expression, tokens) <- result.map(expression(tokens))
-  #(Clause(patterns, expression), tokens)
+  #(Clause(patterns, guard, expression), tokens)
+}
+
+fn optional_clause_guard(
+  tokens: Tokens,
+) -> Result(#(Option(Expression), Tokens), Error) {
+  case tokens {
+    [#(t.If, _), ..tokens] -> {
+      use #(expression, tokens) <- result.try(expression(tokens))
+      Ok(#(Some(expression), tokens))
+    }
+    _ -> Ok(#(None, tokens))
+  }
 }
 
 fn delimited(
@@ -1368,10 +1363,10 @@ fn const_definition(
   // Optional type annotation
   use #(annotation, tokens) <- result.try(optional_type_annotation(tokens))
 
-  // = ConstantExpression
+  // = Expression
   use _, tokens <- expect(t.Equal, tokens)
 
-  use #(expression, tokens) <- result.try(constant_expression(tokens))
+  use #(expression, tokens) <- result.try(expression(tokens))
 
   module
   |> push_constant(Constant(name, publicity, annotation, expression))
@@ -1387,53 +1382,6 @@ fn optional_type_annotation(
       #(Some(annotation), tokens)
     }
     _ -> Ok(#(None, tokens))
-  }
-}
-
-fn constant_expression(
-  tokens: Tokens,
-) -> Result(#(ConstantExpression, Tokens), Error) {
-  case tokens {
-    [] -> Error(UnexpectedEndOfInput)
-    [#(t.Name(module), _), #(t.Dot, _), #(t.UpperName(name), _), ..tokens] ->
-      constant_constructor(name, Some(module), tokens)
-    [#(t.UpperName(name), _), ..tokens] ->
-      constant_constructor(name, None, tokens)
-    [#(t.Int(i), _), ..tokens] -> Ok(#(ConstantInt(i), tokens))
-    [#(t.Name(n), _), ..tokens] -> Ok(#(ConstantVariable(n), tokens))
-    [#(t.Float(i), _), ..tokens] -> Ok(#(ConstantFloat(i), tokens))
-    [#(t.String(i), _), ..tokens] -> Ok(#(ConstantString(i), tokens))
-    [#(t.LeftSquare, _), ..tokens] -> constant_list(tokens)
-    [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> constant_tuple(tokens)
-    [#(t.LessLess, _), ..tokens] -> constant_bit_string(tokens)
-    [#(token, position), ..] -> Error(UnexpectedToken(token, position))
-  }
-}
-
-fn constant_bit_string(
-  tokens: Tokens,
-) -> Result(#(ConstantExpression, Tokens), Error) {
-  let parser = bit_string_segment(constant_expression, _)
-  let result = comma_delimited([], tokens, parser, t.GreaterGreater)
-  use #(segments, tokens) <- result.try(result)
-  Ok(#(ConstantBitString(segments), tokens))
-}
-
-fn constant_constructor(
-  name: String,
-  module: Option(String),
-  tokens: Tokens,
-) -> Result(#(ConstantExpression, Tokens), Error) {
-  case tokens {
-    [#(t.LeftParen, _), ..tokens] -> {
-      let parser = field(_, of: constant_expression)
-      let result = comma_delimited([], tokens, parser, t.RightParen)
-      use #(arguments, tokens) <- result.try(result)
-      Ok(#(ConstantConstructor(name, module, arguments), tokens))
-    }
-    _ -> {
-      Ok(#(ConstantConstructor(name, module, []), tokens))
-    }
   }
 }
 
@@ -1465,22 +1413,6 @@ fn comma_delimited(
       }
     }
   }
-}
-
-fn constant_tuple(
-  tokens: Tokens,
-) -> Result(#(ConstantExpression, Tokens), Error) {
-  let result =
-    comma_delimited([], tokens, constant_expression, until: t.RightParen)
-  use #(elements, tokens) <- result.try(result)
-  Ok(#(ConstantTuple(elements), tokens))
-}
-
-fn constant_list(tokens: Tokens) -> Result(#(ConstantExpression, Tokens), Error) {
-  let result =
-    comma_delimited([], tokens, constant_expression, until: t.RightSquare)
-  use #(elements, tokens) <- result.try(result)
-  Ok(#(ConstantList(elements), tokens))
 }
 
 fn type_definition(
