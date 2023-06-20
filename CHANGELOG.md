@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.4.0 - 2023-06-20
 
 - All Gleam code can now be parsed.
 
