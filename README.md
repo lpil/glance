@@ -5,6 +5,9 @@
 
 A Gleam source code parser, in Gleam!
 
+Glance attempts to be permissive with regards to what it will parse and so it is
+able to parse some code that the Gleam compiler will reject as invalid.
+
 ## Usage
 
 Add the package to your Gleam project:
