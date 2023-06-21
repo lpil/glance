@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.0 - 2023-06-21
+
+- Functions now include their location in the source code.
+
 ## v0.4.1 - 2023-06-20
 
 - Fixed a bug where list patterns with a discarded remainder would fail to
