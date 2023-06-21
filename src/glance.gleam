@@ -46,7 +46,13 @@ pub type Function {
     parameters: List(FunctionParameter),
     return: Option(Type),
     body: List(Statement),
+    location: Span,
   )
+}
+
+pub type Span {
+  /// A span within a file, indicated by byte offsets.
+  Span(start: Int, end: Int)
 }
 
 pub type Statement {
@@ -525,14 +531,17 @@ fn slurp(
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
-    [#(t.Pub, _), #(t.Fn, _), #(t.Name(name), _), ..tokens] -> {
-      let result = function_definition(module, attributes, Public, name, tokens)
+    [#(t.Pub, start), #(t.Fn, _), #(t.Name(name), _), ..tokens] -> {
+      let Position(start) = start
+      let result =
+        function_definition(module, attributes, Public, name, start, tokens)
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
-    [#(t.Fn, _), #(t.Name(name), _), ..tokens] -> {
+    [#(t.Fn, start), #(t.Name(name), _), ..tokens] -> {
+      let Position(start) = start
       let result =
-        function_definition(module, attributes, Private, name, tokens)
+        function_definition(module, attributes, Private, name, start, tokens)
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
@@ -669,6 +678,7 @@ fn function_definition(
   attributes: List(Attribute),
   publicity: Publicity,
   name: String,
+  start: Int,
   tokens: Tokens,
 ) -> Result(#(Module, Tokens), Error) {
   // Parameters
@@ -681,9 +691,11 @@ fn function_definition(
 
   // The function body
   use _, tokens <- expect(t.LeftBrace, tokens)
-  use #(statements, tokens) <- result.try(statements([], tokens))
+  use #(statements, end, tokens) <- result.try(statements([], tokens))
 
-  let function = Function(name, publicity, parameters, return_type, statements)
+  let location = Span(start, end)
+  let function =
+    Function(name, publicity, parameters, return_type, statements, location)
   let module = push_function(module, attributes, function)
   Ok(#(module, tokens))
 }
@@ -703,9 +715,10 @@ fn optional_return_annotation(
 fn statements(
   acc: List(Statement),
   tokens: Tokens,
-) -> Result(#(List(Statement), Tokens), Error) {
+) -> Result(#(List(Statement), Int, Tokens), Error) {
   case tokens {
-    [#(t.RightBrace, _), ..tokens] -> Ok(#(list.reverse(acc), tokens))
+    [#(t.RightBrace, Position(end)), ..tokens] ->
+      Ok(#(list.reverse(acc), end + 1, tokens))
     _ -> {
       use #(statement, tokens) <- result.try(statement(tokens))
       statements([statement, ..acc], tokens)
@@ -1018,7 +1031,7 @@ fn expression_unit(
     }
 
     [#(t.LeftBrace, _), ..tokens] -> {
-      use #(statements, tokens) <- result.map(statements([], tokens))
+      use #(statements, _, tokens) <- result.map(statements([], tokens))
       #(Some(Block(statements)), tokens)
     }
 
@@ -1347,7 +1360,7 @@ fn fn_(tokens: Tokens) -> Result(#(Option(Expression), Tokens), Error) {
 
   // The function body
   use _, tokens <- expect(t.LeftBrace, tokens)
-  use #(body, tokens) <- result.try(statements([], tokens))
+  use #(body, _, tokens) <- result.try(statements([], tokens))
 
   Ok(#(Some(Fn(parameters, return, body)), tokens))
 }
