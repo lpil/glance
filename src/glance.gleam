@@ -9,7 +9,7 @@ type Tokens =
   List(#(Token, Position))
 
 pub type Definition(definition) {
-  Definition(attributes: List(Attribute), definition)
+  Definition(attributes: List(Attribute), definition: definition)
 }
 
 pub type Attribute {

@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.1 - 2023-06-21
+
+- The `Definition` type gains the `definition` label.
+
 ## v0.5.0 - 2023-06-21
 
 - Functions now include their location in the source code.
