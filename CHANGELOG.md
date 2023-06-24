@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.5.2 - 2023-06-24
 
 - Fixed a bug where `||` would fail to parse.
 
