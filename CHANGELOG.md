@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fixed a bug where `||` would fail to parse.
+
 ## v0.5.1 - 2023-06-21
 
 - The `Definition` type gains the `definition` label.

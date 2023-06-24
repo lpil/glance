@@ -885,7 +885,7 @@ fn binary_operator(token: Token) -> Result(BinaryOperator, Nil) {
     t.MinusDot -> Ok(SubFloat)
     t.NotEqual -> Ok(NotEq)
     t.Percent -> Ok(RemainderInt)
-    t.VBar -> Ok(Or)
+    t.VBarVBar -> Ok(Or)
     t.Pipe -> Ok(Pipe)
     t.Plus -> Ok(AddInt)
     t.PlusDot -> Ok(AddFloat)
@@ -906,6 +906,8 @@ fn pop_binary_operator(tokens: Tokens) -> Result(#(BinaryOperator, Tokens), Nil)
     [] -> Error(Nil)
   }
 }
+
+import gleam/io
 
 fn expression_loop(
   tokens: List(#(Token, Position)),

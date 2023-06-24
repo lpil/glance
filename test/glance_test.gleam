@@ -8,7 +8,7 @@ import glance.{
   Field, FieldAccess, Float, FloatOption, Fn, FnCapture, FnParameter, Function,
   FunctionParameter, FunctionType, Import, Int, IntOption, Let, List,
   LittleOption, Module, MultInt, Named, NamedType, NativeOption, NegateBool,
-  NegateInt, Panic, PatternAssignment, PatternBitString, PatternConcatenate,
+  NegateInt, Or, Panic, PatternAssignment, PatternBitString, PatternConcatenate,
   PatternConstructor, PatternDiscard, PatternFloat, PatternInt, PatternList,
   PatternString, PatternTuple, PatternVariable, Pipe, Private, Public,
   RecordUpdate, SignedOption, SizeOption, SizeValueOption, Span, String, Todo,
@@ -3065,4 +3065,26 @@ pub fn main() { Nil }
 pub fn parse_self_test() {
   let assert Ok(src) = simplifile.read("src/glance.gleam")
   let assert Ok(_) = glance.module(src)
+}
+
+pub fn or_test() {
+  "pub fn main() {
+  x || y
+}"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(0, 26),
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [Expression(BinaryOperator(Or, Variable("x"), Variable("y")))],
+      ),
+    ),
+  ])
 }
