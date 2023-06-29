@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.0 - 2023-06-29
+
+- Added support for the `todo as "..."` and `panic as "..."` syntaxes.
+
 ## v0.5.2 - 2023-06-24
 
 - Fixed a bug where `||` would fail to parse.
