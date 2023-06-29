@@ -22,6 +22,11 @@ pub fn main() {
   gleeunit.main()
 }
 
+pub fn parse_self_test() {
+  let assert Ok(src) = simplifile.read("src/glance.gleam")
+  let assert Ok(_) = glance.module(src)
+}
+
 pub fn empty_test() {
   ""
   |> glance.module()
@@ -1023,7 +1028,7 @@ pub fn expression_panic_test() {
         publicity: Public,
         parameters: [],
         return: None,
-        body: [Expression(Panic), Expression(Panic)],
+        body: [Expression(Panic(None)), Expression(Panic(None))],
       ),
     ),
   ])
@@ -3062,11 +3067,6 @@ pub fn main() { Nil }
   ])
 }
 
-pub fn parse_self_test() {
-  let assert Ok(src) = simplifile.read("src/glance.gleam")
-  let assert Ok(_) = glance.module(src)
-}
-
 pub fn or_test() {
   "pub fn main() {
   x || y
@@ -3084,6 +3084,50 @@ pub fn or_test() {
         parameters: [],
         return: None,
         body: [Expression(BinaryOperator(Or, Variable("x"), Variable("y")))],
+      ),
+    ),
+  ])
+}
+
+pub fn todo_as_test() {
+  "pub fn main() {
+  todo as \"oh no\"
+}"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(0, 35),
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [Expression(Todo(Some("oh no")))],
+      ),
+    ),
+  ])
+}
+
+pub fn panic_as_test() {
+  "pub fn main() {
+  panic as \"oh no\"
+}"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(0, 36),
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [Expression(Panic(Some("oh no")))],
       ),
     ),
   ])
