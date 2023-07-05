@@ -1714,6 +1714,7 @@ pub fn function_capture_pointless_test() {
         return: None,
         body: [
           Expression(FnCapture(
+            label: None,
             arguments_before: [],
             arguments_after: [],
             function: Variable("wibble"),
@@ -1740,6 +1741,7 @@ pub fn function_capture_before_test() {
         return: None,
         body: [
           Expression(FnCapture(
+            label: None,
             arguments_before: [
               Field(None, Int("1")),
               Field(None, Int("2")),
@@ -1770,6 +1772,7 @@ pub fn function_capture_after_test() {
         return: None,
         body: [
           Expression(FnCapture(
+            label: None,
             arguments_before: [],
             arguments_after: [
               Field(None, Int("1")),
@@ -1800,6 +1803,7 @@ pub fn function_capture_after_trailing_comma_test() {
         return: None,
         body: [
           Expression(FnCapture(
+            label: None,
             arguments_before: [],
             arguments_after: [
               Field(None, Int("1")),
@@ -1830,6 +1834,7 @@ pub fn function_capture_both_test() {
         return: None,
         body: [
           Expression(FnCapture(
+            label: None,
             arguments_before: [Field(None, Int("1")), Field(None, Int("2"))],
             arguments_after: [Field(None, Int("3"))],
             function: Variable("wibble"),
@@ -1857,6 +1862,7 @@ pub fn function_capture_immediate_call_test() {
         body: [
           Expression(Call(
             function: FnCapture(
+              label: None,
               arguments_before: [],
               arguments_after: [],
               function: Variable("wibble"),
@@ -3128,6 +3134,64 @@ pub fn panic_as_test() {
         parameters: [],
         return: None,
         body: [Expression(Panic(Some("oh no")))],
+      ),
+    ),
+  ])
+}
+
+pub fn label_capture_test() {
+  "pub fn main() {
+  wibble(x: _)
+}"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(0, 32),
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [
+          Expression(FnCapture(
+            label: Some("x"),
+            function: Variable("wibble"),
+            arguments_before: [],
+            arguments_after: [],
+          )),
+        ],
+      ),
+    ),
+  ])
+}
+
+pub fn label_capture_trailing_comma_test() {
+  "pub fn main() {
+  wibble(x: _, )
+}"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(0, 34),
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [
+          Expression(FnCapture(
+            label: Some("x"),
+            function: Variable("wibble"),
+            arguments_before: [],
+            arguments_after: [],
+          )),
+        ],
       ),
     ),
   ])

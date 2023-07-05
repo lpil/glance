@@ -119,6 +119,7 @@ pub type Expression {
   Call(function: Expression, arguments: List(Field(Expression)))
   TupleIndex(tuple: Expression, index: Int)
   FnCapture(
+    label: Option(String),
     function: Expression,
     arguments_before: List(Field(Expression)),
     arguments_after: List(Field(Expression)),
@@ -1191,15 +1192,46 @@ fn call(
       after_expression(call, tokens)
     }
 
+    [
+      #(t.Name(label), _),
+      #(t.Colon, _),
+      #(t.DiscardName(""), _),
+      #(t.Comma, _),
+      #(t.RightParen, _),
+      ..tokens
+    ]
+    | [
+      #(t.Name(label), _),
+      #(t.Colon, _),
+      #(t.DiscardName(""), _),
+      #(t.RightParen, _),
+      ..tokens
+    ] -> {
+      let capture =
+        FnCapture(Some(label), function, list.reverse(arguments), [])
+      after_expression(capture, tokens)
+    }
+
+    [
+      #(t.Name(label), _),
+      #(t.Colon, _),
+      #(t.DiscardName(""), _),
+      #(t.Comma, _),
+      ..tokens
+    ]
+    | [#(t.Name(label), _), #(t.Colon, _), #(t.DiscardName(""), _), ..tokens] -> {
+      fn_capture(Some(label), function, list.reverse(arguments), [], tokens)
+    }
+
     [#(t.DiscardName(""), _), #(t.Comma, _), #(t.RightParen, _), ..tokens]
     | [#(t.DiscardName(""), _), #(t.RightParen, _), ..tokens] -> {
-      let capture = FnCapture(function, list.reverse(arguments), [])
+      let capture = FnCapture(None, function, list.reverse(arguments), [])
       after_expression(capture, tokens)
     }
 
     [#(t.DiscardName(""), _), #(t.Comma, _), ..tokens]
     | [#(t.DiscardName(""), _), ..tokens] -> {
-      fn_capture(function, list.reverse(arguments), [], tokens)
+      fn_capture(None, function, list.reverse(arguments), [], tokens)
     }
 
     _ -> {
@@ -1222,6 +1254,7 @@ fn call(
 }
 
 fn fn_capture(
+  label: Option(String),
   function: Expression,
   before: List(Field(Expression)),
   after: List(Field(Expression)),
@@ -1231,7 +1264,7 @@ fn fn_capture(
     [] -> Error(UnexpectedEndOfInput)
 
     [#(t.RightParen, _), ..tokens] -> {
-      let capture = FnCapture(function, before, list.reverse(after))
+      let capture = FnCapture(label, function, before, list.reverse(after))
       after_expression(capture, tokens)
     }
 
@@ -1240,10 +1273,10 @@ fn fn_capture(
       let after = [argument, ..after]
       case tokens {
         [#(t.Comma, _), ..tokens] -> {
-          fn_capture(function, before, after, tokens)
+          fn_capture(label, function, before, after, tokens)
         }
         [#(t.RightParen, _), ..tokens] -> {
-          let call = FnCapture(function, before, list.reverse(after))
+          let call = FnCapture(label, function, before, list.reverse(after))
           after_expression(call, tokens)
         }
         [#(other, position), ..] -> {
