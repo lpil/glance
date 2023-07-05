@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.6.1 - 2023-07-05
+
+- Added support for parsing function captures that use a label with the `_`
+  argument.
+
 ## v0.6.0 - 2023-06-29
 
 - Added support for the `todo as "..."` and `panic as "..."` syntaxes.
