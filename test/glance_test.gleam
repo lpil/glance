@@ -3196,3 +3196,34 @@ pub fn crash_test() {
     ),
   ])
 }
+
+pub fn blah_test() {
+  "
+pub fn main() {
+  let _money: Int = 1
+}
+"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(1, 39),
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [
+          Assignment(
+            Let,
+            PatternDiscard("money"),
+            Some(NamedType("Int", None, [])),
+            Int("1"),
+          ),
+        ],
+      ),
+    ),
+  ])
+}

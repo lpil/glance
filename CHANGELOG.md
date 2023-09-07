@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.6.2 - 2023-09-07
+
+- Fixed a bug where assignment type annotations would fail to parse.
+
 ## v0.6.1 - 2023-07-05
 
 - Added support for parsing function captures that use a label with the `_`
