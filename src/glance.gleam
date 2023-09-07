@@ -751,8 +751,8 @@ fn assignment(
   tokens: Tokens,
 ) -> Result(#(Statement, Tokens), Error) {
   use #(pattern, tokens) <- result.try(pattern(tokens))
-  use _, tokens <- expect(t.Equal, tokens)
   use #(annotation, tokens) <- result.try(optional_type_annotation(tokens))
+  use _, tokens <- expect(t.Equal, tokens)
   use #(expression, tokens) <- result.try(expression(tokens))
   let statement = Assignment(kind, pattern, annotation, expression)
   Ok(#(statement, tokens))
