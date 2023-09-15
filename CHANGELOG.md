@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.7.0 - 2023-09-15
+
+- Added support for the `pub type TypeName` syntax.
+- Added support for the `@external(target, "module", "function")` syntax.
+
 ## v0.6.2 - 2023-09-07
 
 - Fixed a bug where assignment type annotations would fail to parse.

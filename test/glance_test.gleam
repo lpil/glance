@@ -3197,7 +3197,7 @@ pub fn crash_test() {
   ])
 }
 
-pub fn blah_test() {
+pub fn let_annotation_test() {
   "
 pub fn main() {
   let _money: Int = 1
@@ -3223,6 +3223,64 @@ pub fn main() {
             Int("1"),
           ),
         ],
+      ),
+    ),
+  ])
+}
+
+pub fn external_attribute_test() {
+  "
+@external(erlang, \"gb_trees\", \"empty\")
+@external(javascript, \"./gb_trees.js\", \"empty\")
+pub fn new_gb_tree() -> GbTree(k, v)
+"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [
+        Attribute(
+          "external",
+          [Variable("erlang"), String("gb_trees"), String("empty")],
+        ),
+        Attribute(
+          "external",
+          [Variable("javascript"), String("./gb_trees.js"), String("empty")],
+        ),
+      ],
+      Function(
+        location: Span(88, 109),
+        name: "new_gb_tree",
+        publicity: Public,
+        parameters: [],
+        return: Some(NamedType(
+          "GbTree",
+          None,
+          [VariableType("k"), VariableType("v")],
+        )),
+        body: [],
+      ),
+    ),
+  ])
+}
+
+pub fn constuctorless_type_test() {
+  "
+pub type X
+"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.custom_types }
+  |> should.equal([
+    Definition(
+      [],
+      CustomType(
+        opaque_: False,
+        publicity: Public,
+        name: "X",
+        parameters: [],
+        variants: [],
       ),
     ),
   ])

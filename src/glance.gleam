@@ -474,7 +474,12 @@ fn until(
 }
 
 fn attribute(tokens: Tokens) -> Result(#(Attribute, Tokens), Error) {
-  use name, tokens <- expect_name(tokens)
+  use #(name, tokens) <- result.try(case tokens {
+    [#(t.Name(name), _), ..tokens] -> Ok(#(name, tokens))
+    [#(t.External, _), ..tokens] -> Ok(#("external", tokens))
+    [#(other, position), ..] -> Error(UnexpectedToken(other, position))
+    [] -> Error(UnexpectedEndOfInput)
+  })
   use _, tokens <- expect(t.LeftParen, tokens)
   let result = comma_delimited([], tokens, expression, t.RightParen)
   use #(parameters, tokens) <- result.try(result)
@@ -683,33 +688,37 @@ fn function_definition(
   tokens: Tokens,
 ) -> Result(#(Module, Tokens), Error) {
   // Parameters
-  use _, tokens <- expect(t.LeftParen, tokens)
+  use Position(end), tokens <- expect(t.LeftParen, tokens)
   let result = comma_delimited([], tokens, function_parameter, t.RightParen)
   use #(parameters, tokens) <- result.try(result)
 
   // Return type
-  use #(return_type, tokens) <- result.try(optional_return_annotation(tokens))
+  let result = optional_return_annotation(end, tokens)
+  use #(return_type, end, tokens) <- result.try(result)
 
   // The function body
-  use _, tokens <- expect(t.LeftBrace, tokens)
-  use #(statements, end, tokens) <- result.try(statements([], tokens))
+  use #(body, end, tokens) <- result.try(case tokens {
+    [#(t.LeftBrace, _), ..tokens] -> statements([], tokens)
+    _ -> Ok(#([], end, tokens))
+  })
 
   let location = Span(start, end)
   let function =
-    Function(name, publicity, parameters, return_type, statements, location)
+    Function(name, publicity, parameters, return_type, body, location)
   let module = push_function(module, attributes, function)
   Ok(#(module, tokens))
 }
 
 fn optional_return_annotation(
+  end: Int,
   tokens: Tokens,
-) -> Result(#(Option(Type), Tokens), Error) {
+) -> Result(#(Option(Type), Int, Tokens), Error) {
   case tokens {
-    [#(t.RightArrow, _), ..tokens] -> {
+    [#(t.RightArrow, Position(end)), ..tokens] -> {
       use #(return_type, tokens) <- result.try(type_(tokens))
-      Ok(#(Some(return_type), tokens))
+      Ok(#(Some(return_type), end, tokens))
     }
-    _ -> Ok(#(None, tokens))
+    _ -> Ok(#(None, end, tokens))
   }
 }
 
@@ -1396,7 +1405,7 @@ fn fn_(tokens: Tokens) -> Result(#(Option(Expression), Tokens), Error) {
   use #(parameters, tokens) <- result.try(result)
 
   // Return type
-  use #(return, tokens) <- result.try(optional_return_annotation(tokens))
+  use #(return, _, tokens) <- result.try(optional_return_annotation(0, tokens))
 
   // The function body
   use _, tokens <- expect(t.LeftBrace, tokens)
@@ -1609,13 +1618,17 @@ fn type_definition(
   use #(parameters, tokens) <- result.try(optional_type_parameters(tokens))
 
   case tokens {
-    [] -> Error(UnexpectedEndOfInput)
     [#(t.Equal, _), ..tokens] -> {
       type_alias(module, attributes, name, parameters, publicity, tokens)
     }
     [#(t.LeftBrace, _), ..tokens] -> {
       module
       |> custom_type(attributes, name, parameters, publicity, opaque_, tokens)
+    }
+    _ -> {
+      let ct = CustomType(name, publicity, opaque_, parameters, [])
+      let module = push_custom_type(module, attributes, ct)
+      Ok(#(module, tokens))
     }
   }
 }
