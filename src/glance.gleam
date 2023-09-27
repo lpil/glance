@@ -749,7 +749,11 @@ fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
 }
 
 fn use_(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
-  use #(patterns, tokens) <- result.try(delimited([], tokens, pattern, t.Comma))
+  use #(patterns, tokens) <- result.try(case tokens {
+    [#(t.LeftArrow, _), ..] -> Ok(#([], tokens))
+    _ -> delimited([], tokens, pattern, t.Comma)
+  })
+
   use _, tokens <- expect(t.LeftArrow, tokens)
   use #(function, tokens) <- result.try(expression(tokens))
   Ok(#(Use(patterns, function), tokens))

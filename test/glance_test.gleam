@@ -2703,6 +2703,30 @@ pub fn use_test() {
   ])
 }
 
+pub fn use_none_test() {
+  "
+pub fn main() {
+  use <- x
+}
+"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(1, 29),
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [Use([], Variable("x"))],
+      ),
+    ),
+  ])
+}
+
 pub fn use_multiple_test() {
   "pub fn main() { use x, y, z <- f }"
   |> glance.module()
