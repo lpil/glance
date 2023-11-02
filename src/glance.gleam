@@ -240,7 +240,8 @@ pub type Import {
   Import(
     module: String,
     alias: Option(String),
-    unqualified: List(UnqualifiedImport),
+    unqualified_types: List(UnqualifiedImport),
+    unqualified_values: List(UnqualifiedImport),
   )
 }
 
@@ -572,9 +573,9 @@ fn import_statement(
   tokens: Tokens,
 ) -> Result(#(Module, Tokens), Error) {
   use #(module_name, tokens) <- result.try(module_name("", tokens))
-  use #(unqualified, tokens) <- result.try(optional_unqualified_imports(tokens))
+  use #(ts, vs, tokens) <- result.try(optional_unqualified_imports(tokens))
   let #(alias, tokens) = optional_module_alias(tokens)
-  let import_ = Import(module_name, alias, unqualified)
+  let import_ = Import(module_name, alias, ts, vs)
   let definition = Definition(list.reverse(attributes), import_)
   let module = Module(..module, imports: [definition, ..module.imports])
   Ok(#(module, tokens))
@@ -606,24 +607,26 @@ fn optional_module_alias(tokens: Tokens) -> #(Option(String), Tokens) {
 
 fn optional_unqualified_imports(
   tokens: Tokens,
-) -> Result(#(List(UnqualifiedImport), Tokens), Error) {
+) -> Result(#(List(UnqualifiedImport), List(UnqualifiedImport), Tokens), Error) {
   case tokens {
     [#(t.Dot, _), #(t.LeftBrace, _), ..tokens] ->
-      unqualified_imports([], tokens)
-    _ -> Ok(#([], tokens))
+      unqualified_imports([], [], tokens)
+    _ -> Ok(#([], [], tokens))
   }
 }
 
 fn unqualified_imports(
-  items: List(UnqualifiedImport),
+  types: List(UnqualifiedImport),
+  values: List(UnqualifiedImport),
   tokens: Tokens,
-) -> Result(#(List(UnqualifiedImport), Tokens), Error) {
+) -> Result(#(List(UnqualifiedImport), List(UnqualifiedImport), Tokens), Error) {
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
 
-    [#(t.RightBrace, _), ..tokens] -> Ok(#(list.reverse(items), tokens))
+    [#(t.RightBrace, _), ..tokens] ->
+      Ok(#(list.reverse(types), list.reverse(values), tokens))
 
-    // Aliased non-final item
+    // Aliased non-final value
     [
       #(t.UpperName(name), _),
       #(t.As, _),
@@ -639,10 +642,10 @@ fn unqualified_imports(
       ..tokens
     ] -> {
       let import_ = UnqualifiedImport(name, Some(alias))
-      unqualified_imports([import_, ..items], tokens)
+      unqualified_imports(types, [import_, ..values], tokens)
     }
 
-    // Aliased final item
+    // Aliased final value
     [
       #(t.UpperName(name), _),
       #(t.As, _),
@@ -658,23 +661,60 @@ fn unqualified_imports(
       ..tokens
     ] -> {
       let import_ = UnqualifiedImport(name, Some(alias))
-      Ok(#(list.reverse([import_, ..items]), tokens))
+      Ok(#(list.reverse(types), list.reverse([import_, ..values]), tokens))
     }
 
-    // Unaliased non-final item
+    // Unaliased non-final value
     [#(t.UpperName(name), _), #(t.Comma, _), ..tokens]
     | [#(t.Name(name), _), #(t.Comma, _), ..tokens] -> {
       let import_ = UnqualifiedImport(name, None)
-      unqualified_imports([import_, ..items], tokens)
+      unqualified_imports(types, [import_, ..values], tokens)
     }
 
-    // Unaliased final item
+    // Unaliased final value
     [#(t.UpperName(name), _), #(t.RightBrace, _), ..tokens]
     | [#(t.Name(name), _), #(t.RightBrace, _), ..tokens] -> {
       let import_ = UnqualifiedImport(name, None)
-      Ok(#(list.reverse([import_, ..items]), tokens))
+      Ok(#(list.reverse(types), list.reverse([import_, ..values]), tokens))
     }
 
+    // Aliased non-final type
+    [
+      #(t.Type, _),
+      #(t.UpperName(name), _),
+      #(t.As, _),
+      #(t.UpperName(alias), _),
+      #(t.Comma, _),
+      ..tokens
+    ] -> {
+      let import_ = UnqualifiedImport(name, Some(alias))
+      unqualified_imports([import_, ..types], values, tokens)
+    }
+
+    // Aliased final type
+    [
+      #(t.Type, _),
+      #(t.UpperName(name), _),
+      #(t.As, _),
+      #(t.UpperName(alias), _),
+      #(t.RightBrace, _),
+      ..tokens
+    ] -> {
+      let import_ = UnqualifiedImport(name, Some(alias))
+      Ok(#(list.reverse([import_, ..types]), list.reverse(values), tokens))
+    }
+
+    // Unaliased non-final type
+    [#(t.Type, _), #(t.UpperName(name), _), #(t.Comma, _), ..tokens] -> {
+      let import_ = UnqualifiedImport(name, None)
+      unqualified_imports([import_, ..types], values, tokens)
+    }
+
+    // Unaliased final type
+    [#(t.Type, _), #(t.UpperName(name), _), #(t.RightBrace, _), ..tokens] -> {
+      let import_ = UnqualifiedImport(name, None)
+      Ok(#(list.reverse([import_, ..types]), list.reverse(values), tokens))
+    }
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
   }
 }

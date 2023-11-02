@@ -461,7 +461,7 @@ pub fn import_test() {
   |> glance.module()
   |> should.be_ok
   |> fn(x: Module) { x.imports }
-  |> should.equal([Definition([], Import("one", None, []))])
+  |> should.equal([Definition([], Import("one", None, [], []))])
 }
 
 pub fn nested_import_test() {
@@ -469,7 +469,7 @@ pub fn nested_import_test() {
   |> glance.module()
   |> should.be_ok
   |> fn(x: Module) { x.imports }
-  |> should.equal([Definition([], Import("one/two/three", None, []))])
+  |> should.equal([Definition([], Import("one/two/three", None, [], []))])
 }
 
 pub fn aliased_import_test() {
@@ -477,7 +477,9 @@ pub fn aliased_import_test() {
   |> glance.module()
   |> should.be_ok
   |> fn(x: Module) { x.imports }
-  |> should.equal([Definition([], Import("one/two/three", Some("four"), []))])
+  |> should.equal([
+    Definition([], Import("one/two/three", Some("four"), [], [])),
+  ])
 }
 
 pub fn empty_unqualified_test() {
@@ -485,7 +487,9 @@ pub fn empty_unqualified_test() {
   |> glance.module()
   |> should.be_ok
   |> fn(x: Module) { x.imports }
-  |> should.equal([Definition([], Import("one/two/three", Some("four"), []))])
+  |> should.equal([
+    Definition([], Import("one/two/three", Some("four"), [], [])),
+  ])
 }
 
 pub fn unqualified_test() {
@@ -499,12 +503,36 @@ pub fn unqualified_test() {
       Import(
         "one/two/three",
         Some("four"),
+        [],
         [
           UnqualifiedImport("One", None),
           UnqualifiedImport("Two", None),
           UnqualifiedImport("three", None),
           UnqualifiedImport("four", None),
         ],
+      ),
+    ),
+  ])
+}
+
+pub fn unqualified_type_test() {
+  "import one/two/three.{type One, type Two, three, four, type Five as X, type Six as Y} as four"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.imports }
+  |> should.equal([
+    Definition(
+      [],
+      Import(
+        "one/two/three",
+        Some("four"),
+        [
+          UnqualifiedImport("One", None),
+          UnqualifiedImport("Two", None),
+          UnqualifiedImport("Five", Some("X")),
+          UnqualifiedImport("Six", Some("Y")),
+        ],
+        [UnqualifiedImport("three", None), UnqualifiedImport("four", None)],
       ),
     ),
   ])
@@ -521,6 +549,7 @@ pub fn unqualified_aliased_test() {
       Import(
         "one/two/three",
         Some("four"),
+        [],
         [
           UnqualifiedImport("One", Some("Two")),
           UnqualifiedImport("Three", None),
