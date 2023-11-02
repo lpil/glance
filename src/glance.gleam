@@ -1,8 +1,8 @@
 import gleam/int
 import gleam/list
-import gleam/option.{None, Option, Some}
-import glexer/token.{Token} as t
-import glexer.{Position}
+import gleam/option.{type Option, None, Some}
+import glexer/token.{type Token} as t
+import glexer.{type Position, Position}
 import gleam/result
 
 type Tokens =

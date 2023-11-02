@@ -2,19 +2,20 @@ import gleeunit
 import gleeunit/should
 import gleam/option.{None, Some}
 import glance.{
-  AddInt, And, Assert, Assignment, Attribute, BigOption, BinaryOperator,
-  BinaryOption, BitString, BitStringOption, Block, Call, Case, Clause, Constant,
-  CustomType, Definition, Discarded, Expression, ExternalFunction, ExternalType,
-  Field, FieldAccess, Float, FloatOption, Fn, FnCapture, FnParameter, Function,
-  FunctionParameter, FunctionType, Import, Int, IntOption, Let, List,
-  LittleOption, Module, MultInt, Named, NamedType, NativeOption, NegateBool,
-  NegateInt, Or, Panic, PatternAssignment, PatternBitString, PatternConcatenate,
-  PatternConstructor, PatternDiscard, PatternFloat, PatternInt, PatternList,
-  PatternString, PatternTuple, PatternVariable, Pipe, Private, Public,
-  RecordUpdate, SignedOption, SizeOption, SizeValueOption, Span, String, Todo,
-  Tuple, TupleIndex, TupleType, TypeAlias, UnitOption, UnqualifiedImport,
-  UnsignedOption, Use, Utf16CodepointOption, Utf16Option, Utf32CodepointOption,
-  Utf32Option, Utf8CodepointOption, Utf8Option, Variable, VariableType, Variant,
+  type Module, AddInt, And, Assert, Assignment, Attribute, BigOption,
+  BinaryOperator, BinaryOption, BitString, BitStringOption, Block, Call, Case,
+  Clause, Constant, CustomType, Definition, Discarded, Expression,
+  ExternalFunction, ExternalType, Field, FieldAccess, Float, FloatOption, Fn,
+  FnCapture, FnParameter, Function, FunctionParameter, FunctionType, Import, Int,
+  IntOption, Let, List, LittleOption, Module, MultInt, Named, NamedType,
+  NativeOption, NegateBool, NegateInt, Or, Panic, PatternAssignment,
+  PatternBitString, PatternConcatenate, PatternConstructor, PatternDiscard,
+  PatternFloat, PatternInt, PatternList, PatternString, PatternTuple,
+  PatternVariable, Pipe, Private, Public, RecordUpdate, SignedOption, SizeOption,
+  SizeValueOption, Span, String, Todo, Tuple, TupleIndex, TupleType, TypeAlias,
+  UnitOption, UnqualifiedImport, UnsignedOption, Use, Utf16CodepointOption,
+  Utf16Option, Utf32CodepointOption, Utf32Option, Utf8CodepointOption,
+  Utf8Option, Variable, VariableType, Variant,
 }
 import simplifile
 

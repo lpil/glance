@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.8.0 - Unreleased
+
+- Updated for Gleam v0.32.0.
+
 ## v0.7.1 - 2023-09-27
 
 - Fixed a bug where use expressions with a zero arity callback would fail to
