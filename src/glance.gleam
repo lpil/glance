@@ -997,7 +997,7 @@ fn handle_operator(
   values: List(Expression),
 ) -> #(Option(Expression), List(BinaryOperator), List(Expression)) {
   case next, operators, values {
-    Some(operator), [], _ -> #(None, [operator, ..operators], values)
+    Some(operator), [], _ -> #(None, [operator], values)
 
     Some(next), [previous, ..operators], [a, b, ..rest_values] -> {
       case precedence(previous) >= precedence(next) {
@@ -1018,8 +1018,7 @@ fn handle_operator(
 
     None, [], [expression] -> #(Some(expression), operators, values)
     None, [], [] -> #(None, operators, values)
-    // Expression not full reduced
-    None, [], _ -> panic
+    _, _, _ -> panic as "parser bug, expression not full reduced"
   }
 }
 
@@ -1301,6 +1300,7 @@ fn call(
         [#(other, position), ..] -> {
           Error(UnexpectedToken(other, position))
         }
+        [] -> Error(UnexpectedEndOfInput)
       }
     }
   }
@@ -1335,6 +1335,7 @@ fn fn_capture(
         [#(other, position), ..] -> {
           Error(UnexpectedToken(other, position))
         }
+        [] -> Error(UnexpectedEndOfInput)
       }
     }
   }
@@ -1645,6 +1646,7 @@ fn comma_delimited(
         [#(other, position), ..] -> {
           Error(UnexpectedToken(other, position))
         }
+        [] -> Error(UnexpectedEndOfInput)
       }
     }
   }

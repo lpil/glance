@@ -2,14 +2,14 @@
 # You typically do not need to edit this file
 
 packages = [
-  { name = "gleam_stdlib", version = "0.32.0", build_tools = ["gleam"], requirements = [], otp_app = "gleam_stdlib", source = "hex", outer_checksum = "07D64C26D014CF570F8ACADCE602761EA2E74C842D26F2FD49B0D61973D9966F" },
-  { name = "gleeunit", version = "0.11.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleeunit", source = "hex", outer_checksum = "1397E5C4AC4108769EE979939AC39BF7870659C5AFB714630DEEEE16B8272AD5" },
-  { name = "glexer", version = "0.6.2", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "glexer", source = "hex", outer_checksum = "703D2347F5180B2BCEA4D258549B0D91DACD0905010892BAC46D04D913B84D1F" },
-  { name = "simplifile", version = "0.1.14", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "simplifile", source = "hex", outer_checksum = "10EA0207796F20488A3A166C50A189C9385333F3C9FAC187729DE7B9CE4ADDBC" },
+  { name = "gleam_stdlib", version = "0.33.1", build_tools = ["gleam"], requirements = [], otp_app = "gleam_stdlib", source = "hex", outer_checksum = "3CEAD7B153D896499C78390B22CC968620C27500C922AED3A5DD7B536F922B25" },
+  { name = "gleeunit", version = "1.0.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "gleeunit", source = "hex", outer_checksum = "D3682ED8C5F9CAE1C928F2506DE91625588CC752495988CBE0F5653A42A6F334" },
+  { name = "glexer", version = "0.7.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "glexer", source = "hex", outer_checksum = "4484942A465482A0A100936E1E5F12314DB4B5AC0D87575A7B9E9062090B96BE" },
+  { name = "simplifile", version = "0.4.0", build_tools = ["gleam"], requirements = ["gleam_stdlib"], otp_app = "simplifile", source = "hex", outer_checksum = "8F3C94B83F691CCFACD784A4D7C1F7E5A0437D93341549B908EE3B32E3477447" },
 ]
 
 [requirements]
-gleam_stdlib = { version = "~> 0.28" }
-gleeunit = { version = "~> 0.10" }
+gleam_stdlib = { version = ">= 0.28.0 and < 2.0.0" }
+gleeunit = { version = "~> 1.0" }
 glexer = { version = "~> 0.5" }
 simplifile = { version = "~> 0.1" }
