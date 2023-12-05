@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.8.1 - 2023-12-05
+
+- Fixed a bug where the parser could crash on some incomplete inputs.
+
 ## v0.8.0 - 2023-11-02
 
 - Updated for Gleam v0.32.0.
