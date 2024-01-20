@@ -35,7 +35,8 @@ pub fn empty_test() {
 }
 
 pub fn public_enum_test() {
-  "pub type Cardinal {
+  "// comment
+  pub type Cardinal {
     North East South West
   }"
   |> glance.module()
@@ -165,14 +166,11 @@ pub fn multiple_fields_test() {
         opaque_: False,
         parameters: ["x", "y", "z"],
         variants: [
-          Variant(
-            "Box",
-            [
-              Field(None, VariableType("x")),
-              Field(None, VariableType("y")),
-              Field(None, VariableType("z")),
-            ],
-          ),
+          Variant("Box", [
+            Field(None, VariableType("x")),
+            Field(None, VariableType("y")),
+            Field(None, VariableType("z")),
+          ]),
         ],
       ),
     ),
@@ -300,13 +298,10 @@ pub fn labelled_fields_test() {
         opaque_: False,
         parameters: ["a"],
         variants: [
-          Variant(
-            "Box",
-            [
-              Field(Some("a"), VariableType("a")),
-              Field(Some("b"), VariableType("a")),
-            ],
-          ),
+          Variant("Box", [
+            Field(Some("a"), VariableType("a")),
+            Field(Some("b"), VariableType("a")),
+          ]),
         ],
       ),
     ),
@@ -335,7 +330,7 @@ pub fn phantom_trailing_comma_test() {
 }
 
 pub fn comment_discarding_test() {
-  "pub type 
+  "pub type
     // Comment!
   Spooky(
     // one
@@ -500,17 +495,12 @@ pub fn unqualified_test() {
   |> should.equal([
     Definition(
       [],
-      Import(
-        "one/two/three",
-        Some("four"),
-        [],
-        [
-          UnqualifiedImport("One", None),
-          UnqualifiedImport("Two", None),
-          UnqualifiedImport("three", None),
-          UnqualifiedImport("four", None),
-        ],
-      ),
+      Import("one/two/three", Some("four"), [], [
+        UnqualifiedImport("One", None),
+        UnqualifiedImport("Two", None),
+        UnqualifiedImport("three", None),
+        UnqualifiedImport("four", None),
+      ]),
     ),
   ])
 }
@@ -546,17 +536,12 @@ pub fn unqualified_aliased_test() {
   |> should.equal([
     Definition(
       [],
-      Import(
-        "one/two/three",
-        Some("four"),
-        [],
-        [
-          UnqualifiedImport("One", Some("Two")),
-          UnqualifiedImport("Three", None),
-          UnqualifiedImport("four", Some("five")),
-          UnqualifiedImport("six", None),
-        ],
-      ),
+      Import("one/two/three", Some("four"), [], [
+        UnqualifiedImport("One", Some("Two")),
+        UnqualifiedImport("Three", None),
+        UnqualifiedImport("four", Some("five")),
+        UnqualifiedImport("six", None),
+      ]),
     ),
   ])
 }
@@ -727,10 +712,7 @@ pub fn constant_constructor_test() {
         "x",
         Private,
         None,
-        Call(
-          Variable("Box"),
-          [Field(None, Int("1")), Field(None, Float("2.0"))],
-        ),
+        Call(Variable("Box"), [Field(None, Int("1")), Field(None, Float("2.0"))]),
       ),
     ),
   ])
@@ -748,10 +730,10 @@ pub fn constant_labelled_constructor_test() {
         "x",
         Private,
         None,
-        Call(
-          Variable("Box"),
-          [Field(None, Int("1")), Field(Some("wobber"), Float("2.0"))],
-        ),
+        Call(Variable("Box"), [
+          Field(None, Int("1")),
+          Field(Some("wobber"), Float("2.0")),
+        ]),
       ),
     ),
   ])
@@ -1119,11 +1101,13 @@ pub fn expression_block_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(Block([
-            Expression(Variable("x")),
-            Expression(Variable("y")),
-            Expression(Variable("z")),
-          ])),
+          Expression(
+            Block([
+              Expression(Variable("x")),
+              Expression(Variable("y")),
+              Expression(Variable("z")),
+            ]),
+          ),
         ],
       ),
     ),
@@ -1287,11 +1271,11 @@ pub fn expression_fn_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(Fn(
-            [FnParameter(Named("x"), None)],
-            None,
-            [Expression(Variable("x"))],
-          )),
+          Expression(
+            Fn([FnParameter(Named("x"), None)], None, [
+              Expression(Variable("x")),
+            ]),
+          ),
         ],
       ),
     ),
@@ -1313,11 +1297,12 @@ pub fn expression_fn_return_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(Fn(
-            [FnParameter(Named("x"), None)],
-            Some(VariableType("a")),
-            [Expression(Int("1")), Expression(Variable("x"))],
-          )),
+          Expression(
+            Fn([FnParameter(Named("x"), None)], Some(VariableType("a")), [
+              Expression(Int("1")),
+              Expression(Variable("x")),
+            ]),
+          ),
         ],
       ),
     ),
@@ -1339,11 +1324,11 @@ pub fn expression_fn_annotated_parens_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(Fn(
-            [FnParameter(Named("x"), Some(VariableType("a")))],
-            None,
-            [Expression(Variable("x"))],
-          )),
+          Expression(
+            Fn([FnParameter(Named("x"), Some(VariableType("a")))], None, [
+              Expression(Variable("x")),
+            ]),
+          ),
         ],
       ),
     ),
@@ -1365,11 +1350,11 @@ pub fn expression_fn_discard_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(Fn(
-            [FnParameter(Discarded("x"), Some(VariableType("a")))],
-            None,
-            [Expression(Int("1"))],
-          )),
+          Expression(
+            Fn([FnParameter(Discarded("x"), Some(VariableType("a")))], None, [
+              Expression(Int("1")),
+            ]),
+          ),
         ],
       ),
     ),
@@ -1391,12 +1376,14 @@ pub fn record_update_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(RecordUpdate(
-            module: None,
-            constructor: "Wibble",
-            record: Variable("wibble"),
-            fields: [#("one", Int("1")), #("two", Int("2"))],
-          )),
+          Expression(
+            RecordUpdate(
+              module: None,
+              constructor: "Wibble",
+              record: Variable("wibble"),
+              fields: [#("one", Int("1")), #("two", Int("2"))],
+            ),
+          ),
         ],
       ),
     ),
@@ -1418,12 +1405,14 @@ pub fn record_update_qualified_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(RecordUpdate(
-            module: Some("wobble"),
-            constructor: "Wibble",
-            record: Variable("wibble"),
-            fields: [#("one", Int("1")), #("two", Int("2"))],
-          )),
+          Expression(
+            RecordUpdate(
+              module: Some("wobble"),
+              constructor: "Wibble",
+              record: Variable("wibble"),
+              fields: [#("one", Int("1")), #("two", Int("2"))],
+            ),
+          ),
         ],
       ),
     ),
@@ -1445,12 +1434,14 @@ pub fn record_update_empty_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(RecordUpdate(
-            module: None,
-            constructor: "Wibble",
-            record: Variable("wibble"),
-            fields: [],
-          )),
+          Expression(
+            RecordUpdate(
+              module: None,
+              constructor: "Wibble",
+              record: Variable("wibble"),
+              fields: [],
+            ),
+          ),
         ],
       ),
     ),
@@ -1472,12 +1463,14 @@ pub fn record_update_trailing_comma_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(RecordUpdate(
-            module: None,
-            constructor: "Wibble",
-            record: Variable("wibble"),
-            fields: [#("one", Int("1")), #("two", Int("2"))],
-          )),
+          Expression(
+            RecordUpdate(
+              module: None,
+              constructor: "Wibble",
+              record: Variable("wibble"),
+              fields: [#("one", Int("1")), #("two", Int("2"))],
+            ),
+          ),
         ],
       ),
     ),
@@ -1499,13 +1492,47 @@ pub fn record_update_empty_trailing_comma_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(RecordUpdate(
-            module: None,
-            constructor: "Wibble",
-            record: Variable("wibble"),
-            fields: [],
-          )),
+          Expression(
+            RecordUpdate(
+              module: None,
+              constructor: "Wibble",
+              record: Variable("wibble"),
+              fields: [],
+            ),
+          ),
         ],
+      ),
+    ),
+  ])
+}
+
+pub fn record_partial_destructure_trailing_comma_test() {
+  "pub fn main(x) { let Wibble(y, ..,) = x }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [FunctionParameter(None, Named("x"), None)],
+        None,
+        [
+          Assignment(
+            Let,
+            PatternConstructor(
+              None,
+              "Wibble",
+              [Field(None, PatternVariable("y"))],
+              True,
+            ),
+            None,
+            Variable("x"),
+          ),
+        ],
+        Span(0, 41),
       ),
     ),
   ])
@@ -1598,14 +1625,13 @@ pub fn call_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(Call(
-            function: Variable("wobble"),
-            arguments: [
+          Expression(
+            Call(function: Variable("wobble"), arguments: [
               Field(None, Int("1")),
               Field(None, Int("2")),
               Field(None, Int("3")),
-            ],
-          )),
+            ]),
+          ),
         ],
       ),
     ),
@@ -1627,14 +1653,13 @@ pub fn call_labelled_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(Call(
-            function: Variable("wobble"),
-            arguments: [
+          Expression(
+            Call(function: Variable("wobble"), arguments: [
               Field(None, Int("1")),
               Field(Some("one"), Int("2")),
               Field(Some("two"), Int("3")),
-            ],
-          )),
+            ]),
+          ),
         ],
       ),
     ),
@@ -1656,17 +1681,19 @@ pub fn call_field_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(Call(
-            function: FieldAccess(
-              container: Variable("wibble"),
-              label: "wobble",
+          Expression(
+            Call(
+              function: FieldAccess(
+                container: Variable("wibble"),
+                label: "wobble",
+              ),
+              arguments: [
+                Field(None, Int("1")),
+                Field(None, Int("2")),
+                Field(None, Int("3")),
+              ],
             ),
-            arguments: [
-              Field(None, Int("1")),
-              Field(None, Int("2")),
-              Field(None, Int("3")),
-            ],
-          )),
+          ),
         ],
       ),
     ),
@@ -1688,20 +1715,19 @@ pub fn call_recursive_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(Call(
-            function: Call(
+          Expression(
+            Call(
               function: Call(
-                function: Variable("wobble"),
-                arguments: [
+                function: Call(function: Variable("wobble"), arguments: [
                   Field(None, Int("1")),
                   Field(None, Int("2")),
                   Field(None, Int("3")),
-                ],
+                ]),
+                arguments: [],
               ),
               arguments: [],
             ),
-            arguments: [],
-          )),
+          ),
         ],
       ),
     ),
@@ -1890,15 +1916,17 @@ pub fn function_capture_immediate_call_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(Call(
-            function: FnCapture(
-              label: None,
-              arguments_before: [],
-              arguments_after: [],
-              function: Variable("wibble"),
+          Expression(
+            Call(
+              function: FnCapture(
+                label: None,
+                arguments_before: [],
+                arguments_after: [],
+                function: Variable("wibble"),
+              ),
+              arguments: [],
             ),
-            arguments: [],
-          )),
+          ),
         ],
       ),
     ),
@@ -1940,11 +1968,9 @@ pub fn bit_string_numbers_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(BitString([
-            #(Int("1"), []),
-            #(Int("2"), []),
-            #(Int("3"), []),
-          ])),
+          Expression(
+            BitString([#(Int("1"), []), #(Int("2"), []), #(Int("3"), [])]),
+          ),
         ],
       ),
     ),
@@ -1966,11 +1992,13 @@ pub fn bit_string_sizes_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(BitString([
-            #(Int("1"), []),
-            #(Int("2"), [SizeOption(4)]),
-            #(Int("5"), [SizeOption(8)]),
-          ])),
+          Expression(
+            BitString([
+              #(Int("1"), []),
+              #(Int("2"), [SizeOption(4)]),
+              #(Int("5"), [SizeOption(8)]),
+            ]),
+          ),
         ],
       ),
     ),
@@ -1992,11 +2020,13 @@ pub fn bit_string_value_sizes_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(BitString([
-            #(Int("1"), []),
-            #(Int("2"), [SizeValueOption(Int("5"))]),
-            #(Int("5"), [SizeValueOption(Variable("x"))]),
-          ])),
+          Expression(
+            BitString([
+              #(Int("1"), []),
+              #(Int("2"), [SizeValueOption(Int("5"))]),
+              #(Int("5"), [SizeValueOption(Variable("x"))]),
+            ]),
+          ),
         ],
       ),
     ),
@@ -2018,11 +2048,13 @@ pub fn bit_string_units_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(BitString([
-            #(Int("1"), []),
-            #(Int("2"), [UnitOption(5)]),
-            #(Int("5"), [UnitOption(3)]),
-          ])),
+          Expression(
+            BitString([
+              #(Int("1"), []),
+              #(Int("2"), [UnitOption(5)]),
+              #(Int("5"), [UnitOption(3)]),
+            ]),
+          ),
         ],
       ),
     ),
@@ -2046,11 +2078,10 @@ binary-int-float-bit_string-utf8-utf16-utf32-utf8_codepoint-utf16_codepoint-utf3
         parameters: [],
         return: None,
         body: [
-          Expression(BitString([
-            #(Int("1"), []),
-            #(
-              Int("2"),
-              [
+          Expression(
+            BitString([
+              #(Int("1"), []),
+              #(Int("2"), [
                 BinaryOption,
                 IntOption,
                 FloatOption,
@@ -2066,9 +2097,9 @@ binary-int-float-bit_string-utf8-utf16-utf32-utf8_codepoint-utf16_codepoint-utf3
                 BigOption,
                 LittleOption,
                 NativeOption,
-              ],
-            ),
-          ])),
+              ]),
+            ]),
+          ),
         ],
       ),
     ),
@@ -2593,10 +2624,11 @@ pub fn case_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(Case(
-            [Variable("x")],
-            [Clause([[PatternVariable("y")]], None, Int("1"))],
-          )),
+          Expression(
+            Case([Variable("x")], [
+              Clause([[PatternVariable("y")]], None, Int("1")),
+            ]),
+          ),
         ],
       ),
     ),
@@ -2618,9 +2650,8 @@ pub fn case_multi_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(Case(
-            [Variable("x"), Variable("y"), Variable("z")],
-            [
+          Expression(
+            Case([Variable("x"), Variable("y"), Variable("z")], [
               Clause(
                 [
                   [
@@ -2632,8 +2663,8 @@ pub fn case_multi_test() {
                 None,
                 Int("1"),
               ),
-            ],
-          )),
+            ]),
+          ),
         ],
       ),
     ),
@@ -2655,9 +2686,8 @@ pub fn case_alternatives_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(Case(
-            [Variable("x"), Variable("y")],
-            [
+          Expression(
+            Case([Variable("x"), Variable("y")], [
               Clause(
                 [
                   [PatternVariable("a"), PatternVariable("b")],
@@ -2666,8 +2696,8 @@ pub fn case_alternatives_test() {
                 None,
                 Int("1"),
               ),
-            ],
-          )),
+            ]),
+          ),
         ],
       ),
     ),
@@ -2689,9 +2719,8 @@ pub fn case_clauses_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(Case(
-            [Variable("x"), Variable("y")],
-            [
+          Expression(
+            Case([Variable("x"), Variable("y")], [
               Clause(
                 [
                   [PatternVariable("a"), PatternVariable("b")],
@@ -2705,8 +2734,8 @@ pub fn case_clauses_test() {
                 None,
                 Int("123"),
               ),
-            ],
-          )),
+            ]),
+          ),
         ],
       ),
     ),
@@ -2999,10 +3028,11 @@ pub fn guard_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(Case(
-            [Variable("x")],
-            [Clause([[PatternVariable("y")]], Some(Variable("z")), Int("1"))],
-          )),
+          Expression(
+            Case([Variable("x")], [
+              Clause([[PatternVariable("y")]], Some(Variable("z")), Int("1")),
+            ]),
+          ),
         ],
       ),
     ),
@@ -3041,14 +3071,16 @@ pub fn main() { Nil }
   |> should.equal([
     Definition(
       [
-        Attribute(
-          "thingbobby",
-          [Variable("erlang"), String("one"), String("two")],
-        ),
-        Attribute(
-          "thingbobby",
-          [Variable("javascript"), String("three"), String("four")],
-        ),
+        Attribute("thingbobby", [
+          Variable("erlang"),
+          String("one"),
+          String("two"),
+        ]),
+        Attribute("thingbobby", [
+          Variable("javascript"),
+          String("three"),
+          String("four"),
+        ]),
       ],
       Function(
         location: Span(76, 97),
@@ -3078,9 +3110,8 @@ pub fn discard_list_rest_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(Case(
-            [Variable("x")],
-            [
+          Expression(
+            Case([Variable("x")], [
               Clause(
                 [
                   [
@@ -3093,8 +3124,8 @@ pub fn discard_list_rest_test() {
                 None,
                 Variable("Nil"),
               ),
-            ],
-          )),
+            ]),
+          ),
         ],
       ),
     ),
@@ -3210,12 +3241,14 @@ pub fn label_capture_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(FnCapture(
-            label: Some("x"),
-            function: Variable("wibble"),
-            arguments_before: [],
-            arguments_after: [],
-          )),
+          Expression(
+            FnCapture(
+              label: Some("x"),
+              function: Variable("wibble"),
+              arguments_before: [],
+              arguments_after: [],
+            ),
+          ),
         ],
       ),
     ),
@@ -3239,12 +3272,14 @@ pub fn crash_test() {
         parameters: [],
         return: None,
         body: [
-          Expression(FnCapture(
-            label: Some("x"),
-            function: Variable("wibble"),
-            arguments_before: [],
-            arguments_after: [],
-          )),
+          Expression(
+            FnCapture(
+              label: Some("x"),
+              function: Variable("wibble"),
+              arguments_before: [],
+              arguments_after: [],
+            ),
+          ),
         ],
       ),
     ),
@@ -3294,25 +3329,25 @@ pub fn new_gb_tree() -> GbTree(k, v)
   |> should.equal([
     Definition(
       [
-        Attribute(
-          "external",
-          [Variable("erlang"), String("gb_trees"), String("empty")],
-        ),
-        Attribute(
-          "external",
-          [Variable("javascript"), String("./gb_trees.js"), String("empty")],
-        ),
+        Attribute("external", [
+          Variable("erlang"),
+          String("gb_trees"),
+          String("empty"),
+        ]),
+        Attribute("external", [
+          Variable("javascript"),
+          String("./gb_trees.js"),
+          String("empty"),
+        ]),
       ],
       Function(
         location: Span(88, 109),
         name: "new_gb_tree",
         publicity: Public,
         parameters: [],
-        return: Some(NamedType(
-          "GbTree",
-          None,
-          [VariableType("k"), VariableType("v")],
-        )),
+        return: Some(
+          NamedType("GbTree", None, [VariableType("k"), VariableType("v")]),
+        ),
         body: [],
       ),
     ),
