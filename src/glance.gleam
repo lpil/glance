@@ -581,10 +581,7 @@ fn import_statement(
   Ok(#(module, tokens))
 }
 
-fn module_name(
-  name: String,
-  tokens: Tokens,
-) -> Result(#(String, Tokens), Error) {
+fn module_name(name: String, tokens: Tokens) -> Result(#(String, Tokens), Error) {
   case tokens {
     [#(t.Slash, _), #(t.Name(s), _), ..tokens] if name != "" -> {
       module_name(name <> "/" <> s, tokens)
@@ -955,9 +952,7 @@ fn binary_operator(token: Token) -> Result(BinaryOperator, Nil) {
   }
 }
 
-fn pop_binary_operator(
-  tokens: Tokens,
-) -> Result(#(BinaryOperator, Tokens), Nil) {
+fn pop_binary_operator(tokens: Tokens) -> Result(#(BinaryOperator, Tokens), Nil) {
   case tokens {
     [#(token, _), ..tokens] -> {
       use op <- result.map(binary_operator(token))

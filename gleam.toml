@@ -1,5 +1,5 @@
 name = "glance"
-version = "0.8.1"
+version = "0.8.2"
 description = "A Gleam source code parser, in Gleam!"
 
 licences = ["Apache-2.0"]

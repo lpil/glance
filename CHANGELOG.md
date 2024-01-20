@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.8.2 - 2024-01-20
+
+- Fixed a bug where record constructor patterns with a `..` and a trailing comma
+  would fail to parse.
+
 ## v0.8.1 - 2023-12-05
 
 - Fixed a bug where the parser could crash on some incomplete inputs.
