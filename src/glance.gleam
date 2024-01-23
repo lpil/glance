@@ -1046,6 +1046,13 @@ fn expression_unit(
 
     [#(t.Panic, _), #(t.As, _), #(t.String(message), _), ..tokens] ->
       Ok(#(Some(Panic(Some(message))), tokens))
+    [
+      #(t.Panic, _),
+      #(t.LeftParen, _),
+      #(t.String(value), _),
+      #(t.RightParen, _),
+      ..tokens
+    ] -> Ok(#(Some(Panic(Some(value))), tokens))
     [#(t.Panic, _), ..tokens] -> Ok(#(Some(Panic(None)), tokens))
 
     [#(t.Int(value), _), ..tokens] -> Ok(#(Some(Int(value)), tokens))

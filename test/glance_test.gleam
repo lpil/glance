@@ -3202,6 +3202,26 @@ pub fn todo_as_test() {
   ])
 }
 
+pub fn expression_panic_message_test() {
+  "pub fn main() { panic(\"huh\") }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(0, 30),
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [Expression(Panic(Some("huh")))],
+      ),
+    ),
+  ])
+}
+
 pub fn panic_as_test() {
   "pub fn main() {
   panic as \"oh no\"
