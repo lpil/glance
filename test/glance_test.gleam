@@ -8,7 +8,7 @@ import glance.{
   ExternalFunction, ExternalType, Field, FieldAccess, Float, FloatOption, Fn,
   FnCapture, FnParameter, Function, FunctionParameter, FunctionType, Import, Int,
   IntOption, Let, List, LittleOption, Module, MultInt, Named, NamedType,
-  NativeOption, NegateBool, NegateInt, Or, Panic, PatternAssignment,
+  NativeOption, NegateBool, NegateNumber, Or, Panic, PatternAssignment,
   PatternBitString, PatternConcatenate, PatternConstructor, PatternDiscard,
   PatternFloat, PatternInt, PatternList, PatternString, PatternTuple,
   PatternVariable, Pipe, Private, Public, RecordUpdate, SignedOption, SizeOption,
@@ -1060,7 +1060,7 @@ pub fn expression_negate_int_test() {
         publicity: Public,
         parameters: [],
         return: None,
-        body: [Expression(NegateInt(Variable("x")))],
+        body: [Expression(NegateNumber(Variable("x")))],
       ),
     ),
   ])

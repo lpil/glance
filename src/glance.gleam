@@ -97,7 +97,7 @@ pub type Expression {
   Float(String)
   String(String)
   Variable(String)
-  NegateInt(Expression)
+  NegateNumber(Expression)
   NegateBool(Expression)
   Block(List(Statement))
   Panic(Option(String))
@@ -1088,7 +1088,7 @@ fn expression_unit(
 
     [#(t.Minus, _), ..tokens] -> {
       use #(expression, tokens) <- result.map(expression(tokens))
-      #(Some(NegateInt(expression)), tokens)
+      #(Some(NegateNumber(expression)), tokens)
     }
 
     [#(t.LeftBrace, _), ..tokens] -> {
