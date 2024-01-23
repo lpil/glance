@@ -1046,7 +1046,7 @@ pub fn expression_panic_test() {
   ])
 }
 
-pub fn expression_negate_int_test() {
+pub fn expression_negate_number_test() {
   "pub fn main() { -x }"
   |> glance.module()
   |> should.be_ok
