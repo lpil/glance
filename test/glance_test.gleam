@@ -1256,6 +1256,26 @@ pub fn expression_list_prefix_test() {
   ])
 }
 
+pub fn expression_empty_list_prefix_test() {
+  "pub fn main() { [..x] }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(0, 23),
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [Expression(List([], Some(Variable("x"))))],
+      ),
+    ),
+  ])
+}
+
 pub fn expression_fn_test() {
   "pub fn main() { fn(x) { x } }"
   |> glance.module()
