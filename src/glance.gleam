@@ -1471,7 +1471,18 @@ fn list(
 
     [#(t.Comma, _), #(t.RightSquare, _), ..tokens] if acc != [] ->
       Ok(#(list.reverse(acc), None, tokens))
+    [#(t.DotDot, _), #(t.RightSquare, _) as close, ..tokens] -> {
+      case discard {
+        None -> unexpected_error([close, ..tokens])
+        Some(discard) -> Ok(#(list.reverse(acc), Some(discard), tokens))
+      }
+    }
 
+    [#(t.DotDot, _), ..tokens] -> {
+      use #(rest, tokens) <- result.try(parser(tokens))
+      use _, tokens <- expect(t.RightSquare, tokens)
+      Ok(#(list.reverse(acc), Some(rest), tokens))
+    }
     _ -> {
       use #(element, tokens) <- result.try(parser(tokens))
       let acc = [element, ..acc]
