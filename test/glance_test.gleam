@@ -2474,6 +2474,33 @@ pub fn list_rest_pattern_test() {
   ])
 }
 
+pub fn empty_list_rest_pattern_test() {
+  "pub fn main() { let [..] = x }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(0, 30),
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [
+          Assignment(
+            Let,
+            PatternList([], Some(PatternDiscard(""))),
+            None,
+            Variable("x"),
+          ),
+        ],
+      ),
+    ),
+  ])
+}
+
 pub fn constructor_pattern_test() {
   "pub fn main() { let None = x }"
   |> glance.module()
