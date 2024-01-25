@@ -1,5 +1,7 @@
 # Changelog
 
+- Add support for list with spread operator and no fixed elements, i.e. `[..]`
+
 ## v0.8.2 - 2024-01-20
 
 - Fixed a bug where record constructor patterns with a `..` and a trailing comma
