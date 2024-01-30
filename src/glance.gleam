@@ -738,7 +738,7 @@ fn function_definition(
 
   // The function body
   use #(body, end, tokens) <- result.try(case tokens {
-    [#(t.LeftBrace, _), ..tokens] -> statements([], tokens)
+    [#(t.LeftBrace, _), ..tokens] -> do_block([], tokens)
     _ -> Ok(#([], end, tokens))
   })
 
@@ -762,7 +762,11 @@ fn optional_return_annotation(
   }
 }
 
-fn statements(
+pub fn block(tokens: Tokens) -> Result(#(List(Statement), Int, Tokens), Error) {
+  do_block([], tokens)
+}
+
+fn do_block(
   acc: List(Statement),
   tokens: Tokens,
 ) -> Result(#(List(Statement), Int, Tokens), Error) {
@@ -771,12 +775,36 @@ fn statements(
       Ok(#(list.reverse(acc), end + 1, tokens))
     _ -> {
       use #(statement, tokens) <- result.try(statement(tokens))
-      statements([statement, ..acc], tokens)
+      do_block([statement, ..acc], tokens)
     }
   }
 }
 
-fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
+/// Returns all statements in the remaining token stream
+///
+/// Stops on end of token stream, not closing brace.
+/// For parsing all statements in a block (`{ ... }`) use the `block` function. 
+pub fn statements(tokens: Tokens) -> Result(List(Statement), Error) {
+  do_statements([], tokens)
+}
+
+fn do_statements(
+  acc: List(Statement),
+  tokens: Tokens,
+) -> Result(List(Statement), Error) {
+  case statement(tokens) {
+    Ok(#(statement, rest)) -> {
+      let acc = [statement, ..acc]
+      case rest {
+        [] -> Ok(list.reverse(acc))
+        _ -> do_statements(acc, rest)
+      }
+    }
+    Error(reason) -> Error(reason)
+  }
+}
+
+pub fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
   case tokens {
     [#(t.Let, _), #(t.Assert, _), ..tokens] -> assignment(Assert, tokens)
     [#(t.Let, _), ..tokens] -> assignment(Let, tokens)
@@ -1092,7 +1120,7 @@ fn expression_unit(
     }
 
     [#(t.LeftBrace, _), ..tokens] -> {
-      use #(statements, _, tokens) <- result.map(statements([], tokens))
+      use #(statements, _, tokens) <- result.map(do_block([], tokens))
       #(Some(Block(statements)), tokens)
     }
 
@@ -1455,7 +1483,7 @@ fn fn_(tokens: Tokens) -> Result(#(Option(Expression), Tokens), Error) {
 
   // The function body
   use _, tokens <- expect(t.LeftBrace, tokens)
-  use #(body, _, tokens) <- result.try(statements([], tokens))
+  use #(body, _, tokens) <- result.try(do_block([], tokens))
 
   Ok(#(Some(Fn(parameters, return, body)), tokens))
 }
