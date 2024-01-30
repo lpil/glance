@@ -313,7 +313,7 @@ pub fn module(src: String) -> Result(Module, Error) {
   |> slurp(Module([], [], [], [], [], [], []), [], _)
 }
 
-fn is_whitespace(token: Token) -> Bool {
+pub fn is_whitespace(token: Token) -> Bool {
   case token {
     t.EmptyLine | t.CommentNormal | t.CommentModule | t.CommentDoc(_) -> True
     _ -> False
