@@ -4,18 +4,17 @@ import gleam/option.{None, Some}
 import glance.{
   type Module, AddInt, And, Assert, Assignment, Attribute, BigOption,
   BinaryOperator, BinaryOption, BitString, BitStringOption, Block, Call, Case,
-  Clause, Constant, CustomType, Definition, Discarded, Expression,
-  ExternalFunction, ExternalType, Field, FieldAccess, Float, FloatOption, Fn,
-  FnCapture, FnParameter, Function, FunctionParameter, FunctionType, Import, Int,
-  IntOption, Let, List, LittleOption, Module, MultInt, Named, NamedType,
-  NativeOption, NegateBool, NegateInt, Or, Panic, PatternAssignment,
-  PatternBitString, PatternConcatenate, PatternConstructor, PatternDiscard,
-  PatternFloat, PatternInt, PatternList, PatternString, PatternTuple,
-  PatternVariable, Pipe, Private, Public, RecordUpdate, SignedOption, SizeOption,
-  SizeValueOption, Span, String, Todo, Tuple, TupleIndex, TupleType, TypeAlias,
-  UnitOption, UnqualifiedImport, UnsignedOption, Use, Utf16CodepointOption,
-  Utf16Option, Utf32CodepointOption, Utf32Option, Utf8CodepointOption,
-  Utf8Option, Variable, VariableType, Variant,
+  Clause, Constant, CustomType, Definition, Discarded, Expression, Field,
+  FieldAccess, Float, FloatOption, Fn, FnCapture, FnParameter, Function,
+  FunctionParameter, FunctionType, Import, Int, IntOption, Let, List,
+  LittleOption, Module, MultInt, Named, NamedType, NativeOption, NegateBool,
+  NegateInt, Or, Panic, PatternAssignment, PatternBitString, PatternConcatenate,
+  PatternConstructor, PatternDiscard, PatternFloat, PatternInt, PatternList,
+  PatternString, PatternTuple, PatternVariable, Pipe, Private, Public,
+  RecordUpdate, SignedOption, SizeOption, SizeValueOption, Span, String, Todo,
+  Tuple, TupleIndex, TupleType, TypeAlias, UnitOption, UnqualifiedImport,
+  UnsignedOption, Use, Utf16CodepointOption, Utf16Option, Utf32CodepointOption,
+  Utf32Option, Utf8CodepointOption, Utf8Option, Variable, VariableType, Variant,
 }
 import simplifile
 
@@ -31,7 +30,7 @@ pub fn parse_self_test() {
 pub fn empty_test() {
   ""
   |> glance.module()
-  |> should.equal(Ok(Module([], [], [], [], [], [], [])))
+  |> should.equal(Ok(Module([], [], [], [], [])))
 }
 
 pub fn public_enum_test() {
@@ -752,88 +751,6 @@ pub fn constant_bit_string_test() {
         Private,
         None,
         BitString([#(Int("1"), [SizeOption(2)]), #(Float("2.0"), [])]),
-      ),
-    ),
-  ])
-}
-
-pub fn external_type_test() {
-  "external type Wibble"
-  |> glance.module()
-  |> should.be_ok
-  |> fn(x: Module) { x.external_types }
-  |> should.equal([Definition([], ExternalType("Wibble", Private, []))])
-}
-
-pub fn pub_external_type_test() {
-  "pub external type Wibble"
-  |> glance.module()
-  |> should.be_ok
-  |> fn(x: Module) { x.external_types }
-  |> should.equal([Definition([], ExternalType("Wibble", Public, []))])
-}
-
-pub fn parameter_external_type_test() {
-  "external type Wibble(a, b, c)"
-  |> glance.module()
-  |> should.be_ok
-  |> fn(x: Module) { x.external_types }
-  |> should.equal([
-    Definition([], ExternalType("Wibble", Private, ["a", "b", "c"])),
-  ])
-}
-
-pub fn trailing_comma_parameter_external_type_test() {
-  "external type Wibble(a, b, c, )"
-  |> glance.module()
-  |> should.be_ok
-  |> fn(x: Module) { x.external_types }
-  |> should.equal([
-    Definition([], ExternalType("Wibble", Private, ["a", "b", "c"])),
-  ])
-}
-
-pub fn external_function_test() {
-  "external fn one(Nil, label: other.Two) -> Nil = \"one\" \"two\""
-  |> glance.module()
-  |> should.be_ok
-  |> fn(x: Module) { x.external_functions }
-  |> should.equal([
-    Definition(
-      [],
-      ExternalFunction(
-        name: "one",
-        publicity: Private,
-        parameters: [
-          Field(None, NamedType("Nil", None, [])),
-          Field(Some("label"), NamedType("Two", Some("other"), [])),
-        ],
-        return: NamedType("Nil", None, []),
-        module: "one",
-        function: "two",
-      ),
-    ),
-  ])
-}
-
-pub fn pub_external_function_test() {
-  "pub external fn one(Nil, label: other.Two) -> Nil = \"one\" \"two\""
-  |> glance.module()
-  |> should.be_ok
-  |> fn(x: Module) { x.external_functions }
-  |> should.equal([
-    Definition(
-      [],
-      ExternalFunction(
-        name: "one",
-        publicity: Public,
-        parameters: [
-          Field(None, NamedType("Nil", None, [])),
-          Field(Some("label"), NamedType("Two", Some("other"), [])),
-        ],
-        return: NamedType("Nil", None, []),
-        module: "one",
-        function: "two",
       ),
     ),
   ])
