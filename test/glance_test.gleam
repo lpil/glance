@@ -935,448 +935,190 @@ pub fn function_parameters_test() {
 }
 
 pub fn expression_int_test() {
-  "pub fn main() { 1 2 3 }"
-  |> glance.module()
+  "1 2 3"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
   |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 23),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [Expression(Int("1")), Expression(Int("2")), Expression(Int("3"))],
-      ),
-    ),
+    Expression(Int("1")),
+    Expression(Int("2")),
+    Expression(Int("3")),
   ])
 }
 
 pub fn expression_float_test() {
-  "pub fn main() { 1.0 2.0 3.0 }"
-  |> glance.module()
+  "1.0 2.0 3.0"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
   |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 29),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [
-          Expression(Float("1.0")),
-          Expression(Float("2.0")),
-          Expression(Float("3.0")),
-        ],
-      ),
-    ),
+    Expression(Float("1.0")),
+    Expression(Float("2.0")),
+    Expression(Float("3.0")),
   ])
 }
 
 pub fn expression_string_test() {
-  "pub fn main() { \"10\" \"20\" \"30\" }"
-  |> glance.module()
+  "\"10\" \"20\" \"30\""
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
   |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 32),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [
-          Expression(String("10")),
-          Expression(String("20")),
-          Expression(String("30")),
-        ],
-      ),
-    ),
+    Expression(String("10")),
+    Expression(String("20")),
+    Expression(String("30")),
   ])
 }
 
 pub fn expression_variable_test() {
-  "pub fn main() { x y z }"
-  |> glance.module()
+  "x y z"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
   |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 23),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [
-          Expression(Variable("x")),
-          Expression(Variable("y")),
-          Expression(Variable("z")),
-        ],
-      ),
-    ),
+    Expression(Variable("x")),
+    Expression(Variable("y")),
+    Expression(Variable("z")),
   ])
 }
 
 pub fn expression_panic_test() {
-  "pub fn main() { panic panic }"
-  |> glance.module()
+  "panic panic"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
-  |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 29),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [Expression(Panic(None)), Expression(Panic(None))],
-      ),
-    ),
-  ])
+  |> should.equal([Expression(Panic(None)), Expression(Panic(None))])
 }
 
 pub fn expression_negate_int_test() {
-  "pub fn main() { -x }"
-  |> glance.module()
+  "-x"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
-  |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 20),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [Expression(NegateInt(Variable("x")))],
-      ),
-    ),
-  ])
+  |> should.equal([Expression(NegateInt(Variable("x")))])
 }
 
 pub fn expression_negate_bool_test() {
-  "pub fn main() { !x }"
-  |> glance.module()
+  "!x"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
-  |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 20),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [Expression(NegateBool(Variable("x")))],
-      ),
-    ),
-  ])
+  |> should.equal([Expression(NegateBool(Variable("x")))])
 }
 
 pub fn expression_block_test() {
-  "pub fn main() { { x y z } }"
-  |> glance.module()
+  "{ x y z }"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
   |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 27),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [
-          Expression(
-            Block([
-              Expression(Variable("x")),
-              Expression(Variable("y")),
-              Expression(Variable("z")),
-            ]),
-          ),
-        ],
-      ),
+    Expression(
+      Block([
+        Expression(Variable("x")),
+        Expression(Variable("y")),
+        Expression(Variable("z")),
+      ]),
     ),
   ])
 }
 
 pub fn expression_todo_test() {
-  "pub fn main() { todo }"
-  |> glance.module()
+  "todo"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
-  |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 22),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [Expression(Todo(None))],
-      ),
-    ),
-  ])
+  |> should.equal([Expression(Todo(None))])
 }
 
 pub fn expression_todo_message_test() {
-  "pub fn main() { todo(\"huh\") }"
-  |> glance.module()
+  "todo(\"huh\")"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
-  |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 29),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [Expression(Todo(Some("huh")))],
-      ),
-    ),
-  ])
+  |> should.equal([Expression(Todo(Some("huh")))])
 }
 
 pub fn expression_tuple_test() {
-  "pub fn main() { #(1, 2, 3) }"
-  |> glance.module()
+  "#(1, 2, 3)"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
-  |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 28),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [Expression(Tuple([Int("1"), Int("2"), Int("3")]))],
-      ),
-    ),
-  ])
+  |> should.equal([Expression(Tuple([Int("1"), Int("2"), Int("3")]))])
 }
 
 pub fn expression_tuple_trailing_comma_test() {
-  "pub fn main() { #(1, 2, 3, ) }"
-  |> glance.module()
+  "#(1, 2, 3, )"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
-  |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 30),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [Expression(Tuple([Int("1"), Int("2"), Int("3")]))],
-      ),
-    ),
-  ])
+  |> should.equal([Expression(Tuple([Int("1"), Int("2"), Int("3")]))])
 }
 
 pub fn expression_list_test() {
-  "pub fn main() { [1, 2, 3] }"
-  |> glance.module()
+  "[1, 2, 3]"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
-  |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 27),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [Expression(List([Int("1"), Int("2"), Int("3")], None))],
-      ),
-    ),
-  ])
+  |> should.equal([Expression(List([Int("1"), Int("2"), Int("3")], None))])
 }
 
 pub fn expression_list_trailing_comma_test() {
-  "pub fn main() { [1, 2, 3, ] }"
-  |> glance.module()
+  "[1, 2, 3, ]"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
-  |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 29),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [Expression(List([Int("1"), Int("2"), Int("3")], None))],
-      ),
-    ),
-  ])
+  |> should.equal([Expression(List([Int("1"), Int("2"), Int("3")], None))])
 }
 
 pub fn expression_list_prefix_test() {
-  "pub fn main() { [1, 2, 3, ..x] }"
-  |> glance.module()
+  "[1, 2, 3, ..x]"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
   |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 32),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [
-          Expression(List([Int("1"), Int("2"), Int("3")], Some(Variable("x")))),
-        ],
-      ),
-    ),
+    Expression(List([Int("1"), Int("2"), Int("3")], Some(Variable("x")))),
   ])
 }
 
 pub fn expression_empty_list_prefix_test() {
-  "pub fn main() { [..x] }"
-  |> glance.module()
+  "[..x]"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
-  |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 23),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [Expression(List([], Some(Variable("x"))))],
-      ),
-    ),
-  ])
+  |> should.equal([Expression(List([], Some(Variable("x"))))])
 }
 
 pub fn expression_fn_test() {
-  "pub fn main() { fn(x) { x } }"
-  |> glance.module()
+  "fn(x) { x }"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
   |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 29),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [
-          Expression(
-            Fn([FnParameter(Named("x"), None)], None, [
-              Expression(Variable("x")),
-            ]),
-          ),
-        ],
-      ),
+    Expression(
+      Fn([FnParameter(Named("x"), None)], None, [Expression(Variable("x"))]),
     ),
   ])
 }
 
 pub fn expression_fn_return_test() {
-  "pub fn main() { fn(x) -> a { 1 x } }"
-  |> glance.module()
+  "fn(x) -> a { 1 x }"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
   |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 36),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [
-          Expression(
-            Fn([FnParameter(Named("x"), None)], Some(VariableType("a")), [
-              Expression(Int("1")),
-              Expression(Variable("x")),
-            ]),
-          ),
-        ],
-      ),
+    Expression(
+      Fn([FnParameter(Named("x"), None)], Some(VariableType("a")), [
+        Expression(Int("1")),
+        Expression(Variable("x")),
+      ]),
     ),
   ])
 }
 
 pub fn expression_fn_annotated_parens_test() {
-  "pub fn main() { fn(x: a) { x } }"
-  |> glance.module()
+  "fn(x: a) { x }"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
   |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 32),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [
-          Expression(
-            Fn([FnParameter(Named("x"), Some(VariableType("a")))], None, [
-              Expression(Variable("x")),
-            ]),
-          ),
-        ],
-      ),
+    Expression(
+      Fn([FnParameter(Named("x"), Some(VariableType("a")))], None, [
+        Expression(Variable("x")),
+      ]),
     ),
   ])
 }
 
 pub fn expression_fn_discard_test() {
-  "pub fn main() { fn(_x: a) { 1 } }"
-  |> glance.module()
+  "fn(_x: a) { 1 }"
+  |> glance.statements()
   |> should.be_ok
-  |> fn(x: Module) { x.functions }
   |> should.equal([
-    Definition(
-      [],
-      Function(
-        location: Span(0, 32),
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [
-          Expression(
-            Fn([FnParameter(Discarded("x"), Some(VariableType("a")))], None, [
-              Expression(Int("1")),
-            ]),
-          ),
-        ],
-      ),
+    Expression(
+      Fn([FnParameter(Discarded("x"), Some(VariableType("a")))], None, [
+        Expression(Int("1")),
+      ]),
     ),
   ])
 }
