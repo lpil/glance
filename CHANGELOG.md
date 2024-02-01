@@ -1,5 +1,6 @@
 # Changelog
 
+- Add `statements` function for parsing a list of statements from a string.
 - Add support for list with spread operator and no fixed elements, i.e. `[..]`
 
 ## v0.8.2 - 2024-01-20
