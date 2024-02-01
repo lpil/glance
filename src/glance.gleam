@@ -22,20 +22,7 @@ pub type Module {
     custom_types: List(Definition(CustomType)),
     type_aliases: List(Definition(TypeAlias)),
     constants: List(Definition(Constant)),
-    external_types: List(Definition(ExternalType)),
-    external_functions: List(Definition(ExternalFunction)),
     functions: List(Definition(Function)),
-  )
-}
-
-pub type ExternalFunction {
-  ExternalFunction(
-    name: String,
-    publicity: Publicity,
-    parameters: List(Field(Type)),
-    return: Type,
-    module: String,
-    function: String,
   )
 }
 
@@ -282,10 +269,6 @@ pub type CustomType {
   )
 }
 
-pub type ExternalType {
-  ExternalType(name: String, publicity: Publicity, parameters: List(String))
-}
-
 pub type Variant {
   Variant(name: String, fields: List(Field(Type)))
 }
@@ -338,20 +321,6 @@ fn push_constant(
   )
 }
 
-fn push_external_function(
-  module: Module,
-  attributes: List(Attribute),
-  external_function: ExternalFunction,
-) -> Module {
-  Module(
-    ..module,
-    external_functions: [
-      Definition(list.reverse(attributes), external_function),
-      ..module.external_functions
-    ],
-  )
-}
-
 fn push_function(
   module: Module,
   attributes: List(Attribute),
@@ -362,20 +331,6 @@ fn push_function(
     functions: [
       Definition(list.reverse(attributes), function),
       ..module.functions
-    ],
-  )
-}
-
-fn push_external_type(
-  module: Module,
-  attributes: List(Attribute),
-  external_type: ExternalType,
-) -> Module {
-  Module(
-    ..module,
-    external_types: [
-      Definition(list.reverse(attributes), external_type),
-      ..module.external_types
     ],
   )
 }
@@ -445,17 +400,6 @@ fn expect_name(
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
     [#(t.Name(name), _), ..tokens] -> next(name, tokens)
-    [#(other, position), ..] -> Error(UnexpectedToken(other, position))
-  }
-}
-
-fn expect_string(
-  tokens: Tokens,
-  next: fn(String, Tokens) -> Result(t, Error),
-) -> Result(t, Error) {
-  case tokens {
-    [] -> Error(UnexpectedEndOfInput)
-    [#(t.String(s), _), ..tokens] -> next(s, tokens)
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
   }
 }
@@ -532,16 +476,6 @@ fn slurp(
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
-    [#(t.Pub, _), #(t.External, _), #(t.Fn, _), ..tokens] -> {
-      let result = external_fn_definition(module, attributes, Public, tokens)
-      use #(module, tokens) <- result.try(result)
-      slurp(module, [], tokens)
-    }
-    [#(t.External, _), #(t.Fn, _), ..tokens] -> {
-      let result = external_fn_definition(module, attributes, Private, tokens)
-      use #(module, tokens) <- result.try(result)
-      slurp(module, [], tokens)
-    }
     [#(t.Pub, start), #(t.Fn, _), #(t.Name(name), _), ..tokens] -> {
       let Position(start) = start
       let result =
@@ -553,16 +487,6 @@ fn slurp(
       let Position(start) = start
       let result =
         function_definition(module, attributes, Private, name, start, tokens)
-      use #(module, tokens) <- result.try(result)
-      slurp(module, [], tokens)
-    }
-    [#(t.Pub, _), #(t.External, _), #(t.Type, _), ..tokens] -> {
-      let result = external_type_definition(module, attributes, Public, tokens)
-      use #(module, tokens) <- result.try(result)
-      slurp(module, [], tokens)
-    }
-    [#(t.External, _), #(t.Type, _), ..tokens] -> {
-      let result = external_type_definition(module, attributes, Private, tokens)
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
@@ -1586,50 +1510,6 @@ fn function_parameter(
   use #(type_, tokens) <- result.try(optional_type_annotation(tokens))
 
   Ok(#(FunctionParameter(label, parameter, type_), tokens))
-}
-
-fn external_fn_definition(
-  module: Module,
-  attributes: List(Attribute),
-  publicity: Publicity,
-  tokens: Tokens,
-) -> Result(#(Module, Tokens), Error) {
-  // Name
-  use name, tokens <- expect_name(tokens)
-
-  // Parameters
-  use _, tokens <- expect(t.LeftParen, tokens)
-  let parser = field(_, of: type_)
-  let result = comma_delimited([], tokens, parser, t.RightParen)
-  use #(parameters, tokens) <- result.try(result)
-
-  // Return type
-  use _, tokens <- expect(t.RightArrow, tokens)
-  use #(return_type, tokens) <- result.try(type_(tokens))
-
-  // Implementation location
-  use _, tokens <- expect(t.Equal, tokens)
-  use mod, tokens <- expect_string(tokens)
-  use f, tokens <- expect_string(tokens)
-
-  let extern =
-    ExternalFunction(name, publicity, parameters, return_type, mod, f)
-  let module = push_external_function(module, attributes, extern)
-  Ok(#(module, tokens))
-}
-
-fn external_type_definition(
-  module: Module,
-  attributes: List(Attribute),
-  publicity: Publicity,
-  tokens: Tokens,
-) -> Result(#(Module, Tokens), Error) {
-  use name, tokens <- expect_upper_name(tokens)
-  use #(parameters, tokens) <- result.try(optional_type_parameters(tokens))
-
-  let external_type = ExternalType(name, publicity, parameters)
-  let module = push_external_type(module, attributes, external_type)
-  Ok(#(module, tokens))
 }
 
 fn const_definition(
