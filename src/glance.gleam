@@ -291,7 +291,7 @@ pub type Error {
 
 pub fn module(src: String) -> Result(Module, Error) {
   tokens(src)
-  |> slurp(Module([], [], [], [], [], [], []), [], _)
+  |> slurp(Module([], [], [], [], []), [], _)
 }
 
 fn tokens(src: String) -> List(#(t.Token, Position)) {
@@ -733,7 +733,7 @@ fn do_statements(
   }
 }
 
-pub fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
+fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
   case tokens {
     [#(t.Let, _), #(t.Assert, _), ..tokens] -> assignment(Assert, tokens)
     [#(t.Let, _), ..tokens] -> assignment(Let, tokens)
