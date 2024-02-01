@@ -307,13 +307,17 @@ pub type Error {
 }
 
 pub fn module(src: String) -> Result(Module, Error) {
-  glexer.new(src)
-  |> glexer.lex
-  |> list.filter(fn(pair) { !is_whitespace(pair.0) })
+  tokens(src)
   |> slurp(Module([], [], [], [], [], [], []), [], _)
 }
 
-pub fn is_whitespace(token: Token) -> Bool {
+fn tokens(src: String) -> List(#(t.Token, Position)) {
+  glexer.new(src)
+  |> glexer.lex
+  |> list.filter(fn(pair) { !is_whitespace(pair.0) })
+}
+
+fn is_whitespace(token: Token) -> Bool {
   case token {
     t.EmptyLine | t.CommentNormal | t.CommentModule | t.CommentDoc(_) -> True
     _ -> False
@@ -738,7 +742,7 @@ fn function_definition(
 
   // The function body
   use #(body, end, tokens) <- result.try(case tokens {
-    [#(t.LeftBrace, _), ..tokens] -> do_block([], tokens)
+    [#(t.LeftBrace, _), ..tokens] -> block(tokens)
     _ -> Ok(#([], end, tokens))
   })
 
@@ -762,7 +766,7 @@ fn optional_return_annotation(
   }
 }
 
-pub fn block(tokens: Tokens) -> Result(#(List(Statement), Int, Tokens), Error) {
+fn block(tokens: Tokens) -> Result(#(List(Statement), Int, Tokens), Error) {
   do_block([], tokens)
 }
 
@@ -784,8 +788,9 @@ fn do_block(
 ///
 /// Stops on end of token stream, not closing brace.
 /// For parsing all statements in a block (`{ ... }`) use the `block` function. 
-pub fn statements(tokens: Tokens) -> Result(List(Statement), Error) {
-  do_statements([], tokens)
+pub fn statements(src: String) -> Result(List(Statement), Error) {
+  tokens(src)
+  |> do_statements([], _)
 }
 
 fn do_statements(
@@ -1120,7 +1125,7 @@ fn expression_unit(
     }
 
     [#(t.LeftBrace, _), ..tokens] -> {
-      use #(statements, _, tokens) <- result.map(do_block([], tokens))
+      use #(statements, _, tokens) <- result.map(block(tokens))
       #(Some(Block(statements)), tokens)
     }
 
@@ -1483,7 +1488,7 @@ fn fn_(tokens: Tokens) -> Result(#(Option(Expression), Tokens), Error) {
 
   // The function body
   use _, tokens <- expect(t.LeftBrace, tokens)
-  use #(body, _, tokens) <- result.try(do_block([], tokens))
+  use #(body, _, tokens) <- result.try(block(tokens))
 
   Ok(#(Some(Fn(parameters, return, body)), tokens))
 }
