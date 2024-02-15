@@ -290,10 +290,14 @@ pub type Error {
 }
 
 pub fn module(src: String) -> Result(Module, Error) {
+  tokens(src)
+  |> slurp(Module([], [], [], [], []), [], _)
+}
+
+fn tokens(src: String) -> List(#(t.Token, Position)) {
   glexer.new(src)
   |> glexer.lex
   |> list.filter(fn(pair) { !is_whitespace(pair.0) })
-  |> slurp(Module([], [], [], [], []), [], _)
 }
 
 fn is_whitespace(token: Token) -> Bool {
@@ -662,7 +666,7 @@ fn function_definition(
 
   // The function body
   use #(body, end, tokens) <- result.try(case tokens {
-    [#(t.LeftBrace, _), ..tokens] -> statements([], tokens)
+    [#(t.LeftBrace, _), ..tokens] -> block(tokens)
     _ -> Ok(#([], end, tokens))
   })
 
@@ -686,7 +690,11 @@ fn optional_return_annotation(
   }
 }
 
-fn statements(
+fn block(tokens: Tokens) -> Result(#(List(Statement), Int, Tokens), Error) {
+  do_block([], tokens)
+}
+
+fn do_block(
   acc: List(Statement),
   tokens: Tokens,
 ) -> Result(#(List(Statement), Int, Tokens), Error) {
@@ -695,8 +703,33 @@ fn statements(
       Ok(#(list.reverse(acc), end + 1, tokens))
     _ -> {
       use #(statement, tokens) <- result.try(statement(tokens))
-      statements([statement, ..acc], tokens)
+      do_block([statement, ..acc], tokens)
     }
+  }
+}
+
+/// Returns all statements in the remaining token stream
+///
+/// Stops on end of token stream, not closing brace.
+/// For parsing all statements in a block (`{ ... }`) use the `block` function. 
+pub fn statements(src: String) -> Result(List(Statement), Error) {
+  tokens(src)
+  |> do_statements([], _)
+}
+
+fn do_statements(
+  acc: List(Statement),
+  tokens: Tokens,
+) -> Result(List(Statement), Error) {
+  case statement(tokens) {
+    Ok(#(statement, rest)) -> {
+      let acc = [statement, ..acc]
+      case rest {
+        [] -> Ok(list.reverse(acc))
+        _ -> do_statements(acc, rest)
+      }
+    }
+    Error(reason) -> Error(reason)
   }
 }
 
@@ -1023,7 +1056,7 @@ fn expression_unit(
     }
 
     [#(t.LeftBrace, _), ..tokens] -> {
-      use #(statements, _, tokens) <- result.map(statements([], tokens))
+      use #(statements, _, tokens) <- result.map(block(tokens))
       #(Some(Block(statements)), tokens)
     }
 
@@ -1386,7 +1419,7 @@ fn fn_(tokens: Tokens) -> Result(#(Option(Expression), Tokens), Error) {
 
   // The function body
   use _, tokens <- expect(t.LeftBrace, tokens)
-  use #(body, _, tokens) <- result.try(statements([], tokens))
+  use #(body, _, tokens) <- result.try(block(tokens))
 
   Ok(#(Some(Fn(parameters, return, body)), tokens))
 }
