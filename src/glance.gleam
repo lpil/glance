@@ -280,7 +280,7 @@ pub type Field(t) {
 pub type Type {
   NamedType(name: String, module: Option(String), parameters: List(Type))
   TupleType(elements: List(Type))
-  FunctionType(paramters: List(Type), return: Type)
+  FunctionType(parameters: List(Type), return: Type)
   VariableType(name: String)
 }
 
