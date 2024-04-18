@@ -1,9 +1,9 @@
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import glexer/token.{type Token} as t
-import glexer.{type Position, Position}
 import gleam/result
+import glexer.{type Position, Position}
+import glexer/token.{type Token} as t
 
 type Tokens =
   List(#(Token, Position))
@@ -525,6 +525,7 @@ fn module_name(name: String, tokens: Tokens) -> Result(#(String, Tokens), Error)
 fn optional_module_alias(tokens: Tokens) -> #(Option(String), Tokens) {
   case tokens {
     [#(t.As, _), #(t.Name(alias), _), ..tokens] -> #(Some(alias), tokens)
+    [#(t.As, _), #(t.DiscardName(_), _), ..tokens] -> #(Some("_"), tokens)
     _ -> #(None, tokens)
   }
 }
@@ -559,12 +560,12 @@ fn unqualified_imports(
       ..tokens
     ]
     | [
-      #(t.Name(name), _),
-      #(t.As, _),
-      #(t.Name(alias), _),
-      #(t.Comma, _),
-      ..tokens
-    ] -> {
+        #(t.Name(name), _),
+        #(t.As, _),
+        #(t.Name(alias), _),
+        #(t.Comma, _),
+        ..tokens
+      ] -> {
       let import_ = UnqualifiedImport(name, Some(alias))
       unqualified_imports(types, [import_, ..values], tokens)
     }
@@ -578,12 +579,12 @@ fn unqualified_imports(
       ..tokens
     ]
     | [
-      #(t.Name(name), _),
-      #(t.As, _),
-      #(t.Name(alias), _),
-      #(t.RightBrace, _),
-      ..tokens
-    ] -> {
+        #(t.Name(name), _),
+        #(t.As, _),
+        #(t.Name(alias), _),
+        #(t.RightBrace, _),
+        ..tokens
+      ] -> {
       let import_ = UnqualifiedImport(name, Some(alias))
       Ok(#(list.reverse(types), list.reverse([import_, ..values]), tokens))
     }
@@ -1185,12 +1186,12 @@ fn call(
       ..tokens
     ]
     | [
-      #(t.Name(label), _),
-      #(t.Colon, _),
-      #(t.DiscardName(""), _),
-      #(t.RightParen, _),
-      ..tokens
-    ] -> {
+        #(t.Name(label), _),
+        #(t.Colon, _),
+        #(t.DiscardName(""), _),
+        #(t.RightParen, _),
+        ..tokens
+      ] -> {
       let capture =
         FnCapture(Some(label), function, list.reverse(arguments), [])
       after_expression(capture, tokens)

@@ -3365,4 +3365,11 @@ import gleam/list.{range} as _
 "
   |> glance.module()
   |> should.be_ok
+  |> fn(x: Module) { x.imports }
+  |> should.equal([
+    Definition(
+      [],
+      Import("gleam/list", Some("_"), [], [UnqualifiedImport("range", None)]),
+    ),
+  ])
 }
