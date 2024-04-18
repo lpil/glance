@@ -1,6 +1,3 @@
-import gleeunit
-import gleeunit/should
-import gleam/option.{None, Some}
 import glance.{
   type Module, AddInt, And, Assert, Assignment, Attribute, BigOption,
   BinaryOperator, BinaryOption, BitString, BitStringOption, Block, Call, Case,
@@ -16,6 +13,9 @@ import glance.{
   UnsignedOption, Use, Utf16CodepointOption, Utf16Option, Utf32CodepointOption,
   Utf32Option, Utf8CodepointOption, Utf8Option, Variable, VariableType, Variant,
 }
+import gleam/option.{None, Some}
+import gleeunit
+import gleeunit/should
 import simplifile
 
 pub fn main() {
@@ -3357,4 +3357,12 @@ pub type X
       ),
     ),
   ])
+}
+
+pub fn import_with_underscore_alias_test() {
+  "
+import gleam/list.{range} as _
+"
+  |> glance.module()
+  |> should.be_ok
 }
