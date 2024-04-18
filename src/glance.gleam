@@ -525,7 +525,10 @@ fn module_name(name: String, tokens: Tokens) -> Result(#(String, Tokens), Error)
 fn optional_module_alias(tokens: Tokens) -> #(Option(String), Tokens) {
   case tokens {
     [#(t.As, _), #(t.Name(alias), _), ..tokens] -> #(Some(alias), tokens)
-    [#(t.As, _), #(t.DiscardName(_), _), ..tokens] -> #(Some("_"), tokens)
+    [#(t.As, _), #(t.DiscardName(alias), _), ..tokens] -> #(
+      Some("_" <> alias),
+      tokens,
+    )
     _ -> #(None, tokens)
   }
 }
