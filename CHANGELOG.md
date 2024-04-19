@@ -3,6 +3,7 @@
 - Remove `external fn` and `external type` syntax. Unsupported in Gleam since 0.31.0.
 - Add support for list with spread operator and no fixed elements, i.e. `[..]`
 - Fixed a typo so `FunctionType.paramters` is now called `FunctionType.parameters`.
+- Add support for module alias discarded name
 
 ## v0.8.2 - 2024-01-20
 

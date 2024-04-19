@@ -472,7 +472,7 @@ pub fn aliased_import_test() {
   |> should.be_ok
   |> fn(x: Module) { x.imports }
   |> should.equal([
-    Definition([], Import("one/two/three", Some("four"), [], [])),
+    Definition([], Import("one/two/three", Some(Named("four")), [], [])),
   ])
 }
 
@@ -482,7 +482,7 @@ pub fn empty_unqualified_test() {
   |> should.be_ok
   |> fn(x: Module) { x.imports }
   |> should.equal([
-    Definition([], Import("one/two/three", Some("four"), [], [])),
+    Definition([], Import("one/two/three", Some(Named("four")), [], [])),
   ])
 }
 
@@ -494,7 +494,7 @@ pub fn unqualified_test() {
   |> should.equal([
     Definition(
       [],
-      Import("one/two/three", Some("four"), [], [
+      Import("one/two/three", Some(Named("four")), [], [
         UnqualifiedImport("One", None),
         UnqualifiedImport("Two", None),
         UnqualifiedImport("three", None),
@@ -514,7 +514,7 @@ pub fn unqualified_type_test() {
       [],
       Import(
         "one/two/three",
-        Some("four"),
+        Some(Named("four")),
         [
           UnqualifiedImport("One", None),
           UnqualifiedImport("Two", None),
@@ -535,7 +535,7 @@ pub fn unqualified_aliased_test() {
   |> should.equal([
     Definition(
       [],
-      Import("one/two/three", Some("four"), [], [
+      Import("one/two/three", Some(Named("four")), [], [
         UnqualifiedImport("One", Some("Two")),
         UnqualifiedImport("Three", None),
         UnqualifiedImport("four", Some("five")),
@@ -3361,7 +3361,7 @@ pub type X
 
 pub fn import_with_underscore_alias_test() {
   "
-import gleam/list.{range} as _
+import gleam/list.{range} as _alias
 "
   |> glance.module()
   |> should.be_ok
@@ -3369,7 +3369,9 @@ import gleam/list.{range} as _
   |> should.equal([
     Definition(
       [],
-      Import("gleam/list", Some("_"), [], [UnqualifiedImport("range", None)]),
+      Import("gleam/list", Some(Discarded("alias")), [], [
+        UnqualifiedImport("range", None),
+      ]),
     ),
   ])
 }
