@@ -226,7 +226,7 @@ pub type AssignmentName {
 pub type Import {
   Import(
     module: String,
-    alias: Option(String),
+    alias: Option(AssignmentName),
     unqualified_types: List(UnqualifiedImport),
     unqualified_values: List(UnqualifiedImport),
   )
@@ -522,11 +522,11 @@ fn module_name(name: String, tokens: Tokens) -> Result(#(String, Tokens), Error)
   }
 }
 
-fn optional_module_alias(tokens: Tokens) -> #(Option(String), Tokens) {
+fn optional_module_alias(tokens: Tokens) -> #(Option(AssignmentName), Tokens) {
   case tokens {
-    [#(t.As, _), #(t.Name(alias), _), ..tokens] -> #(Some(alias), tokens)
+    [#(t.As, _), #(t.Name(alias), _), ..tokens] -> #(Some(Named(alias)), tokens)
     [#(t.As, _), #(t.DiscardName(alias), _), ..tokens] -> #(
-      Some("_" <> alias),
+      Some(Discarded(alias)),
       tokens,
     )
     _ -> #(None, tokens)
