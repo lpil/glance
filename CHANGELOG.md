@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Support for the old `panic("reason")` and `todo("reason")` syntax has been
+  removed. These now parse as function calls.
+
 ## v0.10.0 - 2024-04-20
 
 - Added support for module alias discarded name. This is a breaking change as

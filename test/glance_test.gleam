@@ -1065,7 +1065,7 @@ pub fn expression_todo_message_test() {
         publicity: Public,
         parameters: [],
         return: None,
-        body: [Expression(Todo(Some("huh")))],
+        body: [Expression(Call(Todo(None), [Field(None, String("huh"))]))],
       ),
     ),
   ])
@@ -3180,7 +3180,7 @@ pub fn expression_panic_message_test() {
         publicity: Public,
         parameters: [],
         return: None,
-        body: [Expression(Panic(Some("huh")))],
+        body: [Expression(Call(Panic(None), [Field(None, String("huh"))]))],
       ),
     ),
   ])
