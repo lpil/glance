@@ -3437,3 +3437,53 @@ import gleam/list.{range} as _alias
     ),
   ])
 }
+
+// https://github.com/lpil/glance/issues/10
+pub fn negative_float_bug_test() {
+  "
+pub fn main() {
+  -1.1
+}
+"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(1, 25),
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [Expression(Float("-1.1"))],
+      ),
+    ),
+  ])
+}
+
+// https://github.com/lpil/glance/issues/10
+pub fn negative_int_bug_test() {
+  "
+pub fn main() {
+  -11
+}
+"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(1, 24),
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [Expression(NegateInt(Int("11")))],
+      ),
+    ),
+  ])
+}

@@ -7,6 +7,7 @@
 - Support for the old `panic("reason")` and `todo("reason")` syntax has been
   removed. These now parse as function calls.
 - Added support for type holes.
+- Fixed a bug where negative floats would parse as `NegateInt` of a float.
 
 ## v0.10.0 - 2024-04-20
 

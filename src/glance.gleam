@@ -1003,7 +1003,11 @@ fn expression_unit(
 
     [#(t.Minus, _), ..tokens] -> {
       use #(expression, tokens) <- result.map(expression(tokens))
-      #(Some(NegateInt(expression)), tokens)
+      let expression = case expression {
+        Float(amount) -> Float("-" <> amount)
+        _ -> NegateInt(expression)
+      }
+      #(Some(expression), tokens)
     }
 
     [#(t.LeftBrace, _), ..tokens] -> {
