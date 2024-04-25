@@ -3,7 +3,7 @@ import glance.{
   BinaryOperator, BinaryOption, BitString, BitStringOption, Block, Call, Case,
   Clause, Constant, CustomType, Definition, Discarded, Expression, Field,
   FieldAccess, Float, FloatOption, Fn, FnCapture, FnParameter, Function,
-  FunctionParameter, FunctionType, Import, Int, IntOption, Let, List,
+  FunctionParameter, FunctionType, HoleType, Import, Int, IntOption, Let, List,
   LittleOption, Module, MultInt, Named, NamedType, NativeOption, NegateBool,
   NegateInt, Or, Panic, PatternAssignment, PatternBitString, PatternConcatenate,
   PatternConstructor, PatternDiscard, PatternFloat, PatternInt, PatternList,
@@ -370,6 +370,24 @@ pub fn alias_variable_test() {
         publicity: Public,
         parameters: [],
         aliased: VariableType("a"),
+      ),
+    ),
+  ])
+}
+
+pub fn alias_hole_test() {
+  "pub type X = _whatever"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.type_aliases }
+  |> should.equal([
+    Definition(
+      [],
+      TypeAlias(
+        name: "X",
+        publicity: Public,
+        parameters: [],
+        aliased: HoleType("whatever"),
       ),
     ),
   ])

@@ -282,6 +282,7 @@ pub type Type {
   TupleType(elements: List(Type))
   FunctionType(parameters: List(Type), return: Type)
   VariableType(name: String)
+  HoleType(name: String)
 }
 
 pub type Error {
@@ -1602,6 +1603,9 @@ fn type_(tokens: Tokens) -> Result(#(Type, Tokens), Error) {
     }
     [#(t.UpperName(name), _), ..tokens] -> {
       named_type(name, None, tokens)
+    }
+    [#(t.DiscardName(name), _), ..tokens] -> {
+      Ok(#(HoleType(name), tokens))
     }
     [#(t.Name(name), _), ..tokens] -> {
       Ok(#(VariableType(name), tokens))
