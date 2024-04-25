@@ -87,8 +87,8 @@ pub type Expression {
   NegateInt(Expression)
   NegateBool(Expression)
   Block(List(Statement))
-  Panic(Option(String))
-  Todo(Option(String))
+  Panic(Option(Expression))
+  Todo(Option(Expression))
   Tuple(List(Expression))
   List(elements: List(Expression), rest: Option(Expression))
   Fn(
@@ -972,10 +972,6 @@ fn expression_unit(
 
     [#(t.UpperName(name), _), ..tokens] -> Ok(#(Some(Variable(name)), tokens))
 
-    [#(t.Panic, _), #(t.As, _), #(t.String(message), _), ..tokens] ->
-      Ok(#(Some(Panic(Some(message))), tokens))
-    [#(t.Panic, _), ..tokens] -> Ok(#(Some(Panic(None)), tokens))
-
     [#(t.Int(value), _), ..tokens] -> Ok(#(Some(Int(value)), tokens))
     [#(t.Float(value), _), ..tokens] -> Ok(#(Some(Float(value)), tokens))
     [#(t.String(value), _), ..tokens] -> Ok(#(Some(String(value)), tokens))
@@ -984,10 +980,8 @@ fn expression_unit(
     [#(t.Fn, _), ..tokens] -> fn_(tokens)
     [#(t.Case, _), ..tokens] -> case_(tokens)
 
-    [#(t.Todo, _), #(t.As, _), #(t.String(value), _), ..tokens] ->
-      Ok(#(Some(Todo(Some(value))), tokens))
-
-    [#(t.Todo, _), ..tokens] -> Ok(#(Some(Todo(None)), tokens))
+    [#(t.Panic, _), ..tokens] -> todo_panic(tokens, Panic)
+    [#(t.Todo, _), ..tokens] -> todo_panic(tokens, Todo)
 
     [#(t.LeftSquare, _), ..tokens] -> {
       let result = list(expression, None, [], tokens)
@@ -1034,6 +1028,19 @@ fn expression_unit(
       }
     }
     None -> Ok(#(None, tokens))
+  }
+}
+
+fn todo_panic(
+  tokens: Tokens,
+  constructor: fn(Option(Expression)) -> Expression,
+) -> Result(#(Option(Expression), Tokens), Error) {
+  case tokens {
+    [#(t.As, _), ..tokens] -> {
+      use #(reason, tokens) <- result.try(expression(tokens))
+      Ok(#(Some(constructor(Some(reason))), tokens))
+    }
+    _ -> Ok(#(Some(constructor(None)), tokens))
   }
 }
 

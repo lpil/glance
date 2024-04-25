@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The `Panic` and `Todo` AST nodes have been updated to take expressions as the
+  error message, to match current Gleam.
 - Support for the old `panic("reason")` and `todo("reason")` syntax has been
   removed. These now parse as function calls.
 

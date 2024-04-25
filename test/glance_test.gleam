@@ -3160,7 +3160,29 @@ pub fn todo_as_test() {
         publicity: Public,
         parameters: [],
         return: None,
-        body: [Expression(Todo(Some("oh no")))],
+        body: [Expression(Todo(Some(String("oh no"))))],
+      ),
+    ),
+  ])
+}
+
+pub fn todo_as_block_test() {
+  "pub fn main() {
+  todo as { \"oh no\" }
+}"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(0, 39),
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [Expression(Todo(Some(Block([Expression(String("oh no"))]))))],
       ),
     ),
   ])
@@ -3202,7 +3224,29 @@ pub fn panic_as_test() {
         publicity: Public,
         parameters: [],
         return: None,
-        body: [Expression(Panic(Some("oh no")))],
+        body: [Expression(Panic(Some(String("oh no"))))],
+      ),
+    ),
+  ])
+}
+
+pub fn panic_as_block_test() {
+  "pub fn main() {
+  panic as { \"oh no\" }
+}"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(0, 40),
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [Expression(Panic(Some(Block([Expression(String("oh no"))]))))],
       ),
     ),
   ])
