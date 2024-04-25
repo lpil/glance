@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.11.0 - 2024-04-25
 
 - The `Panic` and `Todo` AST nodes have been updated to take expressions as the
   error message, to match current Gleam.
