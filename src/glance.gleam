@@ -275,6 +275,7 @@ pub type Variant {
 
 pub type Field(t) {
   Field(label: Option(String), item: t)
+  PunnedField(label_item: String)
 }
 
 pub type Type {
@@ -765,7 +766,10 @@ fn pattern_constructor_arguments(
       Ok(#(arguments, True, tokens))
 
     tokens -> {
-      use #(pattern, tokens) <- result.try(field(tokens, pattern))
+      use #(pattern, tokens) <- result.try(
+        field_pun(tokens)
+        |> result.try_recover(fn(_) { field(tokens, pattern) }),
+      )
       let arguments = [pattern, ..arguments]
 
       case tokens {
@@ -1297,10 +1301,15 @@ fn record_update_field(
   tokens: Tokens,
 ) -> Result(#(#(String, Expression), Tokens), Error) {
   case tokens {
-    [#(t.Name(name), _), #(t.Colon, _), ..tokens] -> {
-      use #(expression, tokens) <- result.try(expression(tokens))
-      Ok(#(#(name, expression), tokens))
-    }
+    [#(t.Name(name), _), #(t.Colon, _), ..tokens] ->
+      case tokens {
+        [#(t.Comma, _), ..] | [#(t.RightParen, _), ..] ->
+          Ok(#(#(name, Variable(name)), tokens))
+        _ -> {
+          use #(expression, tokens) <- result.try(expression(tokens))
+          Ok(#(#(name, expression), tokens))
+        }
+      }
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
     [] -> Error(UnexpectedEndOfInput)
   }
@@ -1706,11 +1715,11 @@ fn optional_variant_fields(
   }
 }
 
-fn field_pun(tokens: Tokens) -> Result(#(Field(Expression), Tokens), Error) {
+fn field_pun(tokens: Tokens) -> Result(#(Field(t), Tokens), Error) {
   case tokens {
     [#(t.Name(name), _), #(t.Colon, _), #(t.RightParen, _) as end, ..tokens]
     | [#(t.Name(name), _), #(t.Colon, _), #(t.Comma, _) as end, ..tokens] -> {
-      Ok(#(Field(Some(name), Variable(name)), [end, ..tokens]))
+      Ok(#(PunnedField(name), [end, ..tokens]))
     }
     _ -> unexpected_error(tokens)
   }

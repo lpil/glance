@@ -8,10 +8,11 @@ import glance.{
   Panic, PatternAssignment, PatternBitString, PatternConcatenate,
   PatternConstructor, PatternDiscard, PatternFloat, PatternInt, PatternList,
   PatternString, PatternTuple, PatternVariable, Pipe, Private, Public,
-  RecordUpdate, SignedOption, SizeOption, SizeValueOption, Span, String, Todo,
-  Tuple, TupleIndex, TupleType, TypeAlias, UnitOption, UnqualifiedImport,
-  UnsignedOption, Use, Utf16CodepointOption, Utf16Option, Utf32CodepointOption,
-  Utf32Option, Utf8CodepointOption, Utf8Option, Variable, VariableType, Variant,
+  PunnedField, RecordUpdate, SignedOption, SizeOption, SizeValueOption, Span,
+  String, Todo, Tuple, TupleIndex, TupleType, TypeAlias, UnitOption,
+  UnqualifiedImport, UnsignedOption, Use, Utf16CodepointOption, Utf16Option,
+  Utf32CodepointOption, Utf32Option, Utf8CodepointOption, Utf8Option, Variable,
+  VariableType, Variant,
 }
 import gleam/option.{None, Some}
 import gleeunit
@@ -3490,11 +3491,10 @@ pub fn main() {
   ])
 }
 
-pub fn field_punning_test() {
+pub fn record_punning_test() {
   "
-pub fn main() {
-  call(pun:)
-  Constructor(pun:)
+pub fn wibble() {
+  Wobble(field:)
 }
 "
   |> glance.module
@@ -3504,19 +3504,131 @@ pub fn main() {
     Definition(
       [],
       Function(
-        location: Span(1, 51),
-        name: "main",
+        location: Span(1, 37),
+        name: "wibble",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [Expression(Call(Variable("Wobble"), [PunnedField("field")]))],
+      ),
+    ),
+  ])
+}
+
+pub fn const_record_punning_test() {
+  "
+const wibble = Wibble(field:)
+"
+  |> glance.module
+  |> should.be_ok
+  |> fn(x: Module) { x.constants }
+  |> should.equal([
+    Definition(
+      [],
+      Constant(
+        name: "wibble",
+        annotation: None,
+        publicity: Private,
+        value: Call(Variable("Wibble"), [PunnedField("field")]),
+      ),
+    ),
+  ])
+}
+
+pub fn call_punning_test() {
+  "
+pub fn wibble() {
+  wobble(field:)
+}
+"
+  |> glance.module
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(1, 37),
+        name: "wibble",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [Expression(Call(Variable("wobble"), [PunnedField("field")]))],
+      ),
+    ),
+  ])
+}
+
+pub fn pattern_punning_test() {
+  "
+pub fn wibble() {
+  case wobble {
+    Wabble(field:) -> field
+  }
+}
+"
+  |> glance.module
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(1, 68),
+        name: "wibble",
         publicity: Public,
         parameters: [],
         return: None,
         body: [
           Expression(
-            Call(Variable("call"), [Field(Some("pun"), Variable("pun"))]),
-          ),
-          Expression(
-            Call(Variable("Constructor"), [Field(Some("pun"), Variable("pun"))]),
+            Case([Variable("wobble")], [
+              Clause(
+                patterns: [
+                  [
+                    PatternConstructor(
+                      module: None,
+                      constructor: "Wabble",
+                      arguments: [PunnedField("field")],
+                      with_spread: False,
+                    ),
+                  ],
+                ],
+                guard: None,
+                body: Variable("field"),
+              ),
+            ]),
           ),
         ],
+      ),
+    ),
+  ])
+}
+
+pub fn record_update_punning_test() {
+  "
+pub fn wibble() {
+  Wobble(..wabble, field:)
+}
+"
+  |> glance.module
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        "wibble",
+        Public,
+        [],
+        None,
+        [
+          Expression(
+            RecordUpdate(None, "Wobble", Variable("wabble"), [
+              #("field", Variable("field")),
+            ]),
+          ),
+        ],
+        Span(1, 47),
       ),
     ),
   ])
