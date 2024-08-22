@@ -3489,3 +3489,35 @@ pub fn main() {
     ),
   ])
 }
+
+pub fn field_punning_test() {
+  "
+pub fn main() {
+  call(pun:)
+  Constructor(pun:)
+}
+"
+  |> glance.module
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        location: Span(1, 51),
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [
+          Expression(
+            Call(Variable("call"), [Field(Some("pun"), Variable("pun"))]),
+          ),
+          Expression(
+            Call(Variable("Constructor"), [Field(Some("pun"), Variable("pun"))]),
+          ),
+        ],
+      ),
+    ),
+  ])
+}
