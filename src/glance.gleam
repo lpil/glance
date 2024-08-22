@@ -1215,7 +1215,10 @@ fn call(
     }
 
     _ -> {
-      use #(argument, tokens) <- result.try(field(tokens, expression))
+      use #(argument, tokens) <- result.try(
+        field_pun(tokens)
+        |> result.try_recover(fn(_) { field(tokens, expression) }),
+      )
       let arguments = [argument, ..arguments]
       case tokens {
         [#(t.Comma, _), ..tokens] -> {
@@ -1700,6 +1703,16 @@ fn optional_variant_fields(
       comma_delimited([], tokens, field(_, of: type_), until: t.RightParen)
     }
     _ -> Ok(#([], tokens))
+  }
+}
+
+fn field_pun(tokens: Tokens) -> Result(#(Field(Expression), Tokens), Error) {
+  case tokens {
+    [#(t.Name(name), _), #(t.Colon, _), #(t.RightParen, _) as end, ..tokens]
+    | [#(t.Name(name), _), #(t.Colon, _), #(t.Comma, _) as end, ..tokens] -> {
+      Ok(#(Field(Some(name), Variable(name)), [end, ..tokens]))
+    }
+    _ -> unexpected_error(tokens)
   }
 }
 
