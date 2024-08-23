@@ -1705,9 +1705,27 @@ fn optional_variant_fields(
   case tokens {
     [#(t.LeftParen, _), #(t.RightParen, _), ..tokens] -> Ok(#([], tokens))
     [#(t.LeftParen, _), ..tokens] -> {
-      comma_delimited([], tokens, field(_, of: type_), until: t.RightParen)
+      comma_delimited(
+        [],
+        tokens,
+        // ensure a punned field is not used in a record constructor definition
+        non_punned_field(_, of: type_),
+        until: t.RightParen,
+      )
     }
     _ -> Ok(#([], tokens))
+  }
+}
+
+fn non_punned_field(
+  tokens: Tokens,
+  of parser: fn(Tokens) -> Result(#(t, Tokens), Error),
+) {
+  use #(t, tokens) <- result.try(field(tokens, parser))
+
+  case t {
+    PunnedField(..) -> unexpected_error(tokens)
+    _ -> Ok(#(t, tokens))
   }
 }
 
