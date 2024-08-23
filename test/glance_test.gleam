@@ -1337,7 +1337,10 @@ pub fn record_update_test() {
               module: None,
               constructor: "Wibble",
               record: Variable("wibble"),
-              fields: [#("one", Int("1")), #("two", Int("2"))],
+              fields: [
+                Field(Some("one"), Int("1")),
+                Field(Some("two"), Int("2")),
+              ],
             ),
           ),
         ],
@@ -1366,7 +1369,10 @@ pub fn record_update_qualified_test() {
               module: Some("wobble"),
               constructor: "Wibble",
               record: Variable("wibble"),
-              fields: [#("one", Int("1")), #("two", Int("2"))],
+              fields: [
+                Field(Some("one"), Int("1")),
+                Field(Some("two"), Int("2")),
+              ],
             ),
           ),
         ],
@@ -1424,7 +1430,10 @@ pub fn record_update_trailing_comma_test() {
               module: None,
               constructor: "Wibble",
               record: Variable("wibble"),
-              fields: [#("one", Int("1")), #("two", Int("2"))],
+              fields: [
+                Field(Some("one"), Int("1")),
+                Field(Some("two"), Int("2")),
+              ],
             ),
           ),
         ],
@@ -3559,6 +3568,34 @@ pub fn wibble() {
   ])
 }
 
+pub fn function_capture_punning_test() {
+  "
+pub fn wibble() {
+  wobble(_, field:)
+}
+"
+  |> glance.module
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        "wibble",
+        Public,
+        [],
+        None,
+        [
+          Expression(
+            FnCapture(None, Variable("wobble"), [], [PunnedField("field")]),
+          ),
+        ],
+        Span(1, 39),
+      ),
+    ),
+  ])
+}
+
 pub fn pattern_punning_test() {
   "
 pub fn wibble() {
@@ -3624,11 +3661,76 @@ pub fn wibble() {
         [
           Expression(
             RecordUpdate(None, "Wobble", Variable("wabble"), [
-              #("field", Variable("field")),
+              PunnedField("field"),
             ]),
           ),
         ],
         Span(1, 47),
+      ),
+    ),
+  ])
+}
+
+pub fn multiple_field_call_test() {
+  "
+pub fn wibble() {
+  wobble(unlabelled, punned_mid:, non_punned: a, punned_end:)
+}
+"
+  |> glance.module
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        "wibble",
+        Public,
+        [],
+        None,
+        [
+          Expression(
+            Call(Variable("wobble"), [
+              Field(None, Variable("unlabelled")),
+              PunnedField("punned_mid"),
+              Field(Some("non_punned"), Variable("a")),
+              PunnedField("punned_end"),
+            ]),
+          ),
+        ],
+        Span(1, 82),
+      ),
+    ),
+  ])
+}
+
+pub fn multiple_field_record_update_test() {
+  "
+pub fn wibble() {
+  Wobble(..wobble, punned_mid:, non_punned: a, punned_end:)
+}
+"
+  |> glance.module
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        "wibble",
+        Public,
+        [],
+        None,
+        [
+          Expression(
+            RecordUpdate(None, "Wobble", Variable("wobble"), [
+              PunnedField("punned_mid"),
+              Field(Some("non_punned"), Variable("a")),
+              PunnedField("punned_end"),
+            ]),
+          ),
+        ],
+        Span(1, 80),
       ),
     ),
   ])
