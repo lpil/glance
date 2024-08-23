@@ -3733,3 +3733,13 @@ pub fn wibble() {
     ),
   ])
 }
+
+pub fn no_punning_in_constructors_test() {
+  "
+pub type Wibble {
+  Wobble(int:)
+}
+"
+  |> glance.module
+  |> should.be_error
+}
