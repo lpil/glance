@@ -100,7 +100,7 @@ pub type Expression {
     module: Option(String),
     constructor: String,
     record: Expression,
-    fields: List(#(String, Expression)),
+    fields: List(Field(Expression)),
   )
   FieldAccess(container: Expression, label: String)
   Call(function: Expression, arguments: List(Field(Expression)))
@@ -766,10 +766,7 @@ fn pattern_constructor_arguments(
       Ok(#(arguments, True, tokens))
 
     tokens -> {
-      use #(pattern, tokens) <- result.try(
-        field_pun(tokens)
-        |> result.try_recover(fn(_) { field(tokens, pattern) }),
-      )
+      use #(pattern, tokens) <- result.try(field(tokens, pattern))
       let arguments = [pattern, ..arguments]
 
       case tokens {
@@ -1219,10 +1216,7 @@ fn call(
     }
 
     _ -> {
-      use #(argument, tokens) <- result.try(
-        field_pun(tokens)
-        |> result.try_recover(fn(_) { field(tokens, expression) }),
-      )
+      use #(argument, tokens) <- result.try(field(tokens, expression))
       let arguments = [argument, ..arguments]
       case tokens {
         [#(t.Comma, _), ..tokens] -> {
@@ -1299,15 +1293,17 @@ fn record_update(
 
 fn record_update_field(
   tokens: Tokens,
-) -> Result(#(#(String, Expression), Tokens), Error) {
+) -> Result(#(Field(Expression), Tokens), Error) {
   case tokens {
     [#(t.Name(name), _), #(t.Colon, _), ..tokens] ->
       case tokens {
+        // Field is punned (`value:` instead of `value: value`)
         [#(t.Comma, _), ..] | [#(t.RightParen, _), ..] ->
-          Ok(#(#(name, Variable(name)), tokens))
+          Ok(#(PunnedField(name), tokens))
+        // Field is not punned
         _ -> {
           use #(expression, tokens) <- result.try(expression(tokens))
-          Ok(#(#(name, expression), tokens))
+          Ok(#(Field(Some(name), expression), tokens))
         }
       }
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
@@ -1715,25 +1711,23 @@ fn optional_variant_fields(
   }
 }
 
-fn field_pun(tokens: Tokens) -> Result(#(Field(t), Tokens), Error) {
-  case tokens {
-    [#(t.Name(name), _), #(t.Colon, _), #(t.RightParen, _) as end, ..tokens]
-    | [#(t.Name(name), _), #(t.Colon, _), #(t.Comma, _) as end, ..tokens] -> {
-      Ok(#(PunnedField(name), [end, ..tokens]))
-    }
-    _ -> unexpected_error(tokens)
-  }
-}
-
 fn field(
   tokens: Tokens,
   of parser: fn(Tokens) -> Result(#(t, Tokens), Error),
 ) -> Result(#(Field(t), Tokens), Error) {
   case tokens {
-    [#(t.Name(name), _), #(t.Colon, _), ..tokens] -> {
-      use #(t, tokens) <- result.try(parser(tokens))
-      Ok(#(Field(Some(name), t), tokens))
-    }
+    [#(t.Name(name), _), #(t.Colon, _), ..tokens] ->
+      case tokens {
+        // Field is punned (`value:` instead of `value: value`)
+        [#(t.Comma, _), ..] | [#(t.RightParen, _), ..] -> {
+          Ok(#(PunnedField(name), tokens))
+        }
+        // Field is not punned
+        _ -> {
+          use #(t, tokens) <- result.try(parser(tokens))
+          Ok(#(Field(Some(name), t), tokens))
+        }
+      }
     _ -> {
       use #(t, tokens) <- result.try(parser(tokens))
       Ok(#(Field(None, t), tokens))
