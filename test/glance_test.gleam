@@ -1,18 +1,18 @@
 import glance.{
   type Module, AddInt, And, Assert, Assignment, Attribute, BigOption,
   BinaryOperator, BitString, BitsOption, Block, BytesOption, Call, Case, Clause,
-  Constant, CustomType, Definition, Discarded, Expression, Field, FieldAccess,
-  Float, FloatOption, Fn, FnCapture, FnParameter, Function, FunctionParameter,
-  FunctionType, HoleType, Import, Int, IntOption, Let, List, LittleOption,
-  Module, MultInt, Named, NamedType, NativeOption, NegateBool, NegateInt, Or,
-  Panic, PatternAssignment, PatternBitString, PatternConcatenate,
+  Constant, CustomType, Definition, Discarded, Expression, FieldAccess, Float,
+  FloatOption, Fn, FnCapture, FnParameter, Function, FunctionParameter,
+  FunctionType, HoleType, Import, Int, IntOption, LabelledField, Let, List,
+  LittleOption, Module, MultInt, Named, NamedType, NativeOption, NegateBool,
+  NegateInt, Or, Panic, PatternAssignment, PatternBitString, PatternConcatenate,
   PatternConstructor, PatternDiscard, PatternFloat, PatternInt, PatternList,
   PatternString, PatternTuple, PatternVariable, Pipe, Private, Public,
-  PunnedField, RecordUpdate, SignedOption, SizeOption, SizeValueOption, Span,
-  String, Todo, Tuple, TupleIndex, TupleType, TypeAlias, UnitOption,
-  UnqualifiedImport, UnsignedOption, Use, Utf16CodepointOption, Utf16Option,
-  Utf32CodepointOption, Utf32Option, Utf8CodepointOption, Utf8Option, Variable,
-  VariableType, Variant,
+  RecordUpdate, RecordUpdateField, ShorthandField, SignedOption, SizeOption,
+  SizeValueOption, Span, String, Todo, Tuple, TupleIndex, TupleType, TypeAlias,
+  UnitOption, UnlabelledField, UnqualifiedImport, UnsignedOption, Use,
+  Utf16CodepointOption, Utf16Option, Utf32CodepointOption, Utf32Option,
+  Utf8CodepointOption, Utf8Option, Variable, VariableType, Variant,
 }
 import gleam/option.{None, Some}
 import gleeunit
@@ -144,7 +144,7 @@ pub fn box_test() {
         publicity: Public,
         opaque_: False,
         parameters: ["x"],
-        variants: [Variant("Box", [Field(None, VariableType("x"))])],
+        variants: [Variant("Box", [UnlabelledField(VariableType("x"))])],
       ),
     ),
   ])
@@ -167,9 +167,9 @@ pub fn multiple_fields_test() {
         parameters: ["x", "y", "z"],
         variants: [
           Variant("Box", [
-            Field(None, VariableType("x")),
-            Field(None, VariableType("y")),
-            Field(None, VariableType("z")),
+            UnlabelledField(VariableType("x")),
+            UnlabelledField(VariableType("y")),
+            UnlabelledField(VariableType("z")),
           ]),
         ],
       ),
@@ -276,7 +276,7 @@ pub fn fields_trailing_comma_test() {
         publicity: Public,
         opaque_: False,
         parameters: ["a"],
-        variants: [Variant("Box", [Field(None, VariableType("a"))])],
+        variants: [Variant("Box", [UnlabelledField(VariableType("a"))])],
       ),
     ),
   ])
@@ -299,8 +299,8 @@ pub fn labelled_fields_test() {
         parameters: ["a"],
         variants: [
           Variant("Box", [
-            Field(Some("a"), VariableType("a")),
-            Field(Some("b"), VariableType("a")),
+            LabelledField("a", VariableType("a")),
+            LabelledField("b", VariableType("a")),
           ]),
         ],
       ),
@@ -730,7 +730,10 @@ pub fn constant_constructor_test() {
         "x",
         Private,
         None,
-        Call(Variable("Box"), [Field(None, Int("1")), Field(None, Float("2.0"))]),
+        Call(Variable("Box"), [
+          UnlabelledField(Int("1")),
+          UnlabelledField(Float("2.0")),
+        ]),
       ),
     ),
   ])
@@ -749,8 +752,8 @@ pub fn constant_labelled_constructor_test() {
         Private,
         None,
         Call(Variable("Box"), [
-          Field(None, Int("1")),
-          Field(Some("wobber"), Float("2.0")),
+          UnlabelledField(Int("1")),
+          LabelledField("wobber", Float("2.0")),
         ]),
       ),
     ),
@@ -1084,7 +1087,7 @@ pub fn expression_todo_message_test() {
         publicity: Public,
         parameters: [],
         return: None,
-        body: [Expression(Call(Todo(None), [Field(None, String("huh"))]))],
+        body: [Expression(Call(Todo(None), [UnlabelledField(String("huh"))]))],
       ),
     ),
   ])
@@ -1338,8 +1341,8 @@ pub fn record_update_test() {
               constructor: "Wibble",
               record: Variable("wibble"),
               fields: [
-                Field(Some("one"), Int("1")),
-                Field(Some("two"), Int("2")),
+                RecordUpdateField("one", Some(Int("1"))),
+                RecordUpdateField("two", Some(Int("2"))),
               ],
             ),
           ),
@@ -1370,8 +1373,8 @@ pub fn record_update_qualified_test() {
               constructor: "Wibble",
               record: Variable("wibble"),
               fields: [
-                Field(Some("one"), Int("1")),
-                Field(Some("two"), Int("2")),
+                RecordUpdateField("one", Some(Int("1"))),
+                RecordUpdateField("two", Some(Int("2"))),
               ],
             ),
           ),
@@ -1431,8 +1434,8 @@ pub fn record_update_trailing_comma_test() {
               constructor: "Wibble",
               record: Variable("wibble"),
               fields: [
-                Field(Some("one"), Int("1")),
-                Field(Some("two"), Int("2")),
+                RecordUpdateField("one", Some(Int("1"))),
+                RecordUpdateField("two", Some(Int("2"))),
               ],
             ),
           ),
@@ -1490,7 +1493,7 @@ pub fn record_partial_destructure_trailing_comma_test() {
             PatternConstructor(
               None,
               "Wibble",
-              [Field(None, PatternVariable("y"))],
+              [UnlabelledField(PatternVariable("y"))],
               True,
             ),
             None,
@@ -1592,9 +1595,9 @@ pub fn call_test() {
         body: [
           Expression(
             Call(function: Variable("wobble"), arguments: [
-              Field(None, Int("1")),
-              Field(None, Int("2")),
-              Field(None, Int("3")),
+              UnlabelledField(Int("1")),
+              UnlabelledField(Int("2")),
+              UnlabelledField(Int("3")),
             ]),
           ),
         ],
@@ -1620,9 +1623,9 @@ pub fn call_labelled_test() {
         body: [
           Expression(
             Call(function: Variable("wobble"), arguments: [
-              Field(None, Int("1")),
-              Field(Some("one"), Int("2")),
-              Field(Some("two"), Int("3")),
+              UnlabelledField(Int("1")),
+              LabelledField("one", Int("2")),
+              LabelledField("two", Int("3")),
             ]),
           ),
         ],
@@ -1653,9 +1656,9 @@ pub fn call_field_test() {
                 label: "wobble",
               ),
               arguments: [
-                Field(None, Int("1")),
-                Field(None, Int("2")),
-                Field(None, Int("3")),
+                UnlabelledField(Int("1")),
+                UnlabelledField(Int("2")),
+                UnlabelledField(Int("3")),
               ],
             ),
           ),
@@ -1684,9 +1687,9 @@ pub fn call_recursive_test() {
             Call(
               function: Call(
                 function: Call(function: Variable("wobble"), arguments: [
-                  Field(None, Int("1")),
-                  Field(None, Int("2")),
-                  Field(None, Int("3")),
+                  UnlabelledField(Int("1")),
+                  UnlabelledField(Int("2")),
+                  UnlabelledField(Int("3")),
                 ]),
                 arguments: [],
               ),
@@ -1764,9 +1767,9 @@ pub fn function_capture_before_test() {
           Expression(FnCapture(
             label: None,
             arguments_before: [
-              Field(None, Int("1")),
-              Field(None, Int("2")),
-              Field(None, Int("3")),
+              UnlabelledField(Int("1")),
+              UnlabelledField(Int("2")),
+              UnlabelledField(Int("3")),
             ],
             arguments_after: [],
             function: Variable("wibble"),
@@ -1796,9 +1799,9 @@ pub fn function_capture_after_test() {
             label: None,
             arguments_before: [],
             arguments_after: [
-              Field(None, Int("1")),
-              Field(None, Int("2")),
-              Field(None, Int("3")),
+              UnlabelledField(Int("1")),
+              UnlabelledField(Int("2")),
+              UnlabelledField(Int("3")),
             ],
             function: Variable("wibble"),
           )),
@@ -1827,9 +1830,9 @@ pub fn function_capture_after_trailing_comma_test() {
             label: None,
             arguments_before: [],
             arguments_after: [
-              Field(None, Int("1")),
-              Field(None, Int("2")),
-              Field(None, Int("3")),
+              UnlabelledField(Int("1")),
+              UnlabelledField(Int("2")),
+              UnlabelledField(Int("3")),
             ],
             function: Variable("wibble"),
           )),
@@ -1856,8 +1859,11 @@ pub fn function_capture_both_test() {
         body: [
           Expression(FnCapture(
             label: None,
-            arguments_before: [Field(None, Int("1")), Field(None, Int("2"))],
-            arguments_after: [Field(None, Int("3"))],
+            arguments_before: [
+              UnlabelledField(Int("1")),
+              UnlabelledField(Int("2")),
+            ],
+            arguments_after: [UnlabelledField(Int("3"))],
             function: Variable("wibble"),
           )),
         ],
@@ -2495,7 +2501,10 @@ pub fn constructor_pattern_args_test() {
             PatternConstructor(
               None,
               "Thing",
-              [Field(None, PatternInt("1")), Field(None, PatternInt("2"))],
+              [
+                UnlabelledField(PatternInt("1")),
+                UnlabelledField(PatternInt("2")),
+              ],
               False,
             ),
             None,
@@ -2527,7 +2536,10 @@ pub fn constructor_pattern_spread_test() {
             PatternConstructor(
               None,
               "Thing",
-              [Field(None, PatternInt("1")), Field(None, PatternInt("2"))],
+              [
+                UnlabelledField(PatternInt("1")),
+                UnlabelledField(PatternInt("2")),
+              ],
               True,
             ),
             None,
@@ -2559,7 +2571,10 @@ pub fn constructor_pattern_labels_test() {
             PatternConstructor(
               None,
               "Thing",
-              [Field(None, PatternInt("1")), Field(Some("x"), PatternInt("2"))],
+              [
+                UnlabelledField(PatternInt("1")),
+                LabelledField("x", PatternInt("2")),
+              ],
               True,
             ),
             None,
@@ -2591,7 +2606,10 @@ pub fn constructor_pattern_qualified_test() {
             PatternConstructor(
               Some("wobble"),
               "Thing",
-              [Field(None, PatternInt("1")), Field(Some("x"), PatternInt("2"))],
+              [
+                UnlabelledField(PatternInt("1")),
+                LabelledField("x", PatternInt("2")),
+              ],
               True,
             ),
             None,
@@ -2997,9 +3015,12 @@ pub fn pipe_test() {
             BinaryOperator(
               Pipe,
               Variable("x"),
-              Call(Variable("y"), [Field(None, Int("1"))]),
+              Call(Variable("y"), [UnlabelledField(Int("1"))]),
             ),
-            Call(Variable("z"), [Field(None, Int("2")), Field(None, Int("3"))]),
+            Call(Variable("z"), [
+              UnlabelledField(Int("2")),
+              UnlabelledField(Int("3")),
+            ]),
           )),
         ],
       ),
@@ -3232,7 +3253,7 @@ pub fn expression_panic_message_test() {
         publicity: Public,
         parameters: [],
         return: None,
-        body: [Expression(Call(Panic(None), [Field(None, String("huh"))]))],
+        body: [Expression(Call(Panic(None), [UnlabelledField(String("huh"))]))],
       ),
     ),
   ])
@@ -3500,7 +3521,7 @@ pub fn main() {
   ])
 }
 
-pub fn record_punning_test() {
+pub fn record_shorthand_test() {
   "
 pub fn wibble() {
   Wobble(field:)
@@ -3518,13 +3539,13 @@ pub fn wibble() {
         publicity: Public,
         parameters: [],
         return: None,
-        body: [Expression(Call(Variable("Wobble"), [PunnedField("field")]))],
+        body: [Expression(Call(Variable("Wobble"), [ShorthandField("field")]))],
       ),
     ),
   ])
 }
 
-pub fn const_record_punning_test() {
+pub fn const_record_shorthand_test() {
   "
 const wibble = Wibble(field:)
 "
@@ -3538,13 +3559,13 @@ const wibble = Wibble(field:)
         name: "wibble",
         annotation: None,
         publicity: Private,
-        value: Call(Variable("Wibble"), [PunnedField("field")]),
+        value: Call(Variable("Wibble"), [ShorthandField("field")]),
       ),
     ),
   ])
 }
 
-pub fn call_punning_test() {
+pub fn call_shorthand_test() {
   "
 pub fn wibble() {
   wobble(field:)
@@ -3562,13 +3583,13 @@ pub fn wibble() {
         publicity: Public,
         parameters: [],
         return: None,
-        body: [Expression(Call(Variable("wobble"), [PunnedField("field")]))],
+        body: [Expression(Call(Variable("wobble"), [ShorthandField("field")]))],
       ),
     ),
   ])
 }
 
-pub fn function_capture_punning_test() {
+pub fn function_capture_shorthand_test() {
   "
 pub fn wibble() {
   wobble(_, field:)
@@ -3587,7 +3608,7 @@ pub fn wibble() {
         None,
         [
           Expression(
-            FnCapture(None, Variable("wobble"), [], [PunnedField("field")]),
+            FnCapture(None, Variable("wobble"), [], [ShorthandField("field")]),
           ),
         ],
         Span(1, 39),
@@ -3596,7 +3617,7 @@ pub fn wibble() {
   ])
 }
 
-pub fn pattern_punning_test() {
+pub fn pattern_shorthand_test() {
   "
 pub fn wibble() {
   case wobble {
@@ -3625,7 +3646,7 @@ pub fn wibble() {
                     PatternConstructor(
                       module: None,
                       constructor: "Wabble",
-                      arguments: [PunnedField("field")],
+                      arguments: [ShorthandField("field")],
                       with_spread: False,
                     ),
                   ],
@@ -3641,7 +3662,7 @@ pub fn wibble() {
   ])
 }
 
-pub fn record_update_punning_test() {
+pub fn record_update_shorthand_test() {
   "
 pub fn wibble() {
   Wobble(..wabble, field:)
@@ -3661,7 +3682,7 @@ pub fn wibble() {
         [
           Expression(
             RecordUpdate(None, "Wobble", Variable("wabble"), [
-              PunnedField("field"),
+              RecordUpdateField("field", None),
             ]),
           ),
         ],
@@ -3674,7 +3695,7 @@ pub fn wibble() {
 pub fn multiple_field_call_test() {
   "
 pub fn wibble() {
-  wobble(unlabelled, punned_mid:, non_punned: a, punned_end:)
+  wobble(unlabelled, shorthand_mid:, non_shorthand: a, shorthand_end:)
 }
 "
   |> glance.module
@@ -3691,14 +3712,14 @@ pub fn wibble() {
         [
           Expression(
             Call(Variable("wobble"), [
-              Field(None, Variable("unlabelled")),
-              PunnedField("punned_mid"),
-              Field(Some("non_punned"), Variable("a")),
-              PunnedField("punned_end"),
+              UnlabelledField(Variable("unlabelled")),
+              ShorthandField("shorthand_mid"),
+              LabelledField("non_shorthand", Variable("a")),
+              ShorthandField("shorthand_end"),
             ]),
           ),
         ],
-        Span(1, 82),
+        Span(1, 91),
       ),
     ),
   ])
@@ -3707,7 +3728,7 @@ pub fn wibble() {
 pub fn multiple_field_record_update_test() {
   "
 pub fn wibble() {
-  Wobble(..wobble, punned_mid:, non_punned: a, punned_end:)
+  Wobble(..wobble, shorthand_mid:, non_shorthand: a, shorthand_end:)
 }
 "
   |> glance.module
@@ -3724,19 +3745,19 @@ pub fn wibble() {
         [
           Expression(
             RecordUpdate(None, "Wobble", Variable("wobble"), [
-              PunnedField("punned_mid"),
-              Field(Some("non_punned"), Variable("a")),
-              PunnedField("punned_end"),
+              RecordUpdateField("shorthand_mid", None),
+              RecordUpdateField("non_shorthand", Some(Variable("a"))),
+              RecordUpdateField("shorthand_end", None),
             ]),
           ),
         ],
-        Span(1, 80),
+        Span(1, 89),
       ),
     ),
   ])
 }
 
-pub fn no_punning_in_constructors_test() {
+pub fn no_shorthand_in_constructors_test() {
   "
 pub type Wibble {
   Wobble(int:)

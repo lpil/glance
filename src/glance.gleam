@@ -100,7 +100,7 @@ pub type Expression {
     module: Option(String),
     constructor: String,
     record: Expression,
-    fields: List(Field(Expression)),
+    fields: List(RecordUpdateField(Expression)),
   )
   FieldAccess(container: Expression, label: String)
   Call(function: Expression, arguments: List(Field(Expression)))
@@ -273,9 +273,14 @@ pub type Variant {
   Variant(name: String, fields: List(Field(Type)))
 }
 
+pub type RecordUpdateField(t) {
+  RecordUpdateField(label: String, item: Option(t))
+}
+
 pub type Field(t) {
-  Field(label: Option(String), item: t)
-  PunnedField(label_item: String)
+  LabelledField(label: String, item: t)
+  ShorthandField(label: String)
+  UnlabelledField(item: t)
 }
 
 pub type Type {
@@ -1293,17 +1298,17 @@ fn record_update(
 
 fn record_update_field(
   tokens: Tokens,
-) -> Result(#(Field(Expression), Tokens), Error) {
+) -> Result(#(RecordUpdateField(Expression), Tokens), Error) {
   case tokens {
     [#(t.Name(name), _), #(t.Colon, _), ..tokens] ->
       case tokens {
-        // Field is punned (`value:` instead of `value: value`)
+        // Field is using shorthand (`value:` instead of `value: value`)
         [#(t.Comma, _), ..] | [#(t.RightParen, _), ..] ->
-          Ok(#(PunnedField(name), tokens))
-        // Field is not punned
+          Ok(#(RecordUpdateField(name, None), tokens))
+        // Field is not using shorthand
         _ -> {
           use #(expression, tokens) <- result.try(expression(tokens))
-          Ok(#(Field(Some(name), expression), tokens))
+          Ok(#(RecordUpdateField(name, Some(expression)), tokens))
         }
       }
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
@@ -1708,8 +1713,8 @@ fn optional_variant_fields(
       comma_delimited(
         [],
         tokens,
-        // ensure a punned field is not used in a record constructor definition
-        non_punned_field(_, of: type_),
+        // ensure a label shorthand field is not used in a record constructor definition
+        explicit_field(_, of: type_),
         until: t.RightParen,
       )
     }
@@ -1717,14 +1722,14 @@ fn optional_variant_fields(
   }
 }
 
-fn non_punned_field(
+fn explicit_field(
   tokens: Tokens,
   of parser: fn(Tokens) -> Result(#(t, Tokens), Error),
 ) {
   use #(t, tokens) <- result.try(field(tokens, parser))
 
   case t {
-    PunnedField(..) -> unexpected_error(tokens)
+    ShorthandField(..) -> unexpected_error(tokens)
     _ -> Ok(#(t, tokens))
   }
 }
@@ -1736,19 +1741,19 @@ fn field(
   case tokens {
     [#(t.Name(name), _), #(t.Colon, _), ..tokens] ->
       case tokens {
-        // Field is punned (`value:` instead of `value: value`)
+        // Field is using shorthand (`value:` instead of `value: value`)
         [#(t.Comma, _), ..] | [#(t.RightParen, _), ..] -> {
-          Ok(#(PunnedField(name), tokens))
+          Ok(#(ShorthandField(name), tokens))
         }
-        // Field is not punned
+        // Field is not using shorthand
         _ -> {
           use #(t, tokens) <- result.try(parser(tokens))
-          Ok(#(Field(Some(name), t), tokens))
+          Ok(#(LabelledField(name, t), tokens))
         }
       }
     _ -> {
       use #(t, tokens) <- result.try(parser(tokens))
-      Ok(#(Field(None, t), tokens))
+      Ok(#(UnlabelledField(t), tokens))
     }
   }
 }
