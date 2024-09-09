@@ -270,11 +270,16 @@ pub type CustomType {
 }
 
 pub type Variant {
-  Variant(name: String, fields: List(Field(Type)))
+  Variant(name: String, fields: List(VariantField))
 }
 
 pub type RecordUpdateField(t) {
   RecordUpdateField(label: String, item: Option(t))
+}
+
+pub type VariantField {
+  LabelledVariantField(item: Type, label: String)
+  UnlabelledVariantField(item: Type)
 }
 
 pub type Field(t) {
@@ -1706,31 +1711,26 @@ fn variants(
 
 fn optional_variant_fields(
   tokens: Tokens,
-) -> Result(#(List(Field(Type)), Tokens), Error) {
+) -> Result(#(List(VariantField), Tokens), Error) {
   case tokens {
     [#(t.LeftParen, _), #(t.RightParen, _), ..tokens] -> Ok(#([], tokens))
     [#(t.LeftParen, _), ..tokens] -> {
-      comma_delimited(
-        [],
-        tokens,
-        // ensure a label shorthand field is not used in a record constructor definition
-        explicit_field(_, of: type_),
-        until: t.RightParen,
-      )
+      comma_delimited([], tokens, variant_field(_), until: t.RightParen)
     }
     _ -> Ok(#([], tokens))
   }
 }
 
-fn explicit_field(
-  tokens: Tokens,
-  of parser: fn(Tokens) -> Result(#(t, Tokens), Error),
-) {
-  use #(t, tokens) <- result.try(field(tokens, parser))
-
-  case t {
-    ShorthandField(..) -> unexpected_error(tokens)
-    _ -> Ok(#(t, tokens))
+fn variant_field(tokens: Tokens) -> Result(#(VariantField, Tokens), Error) {
+  case tokens {
+    [#(t.Name(name), _), #(t.Colon, _), ..tokens] -> {
+      use #(type_, tokens) <- result.try(type_(tokens))
+      Ok(#(LabelledVariantField(type_, name), tokens))
+    }
+    tokens -> {
+      use #(type_, tokens) <- result.try(type_(tokens))
+      Ok(#(UnlabelledVariantField(type_), tokens))
+    }
   }
 }
 
