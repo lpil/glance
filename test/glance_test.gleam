@@ -2018,7 +2018,7 @@ pub fn bit_string_units_test() {
 
 pub fn bit_string_others_test() {
   "pub fn main() { <<1, 2:
-binary-int-float-bit_string-utf8-utf16-utf32-utf8_codepoint-utf16_codepoint-utf32_codepoint-signed-unsigned-big-little-native
+bytes-int-float-bits-utf8-utf16-utf32-utf8_codepoint-utf16_codepoint-utf32_codepoint-signed-unsigned-big-little-native
 >> }"
   |> glance.module()
   |> should.be_ok
@@ -2027,7 +2027,7 @@ binary-int-float-bit_string-utf8-utf16-utf32-utf8_codepoint-utf16_codepoint-utf3
     Definition(
       [],
       Function(
-        location: Span(0, 154),
+        location: Span(0, 147),
         name: "main",
         publicity: Public,
         parameters: [],
