@@ -2018,7 +2018,7 @@ pub fn bit_string_units_test() {
 
 pub fn bit_string_others_test() {
   "pub fn main() { <<1, 2:
-bytes-int-float-bits-utf8-utf16-utf32-utf8_codepoint-utf16_codepoint-utf32_codepoint-signed-unsigned-big-little-native
+bytes-binary-int-float-bits-bit_string-utf8-utf16-utf32-utf8_codepoint-utf16_codepoint-utf32_codepoint-signed-unsigned-big-little-native
 >> }"
   |> glance.module()
   |> should.be_ok
@@ -2027,7 +2027,7 @@ bytes-int-float-bits-utf8-utf16-utf32-utf8_codepoint-utf16_codepoint-utf32_codep
     Definition(
       [],
       Function(
-        location: Span(0, 147),
+        location: Span(0, 165),
         name: "main",
         publicity: Public,
         parameters: [],
@@ -2038,8 +2038,10 @@ bytes-int-float-bits-utf8-utf16-utf32-utf8_codepoint-utf16_codepoint-utf32_codep
               #(Int("1"), []),
               #(Int("2"), [
                 BinaryOption,
+                BinaryOption,
                 IntOption,
                 FloatOption,
+                BitStringOption,
                 BitStringOption,
                 Utf8Option,
                 Utf16Option,
