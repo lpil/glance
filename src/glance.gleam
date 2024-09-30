@@ -128,10 +128,10 @@ pub type Clause {
 }
 
 pub type BitStringSegmentOption(t) {
-  BinaryOption
+  BytesOption
   IntOption
   FloatOption
-  BitStringOption
+  BitsOption
   Utf8Option
   Utf16Option
   Utf32Option
@@ -1104,12 +1104,12 @@ fn bit_string_segment_options(
       }
     }
 
-    [#(t.Name("bytes"), _), ..tokens] -> Ok(#(BinaryOption, tokens))
-    [#(t.Name("binary"), _), ..tokens] -> Ok(#(BinaryOption, tokens))
+    [#(t.Name("bytes"), _), ..tokens] -> Ok(#(BytesOption, tokens))
+    [#(t.Name("binary"), _), ..tokens] -> Ok(#(BytesOption, tokens))
     [#(t.Name("int"), _), ..tokens] -> Ok(#(IntOption, tokens))
     [#(t.Name("float"), _), ..tokens] -> Ok(#(FloatOption, tokens))
-    [#(t.Name("bits"), _), ..tokens] -> Ok(#(BitStringOption, tokens))
-    [#(t.Name("bit_string"), _), ..tokens] -> Ok(#(BitStringOption, tokens))
+    [#(t.Name("bits"), _), ..tokens] -> Ok(#(BitsOption, tokens))
+    [#(t.Name("bit_string"), _), ..tokens] -> Ok(#(BitsOption, tokens))
     [#(t.Name("utf8"), _), ..tokens] -> Ok(#(Utf8Option, tokens))
     [#(t.Name("utf16"), _), ..tokens] -> Ok(#(Utf16Option, tokens))
     [#(t.Name("utf32"), _), ..tokens] -> Ok(#(Utf32Option, tokens))

@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.0.0 - 2024-09-30
+
+- Added support for `bits` and `bytes` bit string options.
+- `BinaryOption` has been renamed `BytesOption`.
+- `BitStringOption` has been renamed `BitsOption`.
+
 ## v0.11.0 - 2024-04-25
 
 - The `Panic` and `Todo` AST nodes have been updated to take expressions as the
