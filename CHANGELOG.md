@@ -1,5 +1,9 @@
 # Changelog
 
+## UNRELEASED
+
+- Updated to glexer v2.0.0
+
 ## v1.0.0 - 2024-09-30
 
 - Added support for `bits` and `bytes` bit string options.

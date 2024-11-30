@@ -292,16 +292,10 @@ pub type Error {
 
 pub fn module(src: String) -> Result(Module, Error) {
   glexer.new(src)
+  |> glexer.discard_comments
+  |> glexer.discard_whitespace
   |> glexer.lex
-  |> list.filter(fn(pair) { !is_whitespace(pair.0) })
   |> slurp(Module([], [], [], [], []), [], _)
-}
-
-fn is_whitespace(token: Token) -> Bool {
-  case token {
-    t.EmptyLine | t.CommentNormal | t.CommentModule | t.CommentDoc(_) -> True
-    _ -> False
-  }
 }
 
 fn push_constant(
@@ -422,7 +416,6 @@ fn until(
 fn attribute(tokens: Tokens) -> Result(#(Attribute, Tokens), Error) {
   use #(name, tokens) <- result.try(case tokens {
     [#(t.Name(name), _), ..tokens] -> Ok(#(name, tokens))
-    [#(t.External, _), ..tokens] -> Ok(#("external", tokens))
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
     [] -> Error(UnexpectedEndOfInput)
   })

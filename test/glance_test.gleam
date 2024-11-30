@@ -843,7 +843,7 @@ pub fn function_parameters_test() {
     Definition(
       [],
       Function(
-        location: Span(0, 47),
+        location: Span(0, 49),
         name: "main",
         publicity: Private,
         parameters: [
@@ -1299,7 +1299,7 @@ pub fn expression_fn_discard_test() {
     Definition(
       [],
       Function(
-        location: Span(0, 32),
+        location: Span(0, 33),
         name: "main",
         publicity: Public,
         parameters: [],
@@ -1718,7 +1718,7 @@ pub fn function_capture_pointless_test() {
     Definition(
       [],
       Function(
-        location: Span(0, 26),
+        location: Span(0, 27),
         name: "main",
         publicity: Public,
         parameters: [],
@@ -1745,7 +1745,7 @@ pub fn function_capture_before_test() {
     Definition(
       [],
       Function(
-        location: Span(0, 32),
+        location: Span(0, 33),
         name: "main",
         publicity: Public,
         parameters: [],
@@ -1776,7 +1776,7 @@ pub fn function_capture_after_test() {
     Definition(
       [],
       Function(
-        location: Span(0, 32),
+        location: Span(0, 33),
         name: "main",
         publicity: Public,
         parameters: [],
@@ -1807,7 +1807,7 @@ pub fn function_capture_after_trailing_comma_test() {
     Definition(
       [],
       Function(
-        location: Span(0, 33),
+        location: Span(0, 34),
         name: "main",
         publicity: Public,
         parameters: [],
@@ -1838,7 +1838,7 @@ pub fn function_capture_both_test() {
     Definition(
       [],
       Function(
-        location: Span(0, 35),
+        location: Span(0, 36),
         name: "main",
         publicity: Public,
         parameters: [],
@@ -1865,7 +1865,7 @@ pub fn function_capture_immediate_call_test() {
     Definition(
       [],
       Function(
-        location: Span(0, 28),
+        location: Span(0, 29),
         name: "main",
         publicity: Public,
         parameters: [],
@@ -2178,7 +2178,7 @@ pub fn discard_pattern_test() {
     Definition(
       [],
       Function(
-        location: Span(0, 29),
+        location: Span(0, 30),
         name: "main",
         publicity: Public,
         parameters: [],
@@ -2198,7 +2198,7 @@ pub fn tuple_pattern_test() {
     Definition(
       [],
       Function(
-        location: Span(0, 31),
+        location: Span(0, 33),
         name: "main",
         publicity: Public,
         parameters: [],
@@ -2225,7 +2225,7 @@ pub fn tuple_pattern_trailing_comma_test() {
     Definition(
       [],
       Function(
-        location: Span(0, 32),
+        location: Span(0, 34),
         name: "main",
         publicity: Public,
         parameters: [],
@@ -2282,7 +2282,7 @@ pub fn concatenate_discard_pattern_test() {
     Definition(
       [],
       Function(
-        location: Span(0, 37),
+        location: Span(0, 38),
         name: "main",
         publicity: Public,
         parameters: [],
@@ -3283,7 +3283,7 @@ pub fn label_capture_test() {
     Definition(
       [],
       Function(
-        location: Span(0, 31),
+        location: Span(0, 32),
         name: "main",
         publicity: Public,
         parameters: [],
@@ -3314,7 +3314,7 @@ pub fn crash_test() {
     Definition(
       [],
       Function(
-        location: Span(0, 33),
+        location: Span(0, 34),
         name: "main",
         publicity: Public,
         parameters: [],
@@ -3347,7 +3347,7 @@ pub fn main() {
     Definition(
       [],
       Function(
-        location: Span(1, 39),
+        location: Span(1, 40),
         name: "main",
         publicity: Public,
         parameters: [],
@@ -3484,7 +3484,7 @@ pub fn main() {
         publicity: Public,
         parameters: [],
         return: None,
-        body: [Expression(NegateInt(Int("11")))],
+        body: [Expression(Int("-11"))],
       ),
     ),
   ])
