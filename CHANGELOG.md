@@ -1,6 +1,6 @@
 # Changelog
 
-## UNRELEASED
+## v1.1.0 - 2024-12-04
 
 - Updated to glexer v2.0.0
 
