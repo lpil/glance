@@ -100,7 +100,7 @@ pub type Expression {
     module: Option(String),
     constructor: String,
     record: Expression,
-    fields: List(#(String, Expression)),
+    fields: List(RecordUpdateField(Expression)),
   )
   FieldAccess(container: Expression, label: String)
   Call(function: Expression, arguments: List(Field(Expression)))
@@ -270,11 +270,22 @@ pub type CustomType {
 }
 
 pub type Variant {
-  Variant(name: String, fields: List(Field(Type)))
+  Variant(name: String, fields: List(VariantField))
+}
+
+pub type RecordUpdateField(t) {
+  RecordUpdateField(label: String, item: Option(t))
+}
+
+pub type VariantField {
+  LabelledVariantField(item: Type, label: String)
+  UnlabelledVariantField(item: Type)
 }
 
 pub type Field(t) {
-  Field(label: Option(String), item: t)
+  LabelledField(label: String, item: t)
+  ShorthandField(label: String)
+  UnlabelledField(item: t)
 }
 
 pub type Type {
@@ -1292,12 +1303,19 @@ fn record_update(
 
 fn record_update_field(
   tokens: Tokens,
-) -> Result(#(#(String, Expression), Tokens), Error) {
+) -> Result(#(RecordUpdateField(Expression), Tokens), Error) {
   case tokens {
-    [#(t.Name(name), _), #(t.Colon, _), ..tokens] -> {
-      use #(expression, tokens) <- result.try(expression(tokens))
-      Ok(#(#(name, expression), tokens))
-    }
+    [#(t.Name(name), _), #(t.Colon, _), ..tokens] ->
+      case tokens {
+        // Field is using shorthand (`value:` instead of `value: value`)
+        [#(t.Comma, _), ..] | [#(t.RightParen, _), ..] ->
+          Ok(#(RecordUpdateField(name, None), tokens))
+        // Field is not using shorthand
+        _ -> {
+          use #(expression, tokens) <- result.try(expression(tokens))
+          Ok(#(RecordUpdateField(name, Some(expression)), tokens))
+        }
+      }
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
     [] -> Error(UnexpectedEndOfInput)
   }
@@ -1693,13 +1711,26 @@ fn variants(
 
 fn optional_variant_fields(
   tokens: Tokens,
-) -> Result(#(List(Field(Type)), Tokens), Error) {
+) -> Result(#(List(VariantField), Tokens), Error) {
   case tokens {
     [#(t.LeftParen, _), #(t.RightParen, _), ..tokens] -> Ok(#([], tokens))
     [#(t.LeftParen, _), ..tokens] -> {
-      comma_delimited([], tokens, field(_, of: type_), until: t.RightParen)
+      comma_delimited([], tokens, variant_field(_), until: t.RightParen)
     }
     _ -> Ok(#([], tokens))
+  }
+}
+
+fn variant_field(tokens: Tokens) -> Result(#(VariantField, Tokens), Error) {
+  case tokens {
+    [#(t.Name(name), _), #(t.Colon, _), ..tokens] -> {
+      use #(type_, tokens) <- result.try(type_(tokens))
+      Ok(#(LabelledVariantField(type_, name), tokens))
+    }
+    tokens -> {
+      use #(type_, tokens) <- result.try(type_(tokens))
+      Ok(#(UnlabelledVariantField(type_), tokens))
+    }
   }
 }
 
@@ -1708,13 +1739,21 @@ fn field(
   of parser: fn(Tokens) -> Result(#(t, Tokens), Error),
 ) -> Result(#(Field(t), Tokens), Error) {
   case tokens {
-    [#(t.Name(name), _), #(t.Colon, _), ..tokens] -> {
-      use #(t, tokens) <- result.try(parser(tokens))
-      Ok(#(Field(Some(name), t), tokens))
-    }
+    [#(t.Name(name), _), #(t.Colon, _), ..tokens] ->
+      case tokens {
+        // Field is using shorthand (`value:` instead of `value: value`)
+        [#(t.Comma, _), ..] | [#(t.RightParen, _), ..] -> {
+          Ok(#(ShorthandField(name), tokens))
+        }
+        // Field is not using shorthand
+        _ -> {
+          use #(t, tokens) <- result.try(parser(tokens))
+          Ok(#(LabelledField(name, t), tokens))
+        }
+      }
     _ -> {
       use #(t, tokens) <- result.try(parser(tokens))
-      Ok(#(Field(None, t), tokens))
+      Ok(#(UnlabelledField(t), tokens))
     }
   }
 }

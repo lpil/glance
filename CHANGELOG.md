@@ -1,5 +1,12 @@
 # Changelog
 
+## v1.2.0 - 2024-12-06
+- Added support for label shorthand syntax.
+- `Field` now has two variants; `LabelledField` and `ShorthandField`.
+- `Variant` now uses a new `VariantField` type instead of `Field(Type)`.
+- `RecordUpdate` variant of `Expression` now uses a new `RecordUpdateField` 
+  type instead of `#(String, Expression)`.
+
 ## v1.1.0 - 2024-12-04
 
 - Updated to glexer v2.0.0
