@@ -3612,7 +3612,7 @@ pub fn wibble() {
             FnCapture(None, Variable("wobble"), [], [ShorthandField("field")]),
           ),
         ],
-        Span(1, 39),
+        Span(1, 40),
       ),
     ),
   ])

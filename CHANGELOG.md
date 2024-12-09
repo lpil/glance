@@ -1,6 +1,7 @@
 # Changelog
 
-## v1.2.0 - 2024-12-06
+## v2.0.0 - 2024-12-09
+
 - Added support for label shorthand syntax.
 - `Field` now has two variants; `LabelledField` and `ShorthandField`.
 - `Variant` now uses a new `VariantField` type instead of `Field(Type)`.
