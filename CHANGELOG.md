@@ -1,5 +1,9 @@
 # Changelog
 
+## v2.0.1 - 2025-02-12
+
+- Fixed attributes with no parens failing to parse.
+
 ## v2.0.0 - 2024-12-09
 
 - Added support for label shorthand syntax.

@@ -314,13 +314,10 @@ fn push_constant(
   attributes: List(Attribute),
   constant: Constant,
 ) -> Module {
-  Module(
-    ..module,
-    constants: [
-      Definition(list.reverse(attributes), constant),
-      ..module.constants
-    ],
-  )
+  Module(..module, constants: [
+    Definition(list.reverse(attributes), constant),
+    ..module.constants
+  ])
 }
 
 fn push_function(
@@ -328,13 +325,10 @@ fn push_function(
   attributes: List(Attribute),
   function: Function,
 ) -> Module {
-  Module(
-    ..module,
-    functions: [
-      Definition(list.reverse(attributes), function),
-      ..module.functions
-    ],
-  )
+  Module(..module, functions: [
+    Definition(list.reverse(attributes), function),
+    ..module.functions
+  ])
 }
 
 fn push_custom_type(
@@ -344,13 +338,10 @@ fn push_custom_type(
 ) -> Module {
   let custom_type =
     CustomType(..custom_type, variants: list.reverse(custom_type.variants))
-  Module(
-    ..module,
-    custom_types: [
-      Definition(list.reverse(attributes), custom_type),
-      ..module.custom_types
-    ],
-  )
+  Module(..module, custom_types: [
+    Definition(list.reverse(attributes), custom_type),
+    ..module.custom_types
+  ])
 }
 
 fn push_type_alias(
@@ -358,13 +349,10 @@ fn push_type_alias(
   attributes: List(Attribute),
   type_alias: TypeAlias,
 ) -> Module {
-  Module(
-    ..module,
-    type_aliases: [
-      Definition(list.reverse(attributes), type_alias),
-      ..module.type_aliases
-    ],
-  )
+  Module(..module, type_aliases: [
+    Definition(list.reverse(attributes), type_alias),
+    ..module.type_aliases
+  ])
 }
 
 fn push_variant(custom_type: CustomType, variant: Variant) -> CustomType {
@@ -430,10 +418,16 @@ fn attribute(tokens: Tokens) -> Result(#(Attribute, Tokens), Error) {
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
     [] -> Error(UnexpectedEndOfInput)
   })
-  use _, tokens <- expect(t.LeftParen, tokens)
-  let result = comma_delimited([], tokens, expression, t.RightParen)
-  use #(parameters, tokens) <- result.try(result)
-  Ok(#(Attribute(name, parameters), tokens))
+  case tokens {
+    [#(t.LeftParen, _), ..tokens] -> {
+      let result = comma_delimited([], tokens, expression, t.RightParen)
+      use #(parameters, tokens) <- result.try(result)
+      Ok(#(Attribute(name, parameters), tokens))
+    }
+    _ -> {
+      Ok(#(Attribute(name, []), tokens))
+    }
+  }
 }
 
 fn slurp(

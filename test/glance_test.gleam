@@ -3110,6 +3110,29 @@ pub fn main() { Nil }
   ])
 }
 
+pub fn attributes_no_paren_test() {
+  "
+@thingbobby
+pub fn main() { Nil }
+"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [Attribute("thingbobby", [])],
+      Function(
+        location: Span(13, 34),
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [Expression(Variable("Nil"))],
+      ),
+    ),
+  ])
+}
+
 pub fn discard_list_rest_test() {
   "pub fn main() { case x { [x, ..] -> Nil } }
 "
