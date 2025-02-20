@@ -67,7 +67,11 @@ pub type Pattern {
   PatternTuple(elems: List(Pattern))
   PatternList(elements: List(Pattern), tail: Option(Pattern))
   PatternAssignment(pattern: Pattern, name: String)
-  PatternConcatenate(left: String, right: AssignmentName)
+  PatternConcatenate(
+    prefix: String,
+    prefix_name: Option(AssignmentName),
+    rest_name: AssignmentName,
+  )
   PatternBitString(
     segments: List(#(Pattern, List(BitStringSegmentOption(Pattern)))),
   )
@@ -796,11 +800,26 @@ fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
     [#(t.Name(module), _), #(t.Dot, _), #(t.UpperName(name), _), ..tokens] ->
       pattern_constructor(Some(module), name, tokens)
 
+    [
+      #(t.String(v), _),
+      #(t.As, _),
+      #(t.Name(l), _),
+      #(t.LessGreater, _),
+      #(t.Name(r), _),
+      ..tokens
+    ] -> Ok(#(PatternConcatenate(v, Some(Named(l)), Named(r)), tokens))
+    [
+      #(t.String(v), _),
+      #(t.As, _),
+      #(t.DiscardName(l), _),
+      #(t.LessGreater, _),
+      #(t.Name(r), _),
+      ..tokens
+    ] -> Ok(#(PatternConcatenate(v, Some(Discarded(l)), Named(r)), tokens))
     [#(t.String(v), _), #(t.LessGreater, _), #(t.Name(n), _), ..tokens] ->
-      Ok(#(PatternConcatenate(v, Named(n)), tokens))
-
+      Ok(#(PatternConcatenate(v, None, Named(n)), tokens))
     [#(t.String(v), _), #(t.LessGreater, _), #(t.DiscardName(n), _), ..tokens] ->
-      Ok(#(PatternConcatenate(v, Discarded(n)), tokens))
+      Ok(#(PatternConcatenate(v, None, Discarded(n)), tokens))
 
     [#(t.Int(value), _), ..tokens] -> Ok(#(PatternInt(value), tokens))
     [#(t.Float(value), _), ..tokens] -> Ok(#(PatternFloat(value), tokens))

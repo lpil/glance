@@ -2307,7 +2307,7 @@ pub fn concatenate_discard_pattern_test() {
         body: [
           Assignment(
             Let,
-            PatternConcatenate("ok", Discarded("nah")),
+            PatternConcatenate("ok", None, Discarded("nah")),
             None,
             Int("1"),
           ),
@@ -2334,11 +2334,38 @@ pub fn concatenate_pattern_test() {
         body: [
           Assignment(
             Let,
-            PatternConcatenate("ok", Named("yah")),
+            PatternConcatenate("ok", None, Named("yah")),
             None,
             Int("1"),
           ),
         ],
+      ),
+    ),
+  ])
+}
+
+pub fn concatenate_pattern_with_prefix_assignment_test() {
+  "pub fn main() { let \"1\" as x <> y = \"\" }"
+  |> glance.module()
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Let,
+            PatternConcatenate("1", Some(Named("x")), Named("y")),
+            None,
+            String(""),
+          ),
+        ],
+        Span(0, 40),
       ),
     ),
   ])
