@@ -1,5 +1,9 @@
 # Changelog
 
+## v3.0.0 - 2025-02-21
+
+- The `"prefix" as prefix name <> rest ->` pattern syntax is now supported.
+
 ## v2.0.1 - 2025-02-12
 
 - Fixed attributes with no parens failing to parse.
