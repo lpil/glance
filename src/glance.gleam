@@ -122,6 +122,8 @@ pub type Expression {
 
   Case(subjects: List(Expression), clauses: List(Clause))
   BinaryOperator(name: BinaryOperator, left: Expression, right: Expression)
+
+  Echo(expression: Option(Expression))
 }
 
 pub type Clause {
@@ -888,7 +890,7 @@ fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
 }
 
 fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
-  expression_loop(tokens, [], [])
+  expression_loop(tokens, [], [], RegularExpressionUnit)
 }
 
 fn unexpected_error(tokens: Tokens) -> Result(a, Error) {
@@ -941,8 +943,9 @@ fn expression_loop(
   tokens: List(#(Token, Position)),
   operators: List(BinaryOperator),
   values: List(Expression),
+  context: ParseExpressionUnitContext,
 ) -> Result(#(Expression, Tokens), Error) {
-  use #(expression, tokens) <- result.try(expression_unit(tokens))
+  use #(expression, tokens) <- result.try(expression_unit(tokens, context))
 
   case expression {
     None -> unexpected_error(tokens)
@@ -953,7 +956,10 @@ fn expression_loop(
           case handle_operator(Some(operator), operators, values) {
             #(Some(expression), _, _) -> Ok(#(expression, tokens))
             #(None, operators, values) ->
-              expression_loop(tokens, operators, values)
+              expression_loop(tokens, operators, values, case operator {
+                Pipe -> ExpressionUnitAfterPipe
+                _ -> RegularExpressionUnit
+              })
           }
         }
         _ ->
@@ -998,8 +1004,14 @@ fn handle_operator(
   }
 }
 
+type ParseExpressionUnitContext {
+  RegularExpressionUnit
+  ExpressionUnitAfterPipe
+}
+
 fn expression_unit(
   tokens: Tokens,
+  context: ParseExpressionUnitContext,
 ) -> Result(#(Option(Expression), Tokens), Error) {
   use #(parsed, tokens) <- result.try(case tokens {
     [
@@ -1067,6 +1079,17 @@ fn expression_unit(
       use #(segments, _, tokens) <- result.map(result)
       #(Some(BitString(segments)), tokens)
     }
+
+    [#(t.Echo, _), ..tokens] ->
+      case context {
+        // `echo` in a pipeline doesn't have an expression after it
+        ExpressionUnitAfterPipe -> Ok(#(Some(Echo(None)), tokens))
+        RegularExpressionUnit ->
+          result.map(expression(tokens), fn(expression_and_tokens) {
+            let #(expression, tokens) = expression_and_tokens
+            #(Some(Echo(Some(expression))), tokens)
+          })
+      }
 
     _ -> Ok(#(None, tokens))
   })

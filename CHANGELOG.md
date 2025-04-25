@@ -6,6 +6,7 @@
 - All types have a location span as their first field.
 - The `let assert ... as message` syntax is now supported.
 - Attributes on individual variant constructors is now supported.
+- The `echo` expression is now supported.
 
 ## v3.0.0 - 2025-02-21
 
