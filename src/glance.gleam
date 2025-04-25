@@ -278,7 +278,7 @@ pub type CustomType {
 }
 
 pub type Variant {
-  Variant(name: String, fields: List(VariantField))
+  Variant(name: String, fields: List(VariantField), attributes: List(Attribute))
 }
 
 pub type RecordUpdateField(t) {
@@ -1775,16 +1775,33 @@ fn variants(
   tokens: Tokens,
 ) -> Result(#(CustomType, Int, Tokens), Error) {
   use ct, tokens <- until(t.RightBrace, ct, tokens)
+  use #(attributes, tokens) <- result.try(attributes([], tokens))
   use name, _, tokens <- expect_upper_name(tokens)
-  use #(parameters, _, tokens) <- result.try(case tokens {
+  use #(fields, _, tokens) <- result.try(case tokens {
     [#(t.LeftParen, _), #(t.RightParen, P(i)), ..tokens] -> Ok(#([], i, tokens))
     [#(t.LeftParen, _), ..tokens] -> {
       comma_delimited([], tokens, variant_field, until: t.RightParen)
     }
     _ -> Ok(#([], 0, tokens))
   })
-  let ct = push_variant(ct, Variant(name, parameters))
+  let ct = push_variant(ct, Variant(name:, fields:, attributes:))
   Ok(#(ct, tokens))
+}
+
+fn attributes(
+  accumulated_attributes: List(Attribute),
+  tokens: Tokens,
+) -> Result(#(List(Attribute), Tokens), Error) {
+  case tokens {
+    [#(t.At, _), ..tokens] -> {
+      case attribute(tokens) {
+        Error(error) -> Error(error)
+        Ok(#(attribute, tokens)) ->
+          attributes([attribute, ..accumulated_attributes], tokens)
+      }
+    }
+    _ -> Ok(#(list.reverse(accumulated_attributes), tokens))
+  }
 }
 
 fn variant_field(tokens: Tokens) -> Result(#(VariantField, Tokens), Error) {
