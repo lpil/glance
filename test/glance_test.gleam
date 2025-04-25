@@ -1111,3 +1111,27 @@ pub type Wibble {
   |> to_snapshot
   |> birdie.snap(title: "no_shorthand_in_constructors")
 }
+
+pub fn empty_block_test() {
+  "
+pub fn main() {
+  {}
+}
+"
+  |> glance.module
+  |> should.be_ok
+  |> fn(x: Module) { x.functions }
+  |> should.equal([
+    Definition(
+      [],
+      Function(
+        name: "main",
+        publicity: Public,
+        parameters: [],
+        return: None,
+        body: [Expression(Block([]))],
+        location: Span(1, 23),
+      ),
+    ),
+  ])
+}
