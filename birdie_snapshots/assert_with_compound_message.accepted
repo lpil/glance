@@ -1,0 +1,49 @@
+---
+version: 1.2.7
+title: assert_with_compound_message
+file: ./test/glance_test.gleam
+test_name: assert_with_compound_message_test
+---
+
+pub fn main() {
+  assert lock(directory) as { some_message <> "!" }
+}
+
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(1, 70),
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assert(
+            Call(
+              Variable("lock"),
+              [
+                UnlabelledField(Variable("directory")),
+              ],
+            ),
+            Some(Block([
+              Expression(BinaryOperator(
+                Concatenate,
+                Variable("some_message"),
+                String("!"),
+              )),
+            ])),
+          ),
+        ],
+      ),
+    ),
+  ],
+)

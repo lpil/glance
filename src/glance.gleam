@@ -51,12 +51,13 @@ pub type Statement {
     annotation: Option(Type),
     value: Expression,
   )
+  Assert(expression: Expression, message: Option(Expression))
   Expression(Expression)
 }
 
 pub type AssignmentKind {
   Let
-  Assert(message: Option(Expression))
+  AssertAssignment(message: Option(Expression))
 }
 
 pub type Pattern {
@@ -731,13 +732,27 @@ fn statements(
 
 fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
   case tokens {
-    [#(t.Let, _), #(t.Assert, _), ..tokens] -> assignment(Assert(None), tokens)
+    [#(t.Let, _), #(t.Assert, _), ..tokens] ->
+      assignment(AssertAssignment(None), tokens)
     [#(t.Let, _), ..tokens] -> assignment(Let, tokens)
     [#(t.Use, _), ..tokens] -> use_(tokens)
+    [#(t.Assert, _), ..tokens] -> assert_(tokens)
     tokens -> {
       use #(expression, tokens) <- result.try(expression(tokens))
       Ok(#(Expression(expression), tokens))
     }
+  }
+}
+
+fn assert_(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
+  use #(subject, tokens) <- result.try(expression(tokens))
+  case tokens {
+    [#(t.As, _), ..tokens] ->
+      case expression(tokens) {
+        Error(error) -> Error(error)
+        Ok(#(message, tokens)) -> Ok(#(Assert(subject, Some(message)), tokens))
+      }
+    _ -> Ok(#(Assert(subject, None), tokens))
   }
 }
 
@@ -762,11 +777,11 @@ fn assignment(
   use #(value, tokens) <- result.try(expression(tokens))
 
   use #(kind, tokens) <- result.try(case kind, tokens {
-    Assert(None), [#(t.As, _), ..tokens] -> {
+    AssertAssignment(None), [#(t.As, _), ..tokens] -> {
       use #(message, tokens) <- result.map(expression(tokens))
-      #(Assert(message: Some(message)), tokens)
+      #(AssertAssignment(message: Some(message)), tokens)
     }
-    Assert(_), _ | Let, _ -> Ok(#(kind, tokens))
+    AssertAssignment(_), _ | Let, _ -> Ok(#(kind, tokens))
   })
 
   let statement = Assignment(kind, pattern, annotation, value)

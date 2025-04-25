@@ -1,12 +1,12 @@
 ---
 version: 1.2.7
-title: assert
+title: assert_with_message
 file: ./test/glance_test.gleam
-test_name: assert_test
+test_name: assert_with_message_test
 ---
 
 pub fn main() {
-  assert is_even(10)
+  assert lock(directory) as "Failed to lock directory"
 }
 
 
@@ -21,7 +21,7 @@ Module(
     Definition(
       [],
       Function(
-        Span(1, 39),
+        Span(1, 73),
         "main",
         Public,
         [],
@@ -29,12 +29,12 @@ Module(
         [
           Assert(
             Call(
-              Variable("is_even"),
+              Variable("lock"),
               [
-                UnlabelledField(Int("10")),
+                UnlabelledField(Variable("directory")),
               ],
             ),
-            None,
+            Some(String("Failed to lock directory")),
           ),
         ],
       ),
