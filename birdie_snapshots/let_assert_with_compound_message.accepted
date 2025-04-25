@@ -1,0 +1,42 @@
+---
+version: 1.2.7
+title: let_assert_with_compound_message
+file: ./test/glance_test.gleam
+test_name: let_assert_with_compound_message_test
+---
+pub fn main() { let assert x = 1 as { "some" <> "message" } }
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(0, 61),
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Assert(Some(Block([
+              Expression(BinaryOperator(
+                Concatenate,
+                String("some"),
+                String("message"),
+              )),
+            ]))),
+            PatternVariable("x"),
+            None,
+            Int("1"),
+          ),
+        ],
+      ),
+    ),
+  ],
+)

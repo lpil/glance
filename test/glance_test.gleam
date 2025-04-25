@@ -638,10 +638,28 @@ pub fn assignment_test() {
   |> birdie.snap(title: "assignment")
 }
 
-pub fn assert_test() {
+pub fn let_assert_test() {
   "pub fn main() { let assert x = 1 2 }"
   |> to_snapshot
-  |> birdie.snap(title: "assert")
+  |> birdie.snap(title: "let_assert")
+}
+
+pub fn let_assert_with_message_test() {
+  "pub fn main() { let assert x = 1 as \"This shouldn't fail\" }"
+  |> to_snapshot
+  |> birdie.snap(title: "let_assert_with_message")
+}
+
+pub fn let_assert_with_compound_message_test() {
+  "pub fn main() { let assert x = 1 as { \"some\" <> \"message\" } }"
+  |> to_snapshot
+  |> birdie.snap(title: "let_assert_with_compound_message")
+}
+
+pub fn let_assert_todo_precedence_test() {
+  "pub fn main() { let assert x = todo as \"This is the todo message\" }"
+  |> to_snapshot
+  |> birdie.snap(title: "let_assert_todo_precedence")
 }
 
 pub fn int_pattern_test() {
@@ -1118,20 +1136,6 @@ pub fn main() {
   {}
 }
 "
-  |> glance.module
-  |> should.be_ok
-  |> fn(x: Module) { x.functions }
-  |> should.equal([
-    Definition(
-      [],
-      Function(
-        name: "main",
-        publicity: Public,
-        parameters: [],
-        return: None,
-        body: [Expression(Block([]))],
-        location: Span(1, 23),
-      ),
-    ),
-  ])
+  |> to_snapshot
+  |> birdie.snap(title: "empty_block")
 }
