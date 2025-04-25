@@ -1,0 +1,33 @@
+---
+version: 1.2.7
+title: empty_block
+file: ./test/glance_test.gleam
+test_name: empty_block_test
+---
+
+pub fn main() {
+  {}
+}
+
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(1, 23),
+        "main",
+        Public,
+        [],
+        None,
+        [Expression(Block([]))],
+      ),
+    ),
+  ],
+)

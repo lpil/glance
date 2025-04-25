@@ -1,0 +1,36 @@
+---
+version: 1.2.7
+title: let_assert_todo_precedence
+file: ./test/glance_test.gleam
+test_name: let_assert_todo_precedence_test
+---
+pub fn main() { let assert x = todo as "This is the todo message" }
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(0, 67),
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Assert(None),
+            PatternVariable("x"),
+            None,
+            Todo(Some(String("This is the todo message"))),
+          ),
+        ],
+      ),
+    ),
+  ],
+)

@@ -1,0 +1,37 @@
+---
+version: 1.2.7
+title: let_assert
+file: ./test/glance_test.gleam
+test_name: let_assert_test
+---
+pub fn main() { let assert x = 1 2 }
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(0, 36),
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Assert(None),
+            PatternVariable("x"),
+            None,
+            Int("1"),
+          ),
+          Expression(Int("2")),
+        ],
+      ),
+    ),
+  ],
+)
