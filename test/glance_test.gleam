@@ -1172,3 +1172,43 @@ pub fn main() {
   |> to_snapshot
   |> birdie.snap(title: "echo_pipeline")
 }
+
+pub fn assert_test() {
+  "
+pub fn main() {
+  assert is_even(10)
+}
+"
+  |> to_snapshot
+  |> birdie.snap(title: "assert")
+}
+
+pub fn assert_with_message_test() {
+  "
+pub fn main() {
+  assert lock(directory) as \"Failed to lock directory\"
+}
+"
+  |> to_snapshot
+  |> birdie.snap(title: "assert_with_message")
+}
+
+pub fn assert_with_compound_message_test() {
+  "
+pub fn main() {
+  assert lock(directory) as { some_message <> \"!\" }
+}
+"
+  |> to_snapshot
+  |> birdie.snap(title: "assert_with_compound_message")
+}
+
+pub fn assert_precedence_with_todo_test() {
+  "
+pub fn main() {
+  assert todo as \"todo message\"
+}
+"
+  |> to_snapshot
+  |> birdie.snap(title: "assert_precedence_with_todo")
+}

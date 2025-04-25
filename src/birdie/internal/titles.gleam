@@ -391,8 +391,16 @@ fn try_fold_statements(
   use acc, statement <- list.try_fold(over: statements, from: acc)
   case statement {
     glance.Use(patterns: _, function: expression)
+    | glance.Assert(expression:, message: None)
     | glance.Assignment(kind: _, pattern: _, annotation: _, value: expression)
     | glance.Expression(expression) -> try_fold_expression(expression, acc, fun)
+
+    glance.Assert(expression:, message: Some(message)) -> {
+      case try_fold_expression(expression, acc, fun) {
+        Ok(acc) -> try_fold_expression(message, acc, fun)
+        Error(_) as e -> e
+      }
+    }
   }
 }
 

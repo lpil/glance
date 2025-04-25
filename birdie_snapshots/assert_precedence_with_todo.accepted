@@ -1,10 +1,14 @@
 ---
 version: 1.2.7
-title: let_assert
+title: assert_precedence_with_todo
 file: ./test/glance_test.gleam
-test_name: let_assert_test
+test_name: assert_precedence_with_todo_test
 ---
-pub fn main() { let assert x = 1 2 }
+
+pub fn main() {
+  assert todo as "todo message"
+}
+
 
 ---------------------------
 
@@ -17,19 +21,16 @@ Module(
     Definition(
       [],
       Function(
-        Span(0, 36),
+        Span(1, 50),
         "main",
         Public,
         [],
         None,
         [
-          Assignment(
-            AssertAssignment(None),
-            PatternVariable("x"),
+          Assert(
+            Todo(Some(String("todo message"))),
             None,
-            Int("1"),
           ),
-          Expression(Int("2")),
         ],
       ),
     ),
