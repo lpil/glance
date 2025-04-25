@@ -1,0 +1,51 @@
+---
+version: 1.2.7
+title: deprecated_constructor
+file: ./test/glance_test.gleam
+test_name: deprecated_constructor_test
+---
+
+pub type HashAlgorithm {
+  @deprecated("Please upgrade to another algorithm")
+  Md5
+  Sha224
+  Sha512
+}
+
+
+---------------------------
+
+Module(
+  [],
+  [
+    Definition(
+      [],
+      CustomType(
+        Span(1, 103),
+        "HashAlgorithm",
+        Public,
+        False,
+        [],
+        [
+          Variant(
+            "Md5",
+            [],
+            [
+              Attribute(
+                "deprecated",
+                [
+                  String("Please upgrade to another algorithm"),
+                ],
+              ),
+            ],
+          ),
+          Variant("Sha224", [], []),
+          Variant("Sha512", [], []),
+        ],
+      ),
+    ),
+  ],
+  [],
+  [],
+  [],
+)

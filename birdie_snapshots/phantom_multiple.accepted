@@ -21,7 +21,7 @@ Module(
         Public,
         False,
         ["t", "u"],
-        [Variant("Spooky", [])],
+        [Variant("Spooky", [], [])],
       ),
     ),
   ],

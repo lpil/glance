@@ -1139,3 +1139,16 @@ pub fn main() {
   |> to_snapshot
   |> birdie.snap(title: "empty_block")
 }
+
+pub fn deprecated_constructor_test() {
+  "
+pub type HashAlgorithm {
+  @deprecated(\"Please upgrade to another algorithm\")
+  Md5
+  Sha224
+  Sha512
+}
+"
+  |> to_snapshot
+  |> birdie.snap(title: "deprecated_constructor")
+}
