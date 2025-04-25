@@ -1152,3 +1152,23 @@ pub type HashAlgorithm {
   |> to_snapshot
   |> birdie.snap(title: "deprecated_constructor")
 }
+
+pub fn echo_test() {
+  "
+pub fn main() {
+  echo 10
+}
+"
+  |> to_snapshot
+  |> birdie.snap(title: "echo")
+}
+
+pub fn echo_pipeline_test() {
+  "
+pub fn main() {
+  10 |> echo
+}
+"
+  |> to_snapshot
+  |> birdie.snap(title: "echo_pipeline")
+}

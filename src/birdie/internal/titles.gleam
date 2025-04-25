@@ -408,10 +408,12 @@ fn try_fold_expression(
     | glance.String(_)
     | glance.Variable(_)
     | glance.Panic(_)
-    | glance.Todo(_) -> Ok(acc)
+    | glance.Todo(_)
+    | glance.Echo(None) -> Ok(acc)
 
     glance.NegateInt(expression)
     | glance.NegateBool(expression)
+    | glance.Echo(Some(expression))
     | glance.FieldAccess(container: expression, label: _)
     | glance.TupleIndex(tuple: expression, index: _) ->
       try_fold_expression(expression, acc, fun)

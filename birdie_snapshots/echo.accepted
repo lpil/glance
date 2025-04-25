@@ -1,0 +1,35 @@
+---
+version: 1.2.7
+title: echo
+file: ./test/glance_test.gleam
+test_name: echo_test
+---
+
+pub fn main() {
+  echo 10
+}
+
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(1, 28),
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Echo(Some(Int("10")))),
+        ],
+      ),
+    ),
+  ],
+)
