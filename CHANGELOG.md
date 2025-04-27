@@ -4,6 +4,7 @@
 
 - All definitions have a location span as their first field.
 - All types have a location span as their first field.
+- The `Assert` variant has been renamed to `LetAssert`.
 - The `let assert ... as message` syntax is now supported.
 - Attributes on individual variant constructors is now supported.
 - The `echo` expression is now supported.
