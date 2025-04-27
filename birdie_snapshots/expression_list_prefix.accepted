@@ -4,6 +4,10 @@ title: expression_list_prefix
 file: ./test/glance_test.gleam
 test_name: expression_list_prefix_test
 ---
+pub fn main() { [1, 2, 3, ..x] }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 32),
         "main",
         Public,
         [],
@@ -27,7 +32,6 @@ Module(
             Some(Variable("x")),
           )),
         ],
-        Span(0, 32),
       ),
     ),
   ],

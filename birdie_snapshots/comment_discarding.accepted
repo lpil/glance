@@ -4,12 +4,27 @@ title: comment_discarding
 file: ./test/glance_test.gleam
 test_name: comment_discarding_test
 ---
+pub type
+    // Comment!
+  Spooky(
+    // one
+    t, u,
+    // two
+     ) {
+      // three
+    Spooky
+    // four
+  }
+
+---------------------------
+
 Module(
   [],
   [
     Definition(
       [],
       CustomType(
+        Span(0, 116),
         "Spooky",
         Public,
         False,

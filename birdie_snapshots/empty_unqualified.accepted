@@ -4,11 +4,16 @@ title: empty_unqualified
 file: ./test/glance_test.gleam
 test_name: empty_unqualified_test
 ---
+import one/two/three.{} as four
+
+---------------------------
+
 Module(
   [
     Definition(
       [],
       Import(
+        Span(0, 20),
         "one/two/three",
         Some(Named("four")),
         [],

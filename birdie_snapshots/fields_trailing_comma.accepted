@@ -4,12 +4,19 @@ title: fields_trailing_comma
 file: ./test/glance_test.gleam
 test_name: fields_trailing_comma_test
 ---
+pub type Box(a) {
+    Box(a,)
+  }
+
+---------------------------
+
 Module(
   [],
   [
     Definition(
       [],
       CustomType(
+        Span(0, 32),
         "Box",
         Public,
         False,
@@ -18,7 +25,10 @@ Module(
           Variant(
             "Box",
             [
-              UnlabelledVariantField(VariableType("a")),
+              UnlabelledVariantField(VariableType(
+                Span(26, 27),
+                "a",
+              )),
             ],
           ),
         ],

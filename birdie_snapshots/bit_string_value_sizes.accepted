@@ -4,6 +4,10 @@ title: bit_string_value_sizes
 file: ./test/glance_test.gleam
 test_name: bit_string_value_sizes_test
 ---
+pub fn main() { <<1, 2:size(5), 5:size(x)>> }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 45),
         "main",
         Public,
         [],
@@ -34,7 +39,6 @@ Module(
             ),
           ])),
         ],
-        Span(0, 45),
       ),
     ),
   ],

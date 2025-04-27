@@ -4,6 +4,10 @@ title: record_update_trailing_comma
 file: ./test/glance_test.gleam
 test_name: record_update_trailing_comma_test
 ---
+pub fn main() { Wibble(..wibble, one: 1, two: 2,) }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 51),
         "main",
         Public,
         [],
@@ -34,7 +39,6 @@ Module(
             ],
           )),
         ],
-        Span(0, 51),
       ),
     ),
   ],

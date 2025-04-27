@@ -4,6 +4,10 @@ title: expression_negate_int
 file: ./test/glance_test.gleam
 test_name: expression_negate_int_test
 ---
+pub fn main() { -x }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 20),
         "main",
         Public,
         [],
@@ -20,7 +25,6 @@ Module(
         [
           Expression(NegateInt(Variable("x"))),
         ],
-        Span(0, 20),
       ),
     ),
   ],

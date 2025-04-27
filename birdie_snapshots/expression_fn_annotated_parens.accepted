@@ -4,6 +4,10 @@ title: expression_fn_annotated_parens
 file: ./test/glance_test.gleam
 test_name: expression_fn_annotated_parens_test
 ---
+pub fn main() { fn(x: a) { x } }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 32),
         "main",
         Public,
         [],
@@ -22,14 +27,16 @@ Module(
             [
               FnParameter(
                 Named("x"),
-                Some(VariableType("a")),
+                Some(VariableType(
+                  Span(22, 23),
+                  "a",
+                )),
               ),
             ],
             None,
             [Expression(Variable("x"))],
           )),
         ],
-        Span(0, 32),
       ),
     ),
   ],

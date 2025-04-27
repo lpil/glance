@@ -4,6 +4,10 @@ title: constant_enum_constructor
 file: ./test/glance_test.gleam
 test_name: constant_enum_constructor_test
 ---
+const x = Nil
+
+---------------------------
+
 Module(
   [],
   [],

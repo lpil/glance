@@ -4,6 +4,10 @@ title: expression_variable
 file: ./test/glance_test.gleam
 test_name: expression_variable_test
 ---
+pub fn main() { x y z }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 23),
         "main",
         Public,
         [],
@@ -22,7 +27,6 @@ Module(
           Expression(Variable("y")),
           Expression(Variable("z")),
         ],
-        Span(0, 23),
       ),
     ),
   ],

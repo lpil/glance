@@ -4,6 +4,10 @@ title: record_update_qualified
 file: ./test/glance_test.gleam
 test_name: record_update_qualified_test
 ---
+pub fn main() { wobble.Wibble(..wibble, one: 1, two: 2) }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 57),
         "main",
         Public,
         [],
@@ -34,7 +39,6 @@ Module(
             ],
           )),
         ],
-        Span(0, 57),
       ),
     ),
   ],

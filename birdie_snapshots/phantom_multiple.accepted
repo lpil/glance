@@ -4,12 +4,19 @@ title: phantom_multiple
 file: ./test/glance_test.gleam
 test_name: phantom_multiple_test
 ---
+pub type Spooky(t, u) {
+    Spooky
+  }
+
+---------------------------
+
 Module(
   [],
   [
     Definition(
       [],
       CustomType(
+        Span(0, 37),
         "Spooky",
         Public,
         False,

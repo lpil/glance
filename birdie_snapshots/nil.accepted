@@ -4,6 +4,10 @@ title: nil
 file: ./test/glance_test.gleam
 test_name: nil_test
 ---
+pub fn main() { Nil }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,12 +17,12 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 21),
         "main",
         Public,
         [],
         None,
         [Expression(Variable("Nil"))],
-        Span(0, 21),
       ),
     ),
   ],

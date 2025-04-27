@@ -4,6 +4,10 @@ title: expression_todo
 file: ./test/glance_test.gleam
 test_name: expression_todo_test
 ---
+pub fn main() { todo }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,12 +17,12 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 22),
         "main",
         Public,
         [],
         None,
         [Expression(Todo(None))],
-        Span(0, 22),
       ),
     ),
   ],

@@ -4,6 +4,10 @@ title: mult_add
 file: ./test/glance_test.gleam
 test_name: mult_add_test
 ---
+pub fn main() { x * y + z }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 27),
         "main",
         Public,
         [],
@@ -28,7 +33,6 @@ Module(
             Variable("z"),
           )),
         ],
-        Span(0, 27),
       ),
     ),
   ],

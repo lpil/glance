@@ -4,6 +4,16 @@ title: pattern_shorthand
 file: ./test/glance_test.gleam
 test_name: pattern_shorthand_test
 ---
+
+pub fn wibble() {
+  case wobble {
+    Wabble(field:) -> field
+  }
+}
+
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +23,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(1, 68),
         "wibble",
         Public,
         [],
@@ -40,7 +51,6 @@ Module(
             ],
           )),
         ],
-        Span(1, 68),
       ),
     ),
   ],

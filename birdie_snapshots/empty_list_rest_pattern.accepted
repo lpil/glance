@@ -4,6 +4,10 @@ title: empty_list_rest_pattern
 file: ./test/glance_test.gleam
 test_name: empty_list_rest_pattern_test
 ---
+pub fn main() { let [..] = x }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 30),
         "main",
         Public,
         [],
@@ -28,7 +33,6 @@ Module(
             Variable("x"),
           ),
         ],
-        Span(0, 30),
       ),
     ),
   ],

@@ -4,6 +4,16 @@ title: comments
 file: ./test/glance_test.gleam
 test_name: comments_test
 ---
+/// Module comment
+
+// Comment
+
+/// Doc comment
+pub fn main() { Nil }
+
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,12 +23,12 @@ Module(
     Definition(
       [],
       Function(
+        Span(48, 69),
         "main",
         Public,
         [],
         None,
         [Expression(Variable("Nil"))],
-        Span(48, 69),
       ),
     ),
   ],

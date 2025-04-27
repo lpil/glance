@@ -4,11 +4,18 @@ title: import_with_underscore_alias
 file: ./test/glance_test.gleam
 test_name: import_with_underscore_alias_test
 ---
+
+import gleam/list.{range} as _alias
+
+
+---------------------------
+
 Module(
   [
     Definition(
       [],
       Import(
+        Span(1, 18),
         "gleam/list",
         Some(Discarded("alias")),
         [],

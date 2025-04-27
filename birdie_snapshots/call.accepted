@@ -4,6 +4,10 @@ title: call
 file: ./test/glance_test.gleam
 test_name: call_test
 ---
+pub fn main() { wobble(1, 2, 3) }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 33),
         "main",
         Public,
         [],
@@ -27,7 +32,6 @@ Module(
             ],
           )),
         ],
-        Span(0, 33),
       ),
     ),
   ],

@@ -4,6 +4,10 @@ title: expression_int
 file: ./test/glance_test.gleam
 test_name: expression_int_test
 ---
+pub fn main() { 1 2 3 }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 23),
         "main",
         Public,
         [],
@@ -22,7 +27,6 @@ Module(
           Expression(Int("2")),
           Expression(Int("3")),
         ],
-        Span(0, 23),
       ),
     ),
   ],

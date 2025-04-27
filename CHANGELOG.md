@@ -1,5 +1,10 @@
 # Changelog
 
+## v4.0.0 - Unreleased.
+
+- All definitions have a location span as their first field.
+- All types have a location span as their first field.
+
 ## v3.0.0 - 2025-02-21
 
 - The `"prefix" as prefix name <> rest ->` pattern syntax is now supported.

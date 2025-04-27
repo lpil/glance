@@ -4,12 +4,19 @@ title: empty_fields_list
 file: ./test/glance_test.gleam
 test_name: empty_fields_list_test
 ---
+pub type Box {
+    Box()
+  }
+
+---------------------------
+
 Module(
   [],
   [
     Definition(
       [],
       CustomType(
+        Span(0, 27),
         "Box",
         Public,
         False,

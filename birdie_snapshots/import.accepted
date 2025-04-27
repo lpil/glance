@@ -4,11 +4,21 @@ title: import
 file: ./test/glance_test.gleam
 test_name: import_test
 ---
+import one
+
+---------------------------
+
 Module(
   [
     Definition(
       [],
-      Import("one", None, [], []),
+      Import(
+        Span(0, 10),
+        "one",
+        None,
+        [],
+        [],
+      ),
     ),
   ],
   [],

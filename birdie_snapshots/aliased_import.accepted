@@ -4,11 +4,16 @@ title: aliased_import
 file: ./test/glance_test.gleam
 test_name: aliased_import_test
 ---
+import one/two/three as four
+
+---------------------------
+
 Module(
   [
     Definition(
       [],
       Import(
+        Span(0, 20),
         "one/two/three",
         Some(Named("four")),
         [],

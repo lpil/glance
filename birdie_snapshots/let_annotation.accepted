@@ -4,6 +4,14 @@ title: let_annotation
 file: ./test/glance_test.gleam
 test_name: let_annotation_test
 ---
+
+pub fn main() {
+  let _money: Int = 1
+}
+
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +21,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(1, 40),
         "main",
         Public,
         [],
@@ -22,6 +31,7 @@ Module(
             Let,
             PatternDiscard("money"),
             Some(NamedType(
+              Span(31, 34),
               "Int",
               None,
               [],
@@ -29,7 +39,6 @@ Module(
             Int("1"),
           ),
         ],
-        Span(1, 40),
       ),
     ),
   ],

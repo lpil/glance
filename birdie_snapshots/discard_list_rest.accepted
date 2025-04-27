@@ -4,6 +4,11 @@ title: discard_list_rest
 file: ./test/glance_test.gleam
 test_name: discard_list_rest_test
 ---
+pub fn main() { case x { [x, ..] -> Nil } }
+
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +18,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 43),
         "main",
         Public,
         [],
@@ -38,7 +44,6 @@ Module(
             ],
           )),
         ],
-        Span(0, 43),
       ),
     ),
   ],

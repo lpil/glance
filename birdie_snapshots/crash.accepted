@@ -4,6 +4,12 @@ title: crash
 file: ./test/glance_test.gleam
 test_name: crash_test
 ---
+pub fn main() {
+  wibble(x: _, )
+}
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +19,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 34),
         "main",
         Public,
         [],
@@ -25,7 +32,6 @@ Module(
             [],
           )),
         ],
-        Span(0, 34),
       ),
     ),
   ],

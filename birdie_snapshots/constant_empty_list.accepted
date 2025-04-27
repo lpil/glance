@@ -4,6 +4,10 @@ title: constant_empty_list
 file: ./test/glance_test.gleam
 test_name: constant_empty_list_test
 ---
+const x = []
+
+---------------------------
+
 Module(
   [],
   [],

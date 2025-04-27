@@ -4,6 +4,10 @@ title: string_pattern
 file: ./test/glance_test.gleam
 test_name: string_pattern_test
 ---
+pub fn main() { let "123" = 1 }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 31),
         "main",
         Public,
         [],
@@ -25,7 +30,6 @@ Module(
             Int("1"),
           ),
         ],
-        Span(0, 31),
       ),
     ),
   ],

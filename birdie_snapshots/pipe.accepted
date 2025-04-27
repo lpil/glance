@@ -4,6 +4,10 @@ title: pipe
 file: ./test/glance_test.gleam
 test_name: pipe_test
 ---
+pub fn main() { x |> y(1) |> z(2, 3) }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 38),
         "main",
         Public,
         [],
@@ -39,7 +44,6 @@ Module(
             ),
           )),
         ],
-        Span(0, 38),
       ),
     ),
   ],

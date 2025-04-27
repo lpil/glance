@@ -4,6 +4,10 @@ title: expression_string
 file: ./test/glance_test.gleam
 test_name: expression_string_test
 ---
+pub fn main() { "10" "20" "30" }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 32),
         "main",
         Public,
         [],
@@ -22,7 +27,6 @@ Module(
           Expression(String("20")),
           Expression(String("30")),
         ],
-        Span(0, 32),
       ),
     ),
   ],

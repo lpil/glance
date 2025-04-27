@@ -2,7 +2,8 @@ import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
-import glexer.{type Position, Position}
+import gleam/string
+import glexer.{type Position, Position as P}
 import glexer/token.{type Token} as t
 
 type Tokens =
@@ -28,12 +29,12 @@ pub type Module {
 
 pub type Function {
   Function(
+    location: Span,
     name: String,
     publicity: Publicity,
     parameters: List(FunctionParameter),
     return: Option(Type),
     body: List(Statement),
-    location: Span,
   )
 }
 
@@ -229,6 +230,7 @@ pub type AssignmentName {
 
 pub type Import {
   Import(
+    location: Span,
     module: String,
     alias: Option(AssignmentName),
     unqualified_types: List(UnqualifiedImport),
@@ -256,6 +258,7 @@ pub type Publicity {
 
 pub type TypeAlias {
   TypeAlias(
+    location: Span,
     name: String,
     publicity: Publicity,
     parameters: List(String),
@@ -265,6 +268,7 @@ pub type TypeAlias {
 
 pub type CustomType {
   CustomType(
+    location: Span,
     name: String,
     publicity: Publicity,
     opaque_: Bool,
@@ -293,11 +297,16 @@ pub type Field(t) {
 }
 
 pub type Type {
-  NamedType(name: String, module: Option(String), parameters: List(Type))
-  TupleType(elements: List(Type))
-  FunctionType(parameters: List(Type), return: Type)
-  VariableType(name: String)
-  HoleType(name: String)
+  NamedType(
+    location: Span,
+    name: String,
+    module: Option(String),
+    parameters: List(Type),
+  )
+  TupleType(location: Span, elements: List(Type))
+  FunctionType(location: Span, parameters: List(Type), return: Type)
+  VariableType(location: Span, name: String)
+  HoleType(location: Span, name: String)
 }
 
 pub type Error {
@@ -378,11 +387,11 @@ fn expect(
 
 fn expect_upper_name(
   tokens: Tokens,
-  next: fn(String, Tokens) -> Result(t, Error),
+  next: fn(String, Int, Tokens) -> Result(t, Error),
 ) -> Result(t, Error) {
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
-    [#(t.UpperName(name), _), ..tokens] -> next(name, tokens)
+    [#(t.UpperName(name), P(end)), ..tokens] -> next(name, end, tokens)
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
   }
 }
@@ -403,10 +412,10 @@ fn until(
   acc: acc,
   tokens: Tokens,
   callback: fn(acc, Tokens) -> Result(#(acc, Tokens), Error),
-) -> Result(#(acc, Tokens), Error) {
+) -> Result(#(acc, Int, Tokens), Error) {
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
-    [#(token, _), ..tokens] if token == limit -> Ok(#(acc, tokens))
+    [#(token, P(i)), ..tokens] if token == limit -> Ok(#(acc, i, tokens))
     [_, ..] -> {
       case callback(acc, tokens) {
         Ok(#(acc, tokens)) -> until(limit, acc, tokens, callback)
@@ -425,7 +434,7 @@ fn attribute(tokens: Tokens) -> Result(#(Attribute, Tokens), Error) {
   case tokens {
     [#(t.LeftParen, _), ..tokens] -> {
       let result = comma_delimited([], tokens, expression, t.RightParen)
-      use #(parameters, tokens) <- result.try(result)
+      use #(parameters, _, tokens) <- result.try(result)
       Ok(#(Attribute(name, parameters), tokens))
     }
     _ -> {
@@ -445,23 +454,26 @@ fn slurp(
       slurp(module, [attribute, ..attributes], tokens)
     }
 
-    [#(t.Import, _), ..tokens] -> {
-      let result = import_statement(module, attributes, tokens)
+    [#(t.Import, P(start)), ..tokens] -> {
+      let result = import_statement(module, attributes, tokens, start)
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
-    [#(t.Pub, _), #(t.Type, _), ..tokens] -> {
-      let result = type_definition(module, attributes, Public, False, tokens)
+    [#(t.Pub, P(start)), #(t.Type, _), ..tokens] -> {
+      let result =
+        type_definition(module, attributes, Public, False, tokens, start)
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
-    [#(t.Pub, _), #(t.Opaque, _), #(t.Type, _), ..tokens] -> {
-      let result = type_definition(module, attributes, Public, True, tokens)
+    [#(t.Pub, P(start)), #(t.Opaque, _), #(t.Type, _), ..tokens] -> {
+      let result =
+        type_definition(module, attributes, Public, True, tokens, start)
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
-    [#(t.Type, _), ..tokens] -> {
-      let result = type_definition(module, attributes, Private, False, tokens)
+    [#(t.Type, P(start)), ..tokens] -> {
+      let result =
+        type_definition(module, attributes, Private, False, tokens, start)
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
@@ -476,14 +488,14 @@ fn slurp(
       slurp(module, [], tokens)
     }
     [#(t.Pub, start), #(t.Fn, _), #(t.Name(name), _), ..tokens] -> {
-      let Position(start) = start
+      let P(start) = start
       let result =
         function_definition(module, attributes, Public, name, start, tokens)
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
     [#(t.Fn, start), #(t.Name(name), _), ..tokens] -> {
-      let Position(start) = start
+      let P(start) = start
       let result =
         function_definition(module, attributes, Private, name, start, tokens)
       use #(module, tokens) <- result.try(result)
@@ -498,30 +510,38 @@ fn import_statement(
   module: Module,
   attributes: List(Attribute),
   tokens: Tokens,
+  start: Int,
 ) -> Result(#(Module, Tokens), Error) {
-  use #(module_name, tokens) <- result.try(module_name("", tokens))
+  use #(module_name, end, tokens) <- result.try(module_name("", 0, tokens))
   use #(ts, vs, tokens) <- result.try(optional_unqualified_imports(tokens))
   let #(alias, tokens) = optional_module_alias(tokens)
-  let import_ = Import(module_name, alias, ts, vs)
+  let span = Span(start, end)
+  let import_ = Import(span, module_name, alias, ts, vs)
   let definition = Definition(list.reverse(attributes), import_)
   let module = Module(..module, imports: [definition, ..module.imports])
   Ok(#(module, tokens))
 }
 
-fn module_name(name: String, tokens: Tokens) -> Result(#(String, Tokens), Error) {
+fn module_name(
+  name: String,
+  end: Int,
+  tokens: Tokens,
+) -> Result(#(String, Int, Tokens), Error) {
   case tokens {
-    [#(t.Slash, _), #(t.Name(s), _), ..tokens] if name != "" -> {
-      module_name(name <> "/" <> s, tokens)
+    [#(t.Slash, _), #(t.Name(s), P(i)), ..tokens] if name != "" -> {
+      let end = i + string.byte_size(s)
+      module_name(name <> "/" <> s, end, tokens)
     }
-    [#(t.Name(s), _), ..tokens] if name == "" -> {
-      module_name(s, tokens)
+    [#(t.Name(s), P(i)), ..tokens] if name == "" -> {
+      let end = i + string.byte_size(s)
+      module_name(s, end, tokens)
     }
 
     [] if name == "" -> Error(UnexpectedEndOfInput)
     [#(other, position), ..] if name == "" ->
       Error(UnexpectedToken(other, position))
 
-    _ -> Ok(#(name, tokens))
+    _ -> Ok(#(name, end, tokens))
   }
 }
 
@@ -659,9 +679,9 @@ fn function_definition(
   tokens: Tokens,
 ) -> Result(#(Module, Tokens), Error) {
   // Parameters
-  use Position(end), tokens <- expect(t.LeftParen, tokens)
+  use P(end), tokens <- expect(t.LeftParen, tokens)
   let result = comma_delimited([], tokens, function_parameter, t.RightParen)
-  use #(parameters, tokens) <- result.try(result)
+  use #(parameters, _, tokens) <- result.try(result)
 
   // Return type
   let result = optional_return_annotation(end, tokens)
@@ -675,7 +695,7 @@ fn function_definition(
 
   let location = Span(start, end)
   let function =
-    Function(name, publicity, parameters, return_type, body, location)
+    Function(location, name, publicity, parameters, return_type, body)
   let module = push_function(module, attributes, function)
   Ok(#(module, tokens))
 }
@@ -685,7 +705,7 @@ fn optional_return_annotation(
   tokens: Tokens,
 ) -> Result(#(Option(Type), Int, Tokens), Error) {
   case tokens {
-    [#(t.RightArrow, Position(end)), ..tokens] -> {
+    [#(t.RightArrow, P(end)), ..tokens] -> {
       use #(return_type, tokens) <- result.try(type_(tokens))
       Ok(#(Some(return_type), end, tokens))
     }
@@ -698,7 +718,7 @@ fn statements(
   tokens: Tokens,
 ) -> Result(#(List(Statement), Int, Tokens), Error) {
   case tokens {
-    [#(t.RightBrace, Position(end)), ..tokens] ->
+    [#(t.RightBrace, P(end)), ..tokens] ->
       Ok(#(list.reverse(acc), end + 1, tokens))
     _ -> {
       use #(statement, tokens) <- result.try(statement(tokens))
@@ -835,14 +855,14 @@ fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
 
     [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> {
       let result = comma_delimited([], tokens, pattern, t.RightParen)
-      use #(patterns, tokens) <- result.try(result)
+      use #(patterns, _, tokens) <- result.try(result)
       Ok(#(PatternTuple(patterns), tokens))
     }
 
     [#(t.LessLess, _), ..tokens] -> {
       let parser = bit_string_segment(pattern, _)
       let result = comma_delimited([], tokens, parser, t.GreaterGreater)
-      use #(segments, tokens) <- result.try(result)
+      use #(segments, _, tokens) <- result.try(result)
       Ok(#(PatternBitString(segments), tokens))
     }
 
@@ -1009,7 +1029,7 @@ fn expression_unit(
 
     [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> {
       let result = comma_delimited([], tokens, expression, t.RightParen)
-      use #(expressions, tokens) <- result.map(result)
+      use #(expressions, _, tokens) <- result.map(result)
       #(Some(Tuple(expressions)), tokens)
     }
 
@@ -1035,7 +1055,7 @@ fn expression_unit(
     [#(t.LessLess, _), ..tokens] -> {
       let parser = bit_string_segment(expression, _)
       let result = comma_delimited([], tokens, parser, t.GreaterGreater)
-      use #(segments, tokens) <- result.map(result)
+      use #(segments, _, tokens) <- result.map(result)
       #(Some(BitString(segments)), tokens)
     }
 
@@ -1307,7 +1327,7 @@ fn record_update(
     [#(t.Comma, _), ..tokens] -> {
       let result =
         comma_delimited([], tokens, record_update_field, t.RightParen)
-      use #(fields, tokens) <- result.try(result)
+      use #(fields, _, tokens) <- result.try(result)
       Ok(#(Some(RecordUpdate(module, constructor, record, fields)), tokens))
     }
     _ -> Ok(#(None, tokens))
@@ -1406,7 +1426,7 @@ fn fn_(tokens: Tokens) -> Result(#(Option(Expression), Tokens), Error) {
   // Parameters
   use _, tokens <- expect(t.LeftParen, tokens)
   let result = comma_delimited([], tokens, fn_parameter, t.RightParen)
-  use #(parameters, tokens) <- result.try(result)
+  use #(parameters, _, tokens) <- result.try(result)
 
   // Return type
   use #(return, _, tokens) <- result.try(optional_return_annotation(0, tokens))
@@ -1552,12 +1572,12 @@ fn comma_delimited(
   tokens: Tokens,
   parse parser: fn(Tokens) -> Result(#(t, Tokens), Error),
   until final: t.Token,
-) -> Result(#(List(t), Tokens), Error) {
+) -> Result(#(List(t), Int, Tokens), Error) {
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
 
-    [#(token, _), ..tokens] if token == final -> {
-      Ok(#(list.reverse(items), tokens))
+    [#(token, P(i)), ..tokens] if token == final -> {
+      Ok(#(list.reverse(items), i, tokens))
     }
 
     _ -> {
@@ -1566,8 +1586,8 @@ fn comma_delimited(
         [#(t.Comma, _), ..tokens] -> {
           comma_delimited([element, ..items], tokens, parser, final)
         }
-        [#(token, _), ..tokens] if token == final -> {
-          Ok(#(list.reverse([element, ..items]), tokens))
+        [#(token, P(i)), ..tokens] if token == final -> {
+          Ok(#(list.reverse([element, ..items]), i, tokens))
         }
         [#(other, position), ..] -> {
           Error(UnexpectedToken(other, position))
@@ -1584,21 +1604,43 @@ fn type_definition(
   publicity: Publicity,
   opaque_: Bool,
   tokens: Tokens,
+  start: Int,
 ) -> Result(#(Module, Tokens), Error) {
   // Name(a, b, c)
-  use name, tokens <- expect_upper_name(tokens)
-  use #(parameters, tokens) <- result.try(optional_type_parameters(tokens))
+  use name_value, name_start, tokens <- expect_upper_name(tokens)
+  use #(parameters, _, tokens) <- result.try(case tokens {
+    [#(t.LeftParen, _), ..tokens] ->
+      comma_delimited([], tokens, name, until: t.RightParen)
+    _ -> Ok(#([], 0, tokens))
+  })
 
   case tokens {
     [#(t.Equal, _), ..tokens] -> {
-      type_alias(module, attributes, name, parameters, publicity, tokens)
+      type_alias(
+        module,
+        attributes,
+        name_value,
+        parameters,
+        publicity,
+        start,
+        tokens,
+      )
     }
     [#(t.LeftBrace, _), ..tokens] -> {
       module
-      |> custom_type(attributes, name, parameters, publicity, opaque_, tokens)
+      |> custom_type(
+        attributes,
+        name_value,
+        parameters,
+        publicity,
+        opaque_,
+        tokens,
+        start,
+      )
     }
     _ -> {
-      let ct = CustomType(name, publicity, opaque_, parameters, [])
+      let span = Span(start, name_start + string.byte_size(name_value))
+      let ct = CustomType(span, name_value, publicity, opaque_, parameters, [])
       let module = push_custom_type(module, attributes, ct)
       Ok(#(module, tokens))
     }
@@ -1611,10 +1653,12 @@ fn type_alias(
   name: String,
   parameters: List(String),
   publicity: Publicity,
+  start: Int,
   tokens: Tokens,
 ) -> Result(#(Module, Tokens), Error) {
   use #(type_, tokens) <- result.try(type_(tokens))
-  let alias = TypeAlias(name, publicity, parameters, type_)
+  let span = Span(start, type_.location.end)
+  let alias = TypeAlias(span, name, publicity, parameters, type_)
   let module = push_type_alias(module, attributes, alias)
   Ok(#(module, tokens))
 }
@@ -1622,23 +1666,30 @@ fn type_alias(
 fn type_(tokens: Tokens) -> Result(#(Type, Tokens), Error) {
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
-    [#(t.Fn, _), #(t.LeftParen, _), ..tokens] -> {
-      fn_type(tokens)
+    [#(t.Fn, P(i)), #(t.LeftParen, _), ..tokens] -> {
+      fn_type(i, tokens)
     }
-    [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> {
-      tuple_type(tokens)
+    [#(t.Hash, P(i)), #(t.LeftParen, _), ..tokens] -> {
+      tuple_type(i, tokens)
     }
-    [#(t.Name(module), _), #(t.Dot, _), #(t.UpperName(name), _), ..tokens] -> {
-      named_type(name, Some(module), tokens)
+    [
+      #(t.Name(module), P(start)),
+      #(t.Dot, _),
+      #(t.UpperName(name), P(end)),
+      ..tokens
+    ] -> {
+      named_type(name, Some(module), tokens, start, end)
     }
-    [#(t.UpperName(name), _), ..tokens] -> {
-      named_type(name, None, tokens)
+    [#(t.UpperName(name), P(start)), ..tokens] -> {
+      named_type(name, None, tokens, start, start)
     }
-    [#(t.DiscardName(name), _), ..tokens] -> {
-      Ok(#(HoleType(name), tokens))
+    [#(t.DiscardName(name), P(i)), ..tokens] -> {
+      let value = HoleType(Span(i, i + string.byte_size(name)), name)
+      Ok(#(value, tokens))
     }
-    [#(t.Name(name), _), ..tokens] -> {
-      Ok(#(VariableType(name), tokens))
+    [#(t.Name(name), P(i)), ..tokens] -> {
+      let value = VariableType(Span(i, i + string.byte_size(name)), name)
+      Ok(#(value, tokens))
     }
     [#(token, position), ..] -> {
       Error(UnexpectedToken(token, position))
@@ -1650,29 +1701,36 @@ fn named_type(
   name: String,
   module: Option(String),
   tokens: Tokens,
+  start: Int,
+  name_start: Int,
 ) -> Result(#(Type, Tokens), Error) {
-  use #(parameters, tokens) <- result.try(case tokens {
+  use #(parameters, end, tokens) <- result.try(case tokens {
     [#(t.LeftParen, _), ..tokens] ->
       comma_delimited([], tokens, type_, until: t.RightParen)
 
-    _ -> Ok(#([], tokens))
+    _ -> {
+      let end = name_start + string.byte_size(name) - 1
+      Ok(#([], end, tokens))
+    }
   })
-  let t = NamedType(name, module, parameters)
+  let t = NamedType(Span(start, end + 1), name, module, parameters)
   Ok(#(t, tokens))
 }
 
-fn fn_type(tokens: Tokens) -> Result(#(Type, Tokens), Error) {
+fn fn_type(start: Int, tokens: Tokens) -> Result(#(Type, Tokens), Error) {
   let result = comma_delimited([], tokens, type_, until: t.RightParen)
-  use #(parameters, tokens) <- result.try(result)
+  use #(parameters, _, tokens) <- result.try(result)
   use _, tokens <- expect(t.RightArrow, tokens)
   use #(return, tokens) <- result.try(type_(tokens))
-  Ok(#(FunctionType(parameters, return), tokens))
+  let span = Span(start, return.location.end)
+  Ok(#(FunctionType(span, parameters, return), tokens))
 }
 
-fn tuple_type(tokens: Tokens) -> Result(#(Type, Tokens), Error) {
+fn tuple_type(start: Int, tokens: Tokens) -> Result(#(Type, Tokens), Error) {
   let result = comma_delimited([], tokens, type_, until: t.RightParen)
-  use #(types, tokens) <- result.try(result)
-  Ok(#(TupleType(types), tokens))
+  use #(types, end, tokens) <- result.try(result)
+  let span = Span(start, end + 1)
+  Ok(#(TupleType(span, types), tokens))
 }
 
 fn custom_type(
@@ -1683,24 +1741,16 @@ fn custom_type(
   publicity: Publicity,
   opaque_: Bool,
   tokens: Tokens,
+  start: Int,
 ) -> Result(#(Module, Tokens), Error) {
   // <variant>.. }
-  let ct = CustomType(name, publicity, opaque_, parameters, [])
-  use #(ct, tokens) <- result.try(variants(ct, tokens))
+  let ct = CustomType(Span(0, 0), name, publicity, opaque_, parameters, [])
+  use #(ct, end, tokens) <- result.try(variants(ct, tokens))
+  let ct = CustomType(..ct, location: Span(start, end))
 
   // Continue to the next statement
   let module = push_custom_type(module, attributes, ct)
   Ok(#(module, tokens))
-}
-
-fn optional_type_parameters(
-  tokens: Tokens,
-) -> Result(#(List(String), Tokens), Error) {
-  case tokens {
-    [#(t.LeftParen, _), ..tokens] ->
-      comma_delimited([], tokens, name, until: t.RightParen)
-    _ -> Ok(#([], tokens))
-  }
 }
 
 fn name(tokens: Tokens) -> Result(#(String, Tokens), Error) {
@@ -1714,24 +1764,18 @@ fn name(tokens: Tokens) -> Result(#(String, Tokens), Error) {
 fn variants(
   ct: CustomType,
   tokens: Tokens,
-) -> Result(#(CustomType, Tokens), Error) {
+) -> Result(#(CustomType, Int, Tokens), Error) {
   use ct, tokens <- until(t.RightBrace, ct, tokens)
-  use name, tokens <- expect_upper_name(tokens)
-  use #(parameters, tokens) <- result.try(optional_variant_fields(tokens))
+  use name, _, tokens <- expect_upper_name(tokens)
+  use #(parameters, _, tokens) <- result.try(case tokens {
+    [#(t.LeftParen, _), #(t.RightParen, P(i)), ..tokens] -> Ok(#([], i, tokens))
+    [#(t.LeftParen, _), ..tokens] -> {
+      comma_delimited([], tokens, variant_field, until: t.RightParen)
+    }
+    _ -> Ok(#([], 0, tokens))
+  })
   let ct = push_variant(ct, Variant(name, parameters))
   Ok(#(ct, tokens))
-}
-
-fn optional_variant_fields(
-  tokens: Tokens,
-) -> Result(#(List(VariantField), Tokens), Error) {
-  case tokens {
-    [#(t.LeftParen, _), #(t.RightParen, _), ..tokens] -> Ok(#([], tokens))
-    [#(t.LeftParen, _), ..tokens] -> {
-      comma_delimited([], tokens, variant_field(_), until: t.RightParen)
-    }
-    _ -> Ok(#([], tokens))
-  }
 }
 
 fn variant_field(tokens: Tokens) -> Result(#(VariantField, Tokens), Error) {

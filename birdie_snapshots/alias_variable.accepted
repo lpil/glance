@@ -4,6 +4,10 @@ title: alias_variable
 file: ./test/glance_test.gleam
 test_name: alias_variable_test
 ---
+pub type X = a
+
+---------------------------
+
 Module(
   [],
   [],
@@ -11,10 +15,11 @@ Module(
     Definition(
       [],
       TypeAlias(
+        Span(0, 14),
         "X",
         Public,
         [],
-        VariableType("a"),
+        VariableType(Span(13, 14), "a"),
       ),
     ),
   ],

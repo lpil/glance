@@ -4,6 +4,14 @@ title: use_none
 file: ./test/glance_test.gleam
 test_name: use_none_test
 ---
+
+pub fn main() {
+  use <- x
+}
+
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,12 +21,12 @@ Module(
     Definition(
       [],
       Function(
+        Span(1, 29),
         "main",
         Public,
         [],
         None,
         [Use([], Variable("x"))],
-        Span(1, 29),
       ),
     ),
   ],

@@ -4,6 +4,10 @@ title: function_return_annotation
 file: ./test/glance_test.gleam
 test_name: function_return_annotation_test
 ---
+fn main() -> Nil {}
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,12 +17,17 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 19),
         "main",
         Private,
         [],
-        Some(NamedType("Nil", None, [])),
+        Some(NamedType(
+          Span(13, 16),
+          "Nil",
+          None,
+          [],
+        )),
         [],
-        Span(0, 19),
       ),
     ),
   ],

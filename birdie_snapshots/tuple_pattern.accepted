@@ -4,6 +4,10 @@ title: tuple_pattern
 file: ./test/glance_test.gleam
 test_name: tuple_pattern_test
 ---
+pub fn main() { let #(_, _) = 1 }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 33),
         "main",
         Public,
         [],
@@ -28,7 +33,6 @@ Module(
             Int("1"),
           ),
         ],
-        Span(0, 33),
       ),
     ),
   ],

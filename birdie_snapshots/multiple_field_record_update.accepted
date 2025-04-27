@@ -4,6 +4,14 @@ title: multiple_field_record_update
 file: ./test/glance_test.gleam
 test_name: multiple_field_record_update_test
 ---
+
+pub fn wibble() {
+  Wobble(..wobble, shorthand_mid:, non_shorthand: a, shorthand_end:)
+}
+
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +21,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(1, 89),
         "wibble",
         Public,
         [],
@@ -38,7 +47,6 @@ Module(
             ],
           )),
         ],
-        Span(1, 89),
       ),
     ),
   ],

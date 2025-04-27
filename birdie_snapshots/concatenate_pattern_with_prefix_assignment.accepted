@@ -4,6 +4,10 @@ title: concatenate_pattern_with_prefix_assignment
 file: ./test/glance_test.gleam
 test_name: concatenate_pattern_with_prefix_assignment_test
 ---
+pub fn main() { let "1" as x <> y = "" }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 40),
         "main",
         Public,
         [],
@@ -29,7 +34,6 @@ Module(
             String(""),
           ),
         ],
-        Span(0, 40),
       ),
     ),
   ],

@@ -4,6 +4,14 @@ title: negative_float_bug
 file: ./test/glance_test.gleam
 test_name: negative_float_bug_test
 ---
+
+pub fn main() {
+  -1.1
+}
+
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,12 +21,12 @@ Module(
     Definition(
       [],
       Function(
+        Span(1, 25),
         "main",
         Public,
         [],
         None,
         [Expression(Float("-1.1"))],
-        Span(1, 25),
       ),
     ),
   ],

@@ -4,12 +4,19 @@ title: empty_parameter_list
 file: ./test/glance_test.gleam
 test_name: empty_parameter_list_test
 ---
+pub type Box() {
+    Box
+  }
+
+---------------------------
+
 Module(
   [],
   [
     Definition(
       [],
       CustomType(
+        Span(0, 27),
         "Box",
         Public,
         False,

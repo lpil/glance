@@ -4,6 +4,10 @@ title: constant_constructor
 file: ./test/glance_test.gleam
 test_name: constant_constructor_test
 ---
+const x = Box(1, 2.0)
+
+---------------------------
+
 Module(
   [],
   [],

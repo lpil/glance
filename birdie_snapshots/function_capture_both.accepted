@@ -4,6 +4,10 @@ title: function_capture_both
 file: ./test/glance_test.gleam
 test_name: function_capture_both_test
 ---
+pub fn main() { wibble(1, 2, _, 3) }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 36),
         "main",
         Public,
         [],
@@ -28,7 +33,6 @@ Module(
             [UnlabelledField(Int("3"))],
           )),
         ],
-        Span(0, 36),
       ),
     ),
   ],

@@ -4,6 +4,10 @@ title: expression_fn_discard
 file: ./test/glance_test.gleam
 test_name: expression_fn_discard_test
 ---
+pub fn main() { fn(_x: a) { 1 } }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 33),
         "main",
         Public,
         [],
@@ -22,14 +27,16 @@ Module(
             [
               FnParameter(
                 Discarded("x"),
-                Some(VariableType("a")),
+                Some(VariableType(
+                  Span(23, 24),
+                  "a",
+                )),
               ),
             ],
             None,
             [Expression(Int("1"))],
           )),
         ],
-        Span(0, 33),
       ),
     ),
   ],

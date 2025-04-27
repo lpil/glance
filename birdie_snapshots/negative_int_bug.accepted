@@ -4,6 +4,14 @@ title: negative_int_bug
 file: ./test/glance_test.gleam
 test_name: negative_int_bug_test
 ---
+
+pub fn main() {
+  -11
+}
+
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,12 +21,12 @@ Module(
     Definition(
       [],
       Function(
+        Span(1, 24),
         "main",
         Public,
         [],
         None,
         [Expression(Int("-11"))],
-        Span(1, 24),
       ),
     ),
   ],

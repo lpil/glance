@@ -4,6 +4,10 @@ title: alias_fn
 file: ./test/glance_test.gleam
 test_name: alias_fn_test
 ---
+pub type X = fn(A, B) -> C
+
+---------------------------
+
 Module(
   [],
   [],
@@ -11,15 +15,32 @@ Module(
     Definition(
       [],
       TypeAlias(
+        Span(0, 26),
         "X",
         Public,
         [],
         FunctionType(
+          Span(13, 26),
           [
-            NamedType("A", None, []),
-            NamedType("B", None, []),
+            NamedType(
+              Span(16, 17),
+              "A",
+              None,
+              [],
+            ),
+            NamedType(
+              Span(19, 20),
+              "B",
+              None,
+              [],
+            ),
           ],
-          NamedType("C", None, []),
+          NamedType(
+            Span(25, 26),
+            "C",
+            None,
+            [],
+          ),
         ),
       ),
     ),

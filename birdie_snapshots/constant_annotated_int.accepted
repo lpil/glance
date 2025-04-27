@@ -4,6 +4,10 @@ title: constant_annotated_int
 file: ./test/glance_test.gleam
 test_name: constant_annotated_int_test
 ---
+pub const x: Int = 123
+
+---------------------------
+
 Module(
   [],
   [],
@@ -14,7 +18,12 @@ Module(
       Constant(
         "x",
         Public,
-        Some(NamedType("Int", None, [])),
+        Some(NamedType(
+          Span(13, 16),
+          "Int",
+          None,
+          [],
+        )),
         Int("123"),
       ),
     ),

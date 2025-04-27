@@ -4,6 +4,10 @@ title: expression_tuple
 file: ./test/glance_test.gleam
 test_name: expression_tuple_test
 ---
+pub fn main() { #(1, 2, 3) }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 28),
         "main",
         Public,
         [],
@@ -24,7 +29,6 @@ Module(
             Int("3"),
           ])),
         ],
-        Span(0, 28),
       ),
     ),
   ],

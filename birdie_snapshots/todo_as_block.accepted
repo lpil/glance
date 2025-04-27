@@ -4,6 +4,12 @@ title: todo_as_block
 file: ./test/glance_test.gleam
 test_name: todo_as_block_test
 ---
+pub fn main() {
+  todo as { "oh no" }
+}
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +19,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 39),
         "main",
         Public,
         [],
@@ -22,7 +29,6 @@ Module(
             Expression(String("oh no")),
           ])))),
         ],
-        Span(0, 39),
       ),
     ),
   ],

@@ -4,6 +4,12 @@ title: panic_as_block
 file: ./test/glance_test.gleam
 test_name: panic_as_block_test
 ---
+pub fn main() {
+  panic as { "oh no" }
+}
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +19,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 40),
         "main",
         Public,
         [],
@@ -22,7 +29,6 @@ Module(
             Expression(String("oh no")),
           ])))),
         ],
-        Span(0, 40),
       ),
     ),
   ],

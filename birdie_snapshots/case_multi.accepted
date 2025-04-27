@@ -4,6 +4,10 @@ title: case_multi
 file: ./test/glance_test.gleam
 test_name: case_multi_test
 ---
+pub fn main() { case x, y, z { a, b, c -> 1 } }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 47),
         "main",
         Public,
         [],
@@ -39,7 +44,6 @@ Module(
             ],
           )),
         ],
-        Span(0, 47),
       ),
     ),
   ],

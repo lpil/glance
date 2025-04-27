@@ -4,6 +4,10 @@ title: bit_string_empty
 file: ./test/glance_test.gleam
 test_name: bit_string_empty_test
 ---
+pub fn main() { <<>> }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,12 +17,12 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 22),
         "main",
         Public,
         [],
         None,
         [Expression(BitString([]))],
-        Span(0, 22),
       ),
     ),
   ],

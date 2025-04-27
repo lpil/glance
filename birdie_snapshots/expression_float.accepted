@@ -4,6 +4,10 @@ title: expression_float
 file: ./test/glance_test.gleam
 test_name: expression_float_test
 ---
+pub fn main() { 1.0 2.0 3.0 }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 29),
         "main",
         Public,
         [],
@@ -22,7 +27,6 @@ Module(
           Expression(Float("2.0")),
           Expression(Float("3.0")),
         ],
-        Span(0, 29),
       ),
     ),
   ],

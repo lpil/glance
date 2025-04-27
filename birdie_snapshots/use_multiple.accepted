@@ -4,6 +4,10 @@ title: use_multiple
 file: ./test/glance_test.gleam
 test_name: use_multiple_test
 ---
+pub fn main() { use x, y, z <- f }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 34),
         "main",
         Public,
         [],
@@ -27,7 +32,6 @@ Module(
             Variable("f"),
           ),
         ],
-        Span(0, 34),
       ),
     ),
   ],

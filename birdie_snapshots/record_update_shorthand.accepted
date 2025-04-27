@@ -4,6 +4,14 @@ title: record_update_shorthand
 file: ./test/glance_test.gleam
 test_name: record_update_shorthand_test
 ---
+
+pub fn wibble() {
+  Wobble(..wabble, field:)
+}
+
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +21,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(1, 47),
         "wibble",
         Public,
         [],
@@ -30,7 +39,6 @@ Module(
             ],
           )),
         ],
-        Span(1, 47),
       ),
     ),
   ],

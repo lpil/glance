@@ -4,6 +4,14 @@ title: external_attribute
 file: ./test/glance_test.gleam
 test_name: external_attribute_test
 ---
+
+@external(erlang, "gb_trees", "empty")
+@external(javascript, "./gb_trees.js", "empty")
+pub fn new_gb_tree() -> GbTree(k, v)
+
+
+---------------------------
+
 Module(
   [],
   [],
@@ -30,19 +38,26 @@ Module(
         ),
       ],
       Function(
+        Span(88, 109),
         "new_gb_tree",
         Public,
         [],
         Some(NamedType(
+          Span(112, 124),
           "GbTree",
           None,
           [
-            VariableType("k"),
-            VariableType("v"),
+            VariableType(
+              Span(119, 120),
+              "k",
+            ),
+            VariableType(
+              Span(122, 123),
+              "v",
+            ),
           ],
         )),
         [],
-        Span(88, 109),
       ),
     ),
   ],

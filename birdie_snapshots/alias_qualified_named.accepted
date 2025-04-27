@@ -4,6 +4,10 @@ title: alias_qualified_named
 file: ./test/glance_test.gleam
 test_name: alias_qualified_named_test
 ---
+pub type X = wibble.Y
+
+---------------------------
+
 Module(
   [],
   [],
@@ -11,10 +15,12 @@ Module(
     Definition(
       [],
       TypeAlias(
+        Span(0, 21),
         "X",
         Public,
         [],
         NamedType(
+          Span(13, 21),
           "Y",
           Some("wibble"),
           [],

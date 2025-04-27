@@ -4,6 +4,10 @@ title: expression_negate_bool
 file: ./test/glance_test.gleam
 test_name: expression_negate_bool_test
 ---
+pub fn main() { !x }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 20),
         "main",
         Public,
         [],
@@ -20,7 +25,6 @@ Module(
         [
           Expression(NegateBool(Variable("x"))),
         ],
-        Span(0, 20),
       ),
     ),
   ],

@@ -4,6 +4,10 @@ title: function_capture_immediate_call
 file: ./test/glance_test.gleam
 test_name: function_capture_immediate_call_test
 ---
+pub fn main() { wibble(_)() }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 29),
         "main",
         Public,
         [],
@@ -28,7 +33,6 @@ Module(
             [],
           )),
         ],
-        Span(0, 29),
       ),
     ),
   ],

@@ -4,6 +4,10 @@ title: record_partial_destructure_trailing_comma
 file: ./test/glance_test.gleam
 test_name: record_partial_destructure_trailing_comma_test
 ---
+pub fn main(x) { let Wibble(y, ..,) = x }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 41),
         "main",
         Public,
         [
@@ -38,7 +43,6 @@ Module(
             Variable("x"),
           ),
         ],
-        Span(0, 41),
       ),
     ),
   ],

@@ -4,6 +4,10 @@ title: add_mult_block
 file: ./test/glance_test.gleam
 test_name: add_mult_block_test
 ---
+pub fn main() { { x + y } * z }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 31),
         "main",
         Public,
         [],
@@ -30,7 +35,6 @@ Module(
             Variable("z"),
           )),
         ],
-        Span(0, 31),
       ),
     ),
   ],

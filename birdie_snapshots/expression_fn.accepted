@@ -4,6 +4,10 @@ title: expression_fn
 file: ./test/glance_test.gleam
 test_name: expression_fn_test
 ---
+pub fn main() { fn(x) { x } }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 29),
         "main",
         Public,
         [],
@@ -29,7 +34,6 @@ Module(
             [Expression(Variable("x"))],
           )),
         ],
-        Span(0, 29),
       ),
     ),
   ],

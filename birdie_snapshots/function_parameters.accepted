@@ -4,6 +4,10 @@ title: function_parameters
 file: ./test/glance_test.gleam
 test_name: function_parameters_test
 ---
+fn main(a, b: #(), c d, e f: G, h _i, j _k: L) {}
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 49),
         "main",
         Private,
         [
@@ -24,7 +29,10 @@ Module(
           FunctionParameter(
             None,
             Named("b"),
-            Some(TupleType([])),
+            Some(TupleType(
+              Span(14, 17),
+              [],
+            )),
           ),
           FunctionParameter(
             Some("c"),
@@ -35,6 +43,7 @@ Module(
             Some("e"),
             Named("f"),
             Some(NamedType(
+              Span(29, 30),
               "G",
               None,
               [],
@@ -49,6 +58,7 @@ Module(
             Some("j"),
             Discarded("k"),
             Some(NamedType(
+              Span(44, 45),
               "L",
               None,
               [],
@@ -57,7 +67,6 @@ Module(
         ],
         None,
         [],
-        Span(0, 49),
       ),
     ),
   ],

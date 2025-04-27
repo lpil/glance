@@ -4,6 +4,14 @@ title: record_shorthand
 file: ./test/glance_test.gleam
 test_name: record_shorthand_test
 ---
+
+pub fn wibble() {
+  Wobble(field:)
+}
+
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +21,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(1, 37),
         "wibble",
         Public,
         [],
@@ -23,7 +32,6 @@ Module(
             [ShorthandField("field")],
           )),
         ],
-        Span(1, 37),
       ),
     ),
   ],

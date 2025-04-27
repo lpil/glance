@@ -4,6 +4,10 @@ title: bit_string_pattern
 file: ./test/glance_test.gleam
 test_name: bit_string_pattern_test
 ---
+pub fn main() { let <<1, 2:4>> = 1 }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 36),
         "main",
         Public,
         [],
@@ -31,7 +36,6 @@ Module(
             Int("1"),
           ),
         ],
-        Span(0, 36),
       ),
     ),
   ],

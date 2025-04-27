@@ -4,6 +4,10 @@ title: case
 file: ./test/glance_test.gleam
 test_name: case_test
 ---
+pub fn main() { case x { y -> 1 } }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 35),
         "main",
         Public,
         [],
@@ -29,7 +34,6 @@ Module(
             ],
           )),
         ],
-        Span(0, 35),
       ),
     ),
   ],

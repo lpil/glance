@@ -4,6 +4,10 @@ title: and
 file: ./test/glance_test.gleam
 test_name: and_test
 ---
+pub fn main() { x && y }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 24),
         "main",
         Public,
         [],
@@ -24,7 +29,6 @@ Module(
             Variable("y"),
           )),
         ],
-        Span(0, 24),
       ),
     ),
   ],

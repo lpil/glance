@@ -4,6 +4,10 @@ title: alias_hole
 file: ./test/glance_test.gleam
 test_name: alias_hole_test
 ---
+pub type X = _whatever
+
+---------------------------
+
 Module(
   [],
   [],
@@ -11,10 +15,14 @@ Module(
     Definition(
       [],
       TypeAlias(
+        Span(0, 21),
         "X",
         Public,
         [],
-        HoleType("whatever"),
+        HoleType(
+          Span(13, 21),
+          "whatever",
+        ),
       ),
     ),
   ],

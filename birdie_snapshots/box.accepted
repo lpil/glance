@@ -4,12 +4,19 @@ title: box
 file: ./test/glance_test.gleam
 test_name: box_test
 ---
+pub type Box(x) {
+    Box(x)
+  }
+
+---------------------------
+
 Module(
   [],
   [
     Definition(
       [],
       CustomType(
+        Span(0, 31),
         "Box",
         Public,
         False,
@@ -18,7 +25,10 @@ Module(
           Variant(
             "Box",
             [
-              UnlabelledVariantField(VariableType("x")),
+              UnlabelledVariantField(VariableType(
+                Span(26, 27),
+                "x",
+              )),
             ],
           ),
         ],

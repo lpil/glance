@@ -4,6 +4,10 @@ title: tuple_index
 file: ./test/glance_test.gleam
 test_name: tuple_index_test
 ---
+pub fn main() { wobble.12 }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 27),
         "main",
         Public,
         [],
@@ -23,7 +28,6 @@ Module(
             12,
           )),
         ],
-        Span(0, 27),
       ),
     ),
   ],

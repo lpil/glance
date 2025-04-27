@@ -4,6 +4,14 @@ title: attributes
 file: ./test/glance_test.gleam
 test_name: attributes_test
 ---
+
+@thingbobby(erlang, "one", "two")
+@thingbobby(javascript, "three", "four")
+pub fn main() { Nil }
+
+
+---------------------------
+
 Module(
   [],
   [],
@@ -30,12 +38,12 @@ Module(
         ),
       ],
       Function(
+        Span(76, 97),
         "main",
         Public,
         [],
         None,
         [Expression(Variable("Nil"))],
-        Span(76, 97),
       ),
     ),
   ],

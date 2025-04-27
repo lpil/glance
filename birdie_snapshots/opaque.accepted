@@ -4,12 +4,19 @@ title: opaque
 file: ./test/glance_test.gleam
 test_name: opaque_test
 ---
+pub opaque type Box {
+    Box()
+  }
+
+---------------------------
+
 Module(
   [],
   [
     Definition(
       [],
       CustomType(
+        Span(0, 34),
         "Box",
         Public,
         True,

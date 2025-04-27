@@ -188,6 +188,7 @@ fn birdie_import(module: glance.Module) -> Result(BirdieImport, Nil) {
   use nil, import_ <- list.fold_until(over: module.imports, from: Error(Nil))
   case import_.definition {
     glance.Import(
+      location: _,
       module: "birdie",
       alias: birdie_alias,
       unqualified_types: _,

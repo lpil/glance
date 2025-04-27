@@ -4,12 +4,19 @@ title: multiple_fields
 file: ./test/glance_test.gleam
 test_name: multiple_fields_test
 ---
+pub type Box(x, y, z) {
+    Box(x, y, z)
+  }
+
+---------------------------
+
 Module(
   [],
   [
     Definition(
       [],
       CustomType(
+        Span(0, 43),
         "Box",
         Public,
         False,
@@ -18,9 +25,18 @@ Module(
           Variant(
             "Box",
             [
-              UnlabelledVariantField(VariableType("x")),
-              UnlabelledVariantField(VariableType("y")),
-              UnlabelledVariantField(VariableType("z")),
+              UnlabelledVariantField(VariableType(
+                Span(32, 33),
+                "x",
+              )),
+              UnlabelledVariantField(VariableType(
+                Span(35, 36),
+                "y",
+              )),
+              UnlabelledVariantField(VariableType(
+                Span(38, 39),
+                "z",
+              )),
             ],
           ),
         ],

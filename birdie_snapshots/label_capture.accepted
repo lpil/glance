@@ -4,6 +4,12 @@ title: label_capture
 file: ./test/glance_test.gleam
 test_name: label_capture_test
 ---
+pub fn main() {
+  wibble(x: _)
+}
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +19,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 32),
         "main",
         Public,
         [],
@@ -25,7 +32,6 @@ Module(
             [],
           )),
         ],
-        Span(0, 32),
       ),
     ),
   ],

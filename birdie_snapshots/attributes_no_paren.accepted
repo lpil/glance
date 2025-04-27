@@ -4,6 +4,13 @@ title: attributes_no_paren
 file: ./test/glance_test.gleam
 test_name: attributes_no_paren_test
 ---
+
+@thingbobby
+pub fn main() { Nil }
+
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,12 +20,12 @@ Module(
     Definition(
       [Attribute("thingbobby", [])],
       Function(
+        Span(13, 34),
         "main",
         Public,
         [],
         None,
         [Expression(Variable("Nil"))],
-        Span(13, 34),
       ),
     ),
   ],

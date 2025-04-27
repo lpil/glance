@@ -4,12 +4,20 @@ title: public_enum
 file: ./test/glance_test.gleam
 test_name: public_enum_test
 ---
+// comment
+  pub type Cardinal {
+    North East South West
+  }
+
+---------------------------
+
 Module(
   [],
   [
     Definition(
       [],
       CustomType(
+        Span(13, 61),
         "Cardinal",
         Public,
         False,

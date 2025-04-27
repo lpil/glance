@@ -4,11 +4,16 @@ title: nested_import
 file: ./test/glance_test.gleam
 test_name: nested_import_test
 ---
+import one/two/three
+
+---------------------------
+
 Module(
   [
     Definition(
       [],
       Import(
+        Span(0, 20),
         "one/two/three",
         None,
         [],

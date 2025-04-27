@@ -4,12 +4,19 @@ title: labelled_fields
 file: ./test/glance_test.gleam
 test_name: labelled_fields_test
 ---
+pub type Box(a) {
+    Box(a: a, b: a)
+  }
+
+---------------------------
+
 Module(
   [],
   [
     Definition(
       [],
       CustomType(
+        Span(0, 40),
         "Box",
         Public,
         False,
@@ -19,11 +26,17 @@ Module(
             "Box",
             [
               LabelledVariantField(
-                VariableType("a"),
+                VariableType(
+                  Span(29, 30),
+                  "a",
+                ),
                 "a",
               ),
               LabelledVariantField(
-                VariableType("a"),
+                VariableType(
+                  Span(35, 36),
+                  "a",
+                ),
                 "b",
               ),
             ],

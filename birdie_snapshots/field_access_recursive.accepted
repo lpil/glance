@@ -4,6 +4,10 @@ title: field_access_recursive
 file: ./test/glance_test.gleam
 test_name: field_access_recursive_test
 ---
+pub fn main() { one.two.three.four }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 36),
         "main",
         Public,
         [],
@@ -29,7 +34,6 @@ Module(
             "four",
           )),
         ],
-        Span(0, 36),
       ),
     ),
   ],

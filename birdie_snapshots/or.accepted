@@ -4,6 +4,12 @@ title: or
 file: ./test/glance_test.gleam
 test_name: or_test
 ---
+pub fn main() {
+  x || y
+}
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +19,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 26),
         "main",
         Public,
         [],
@@ -24,7 +31,6 @@ Module(
             Variable("y"),
           )),
         ],
-        Span(0, 26),
       ),
     ),
   ],

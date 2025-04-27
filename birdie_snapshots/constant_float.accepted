@@ -4,6 +4,10 @@ title: constant_float
 file: ./test/glance_test.gleam
 test_name: constant_float_test
 ---
+const x = 1.1
+
+---------------------------
+
 Module(
   [],
   [],

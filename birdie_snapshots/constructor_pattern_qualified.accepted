@@ -4,6 +4,10 @@ title: constructor_pattern_qualified
 file: ./test/glance_test.gleam
 test_name: constructor_pattern_qualified_test
 ---
+pub fn main() { let wobble.Thing(1, x: 2, ..) = x }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 51),
         "main",
         Public,
         [],
@@ -36,7 +41,6 @@ Module(
             Variable("x"),
           ),
         ],
-        Span(0, 51),
       ),
     ),
   ],

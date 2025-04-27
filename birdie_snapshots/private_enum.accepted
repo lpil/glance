@@ -4,12 +4,19 @@ title: private_enum
 file: ./test/glance_test.gleam
 test_name: private_enum_test
 ---
+type Cardinal {
+    North East South West
+  }
+
+---------------------------
+
 Module(
   [],
   [
     Definition(
       [],
       CustomType(
+        Span(0, 44),
         "Cardinal",
         Private,
         False,

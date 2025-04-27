@@ -4,6 +4,10 @@ title: constructor_pattern_args
 file: ./test/glance_test.gleam
 test_name: constructor_pattern_args_test
 ---
+pub fn main() { let Thing(1, 2) = x }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 37),
         "main",
         Public,
         [],
@@ -33,7 +38,6 @@ Module(
             Variable("x"),
           ),
         ],
-        Span(0, 37),
       ),
     ),
   ],

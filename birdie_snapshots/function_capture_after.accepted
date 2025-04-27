@@ -4,6 +4,10 @@ title: function_capture_after
 file: ./test/glance_test.gleam
 test_name: function_capture_after_test
 ---
+pub fn main() { wibble(_,1,2,3) }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 33),
         "main",
         Public,
         [],
@@ -29,7 +34,6 @@ Module(
             ],
           )),
         ],
-        Span(0, 33),
       ),
     ),
   ],

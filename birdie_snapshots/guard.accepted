@@ -4,6 +4,10 @@ title: guard
 file: ./test/glance_test.gleam
 test_name: guard_test
 ---
+pub fn main() { case x { y if z -> 1 } }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 40),
         "main",
         Public,
         [],
@@ -29,7 +34,6 @@ Module(
             ],
           )),
         ],
-        Span(0, 40),
       ),
     ),
   ],

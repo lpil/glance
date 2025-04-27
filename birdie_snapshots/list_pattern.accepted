@@ -4,6 +4,10 @@ title: list_pattern
 file: ./test/glance_test.gleam
 test_name: list_pattern_test
 ---
+pub fn main() { let [1, 2] = x }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 32),
         "main",
         Public,
         [],
@@ -31,7 +36,6 @@ Module(
             Variable("x"),
           ),
         ],
-        Span(0, 32),
       ),
     ),
   ],

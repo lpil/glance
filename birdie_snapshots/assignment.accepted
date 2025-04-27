@@ -4,6 +4,10 @@ title: assignment
 file: ./test/glance_test.gleam
 test_name: assignment_test
 ---
+pub fn main() { let x = 1 2 }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 29),
         "main",
         Public,
         [],
@@ -26,7 +31,6 @@ Module(
           ),
           Expression(Int("2")),
         ],
-        Span(0, 29),
       ),
     ),
   ],

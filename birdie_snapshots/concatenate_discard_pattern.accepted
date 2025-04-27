@@ -4,6 +4,10 @@ title: concatenate_discard_pattern
 file: ./test/glance_test.gleam
 test_name: concatenate_discard_pattern_test
 ---
+pub fn main() { let "ok" <> _nah = 1 }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 38),
         "main",
         Public,
         [],
@@ -29,7 +34,6 @@ Module(
             Int("1"),
           ),
         ],
-        Span(0, 38),
       ),
     ),
   ],

@@ -4,6 +4,10 @@ title: expression_todo_message
 file: ./test/glance_test.gleam
 test_name: expression_todo_message_test
 ---
+pub fn main() { todo("huh") }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 29),
         "main",
         Public,
         [],
@@ -25,7 +30,6 @@ Module(
             ],
           )),
         ],
-        Span(0, 29),
       ),
     ),
   ],

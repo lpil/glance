@@ -4,12 +4,19 @@ title: phantom_trailing_comma
 file: ./test/glance_test.gleam
 test_name: phantom_trailing_comma_test
 ---
+pub type Spooky(t, u, ) {
+    Spooky
+  }
+
+---------------------------
+
 Module(
   [],
   [
     Definition(
       [],
       CustomType(
+        Span(0, 39),
         "Spooky",
         Public,
         False,

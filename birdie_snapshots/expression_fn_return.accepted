@@ -4,6 +4,10 @@ title: expression_fn_return
 file: ./test/glance_test.gleam
 test_name: expression_fn_return_test
 ---
+pub fn main() { fn(x) -> a { 1 x } }
+
+---------------------------
+
 Module(
   [],
   [],
@@ -13,6 +17,7 @@ Module(
     Definition(
       [],
       Function(
+        Span(0, 36),
         "main",
         Public,
         [],
@@ -25,14 +30,16 @@ Module(
                 None,
               ),
             ],
-            Some(VariableType("a")),
+            Some(VariableType(
+              Span(25, 26),
+              "a",
+            )),
             [
               Expression(Int("1")),
               Expression(Variable("x")),
             ],
           )),
         ],
-        Span(0, 36),
       ),
     ),
   ],
