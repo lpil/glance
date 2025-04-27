@@ -1,0 +1,41 @@
+---
+version: 1.2.7
+title: record_update_qualified
+file: ./test/glance_test.gleam
+test_name: record_update_qualified_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(RecordUpdate(
+            Some("wobble"),
+            "Wibble",
+            Variable("wibble"),
+            [
+              RecordUpdateField(
+                "one",
+                Some(Int("1")),
+              ),
+              RecordUpdateField(
+                "two",
+                Some(Int("2")),
+              ),
+            ],
+          )),
+        ],
+        Span(0, 57),
+      ),
+    ),
+  ],
+)

@@ -1,0 +1,40 @@
+---
+version: 1.2.7
+title: constructor_pattern_spread
+file: ./test/glance_test.gleam
+test_name: constructor_pattern_spread_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Let,
+            PatternConstructor(
+              None,
+              "Thing",
+              [
+                UnlabelledField(PatternInt("1")),
+                UnlabelledField(PatternInt("2")),
+              ],
+              True,
+            ),
+            None,
+            Variable("x"),
+          ),
+        ],
+        Span(0, 41),
+      ),
+    ),
+  ],
+)

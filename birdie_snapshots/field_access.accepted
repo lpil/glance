@@ -1,0 +1,30 @@
+---
+version: 1.2.7
+title: field_access
+file: ./test/glance_test.gleam
+test_name: field_access_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(FieldAccess(
+            Variable("wobble"),
+            "wibble",
+          )),
+        ],
+        Span(0, 31),
+      ),
+    ),
+  ],
+)

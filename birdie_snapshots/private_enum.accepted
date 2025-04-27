@@ -1,0 +1,29 @@
+---
+version: 1.2.7
+title: private_enum
+file: ./test/glance_test.gleam
+test_name: private_enum_test
+---
+Module(
+  [],
+  [
+    Definition(
+      [],
+      CustomType(
+        "Cardinal",
+        Private,
+        False,
+        [],
+        [
+          Variant("North", []),
+          Variant("East", []),
+          Variant("South", []),
+          Variant("West", []),
+        ],
+      ),
+    ),
+  ],
+  [],
+  [],
+  [],
+)

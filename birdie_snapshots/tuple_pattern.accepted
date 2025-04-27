@@ -1,0 +1,35 @@
+---
+version: 1.2.7
+title: tuple_pattern
+file: ./test/glance_test.gleam
+test_name: tuple_pattern_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Let,
+            PatternTuple([
+              PatternDiscard(""),
+              PatternDiscard(""),
+            ]),
+            None,
+            Int("1"),
+          ),
+        ],
+        Span(0, 33),
+      ),
+    ),
+  ],
+)

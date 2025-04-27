@@ -1,0 +1,29 @@
+---
+version: 1.2.7
+title: expression_int
+file: ./test/glance_test.gleam
+test_name: expression_int_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Int("1")),
+          Expression(Int("2")),
+          Expression(Int("3")),
+        ],
+        Span(0, 23),
+      ),
+    ),
+  ],
+)

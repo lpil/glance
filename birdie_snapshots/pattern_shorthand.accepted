@@ -1,0 +1,47 @@
+---
+version: 1.2.7
+title: pattern_shorthand
+file: ./test/glance_test.gleam
+test_name: pattern_shorthand_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "wibble",
+        Public,
+        [],
+        None,
+        [
+          Expression(Case(
+            [Variable("wobble")],
+            [
+              Clause(
+                [
+                  [
+                    PatternConstructor(
+                      None,
+                      "Wabble",
+                      [
+                        ShorthandField("field"),
+                      ],
+                      False,
+                    ),
+                  ],
+                ],
+                None,
+                Variable("field"),
+              ),
+            ],
+          )),
+        ],
+        Span(1, 68),
+      ),
+    ),
+  ],
+)

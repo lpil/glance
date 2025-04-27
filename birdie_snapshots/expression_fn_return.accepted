@@ -1,0 +1,39 @@
+---
+version: 1.2.7
+title: expression_fn_return
+file: ./test/glance_test.gleam
+test_name: expression_fn_return_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Fn(
+            [
+              FnParameter(
+                Named("x"),
+                None,
+              ),
+            ],
+            Some(VariableType("a")),
+            [
+              Expression(Int("1")),
+              Expression(Variable("x")),
+            ],
+          )),
+        ],
+        Span(0, 36),
+      ),
+    ),
+  ],
+)

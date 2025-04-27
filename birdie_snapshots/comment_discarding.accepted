@@ -1,0 +1,24 @@
+---
+version: 1.2.7
+title: comment_discarding
+file: ./test/glance_test.gleam
+test_name: comment_discarding_test
+---
+Module(
+  [],
+  [
+    Definition(
+      [],
+      CustomType(
+        "Spooky",
+        Public,
+        False,
+        ["t", "u"],
+        [Variant("Spooky", [])],
+      ),
+    ),
+  ],
+  [],
+  [],
+  [],
+)

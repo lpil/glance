@@ -1,0 +1,46 @@
+---
+version: 1.2.7
+title: pipe
+file: ./test/glance_test.gleam
+test_name: pipe_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(BinaryOperator(
+            Pipe,
+            BinaryOperator(
+              Pipe,
+              Variable("x"),
+              Call(
+                Variable("y"),
+                [
+                  UnlabelledField(Int("1")),
+                ],
+              ),
+            ),
+            Call(
+              Variable("z"),
+              [
+                UnlabelledField(Int("2")),
+                UnlabelledField(Int("3")),
+              ],
+            ),
+          )),
+        ],
+        Span(0, 38),
+      ),
+    ),
+  ],
+)

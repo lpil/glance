@@ -1,0 +1,35 @@
+---
+version: 1.2.7
+title: add_mult
+file: ./test/glance_test.gleam
+test_name: add_mult_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(BinaryOperator(
+            AddInt,
+            Variable("x"),
+            BinaryOperator(
+              MultInt,
+              Variable("y"),
+              Variable("z"),
+            ),
+          )),
+        ],
+        Span(0, 27),
+      ),
+    ),
+  ],
+)

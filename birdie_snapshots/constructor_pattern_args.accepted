@@ -1,0 +1,40 @@
+---
+version: 1.2.7
+title: constructor_pattern_args
+file: ./test/glance_test.gleam
+test_name: constructor_pattern_args_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Let,
+            PatternConstructor(
+              None,
+              "Thing",
+              [
+                UnlabelledField(PatternInt("1")),
+                UnlabelledField(PatternInt("2")),
+              ],
+              False,
+            ),
+            None,
+            Variable("x"),
+          ),
+        ],
+        Span(0, 37),
+      ),
+    ),
+  ],
+)

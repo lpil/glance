@@ -1,0 +1,32 @@
+---
+version: 1.2.7
+title: int_pattern
+file: ./test/glance_test.gleam
+test_name: int_pattern_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Let,
+            PatternInt("123"),
+            None,
+            Int("1"),
+          ),
+        ],
+        Span(0, 29),
+      ),
+    ),
+  ],
+)

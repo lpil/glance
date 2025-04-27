@@ -1,0 +1,26 @@
+---
+version: 1.2.7
+title: const_record_shorthand
+file: ./test/glance_test.gleam
+test_name: const_record_shorthand_test
+---
+Module(
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Constant(
+        "wibble",
+        Private,
+        None,
+        Call(
+          Variable("Wibble"),
+          [ShorthandField("field")],
+        ),
+      ),
+    ),
+  ],
+  [],
+)

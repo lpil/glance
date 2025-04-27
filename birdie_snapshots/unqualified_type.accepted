@@ -1,0 +1,43 @@
+---
+version: 1.2.7
+title: unqualified_type
+file: ./test/glance_test.gleam
+test_name: unqualified_type_test
+---
+Module(
+  [
+    Definition(
+      [],
+      Import(
+        "one/two/three",
+        Some(Named("four")),
+        [
+          UnqualifiedImport("One", None),
+          UnqualifiedImport("Two", None),
+          UnqualifiedImport(
+            "Five",
+            Some("X"),
+          ),
+          UnqualifiedImport(
+            "Six",
+            Some("Y"),
+          ),
+        ],
+        [
+          UnqualifiedImport(
+            "three",
+            None,
+          ),
+          UnqualifiedImport(
+            "four",
+            None,
+          ),
+        ],
+      ),
+    ),
+  ],
+  [],
+  [],
+  [],
+  [],
+)

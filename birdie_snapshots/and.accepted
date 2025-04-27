@@ -1,0 +1,31 @@
+---
+version: 1.2.7
+title: and
+file: ./test/glance_test.gleam
+test_name: and_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(BinaryOperator(
+            And,
+            Variable("x"),
+            Variable("y"),
+          )),
+        ],
+        Span(0, 24),
+      ),
+    ),
+  ],
+)

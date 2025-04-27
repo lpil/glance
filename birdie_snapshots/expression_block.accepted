@@ -1,0 +1,31 @@
+---
+version: 1.2.7
+title: expression_block
+file: ./test/glance_test.gleam
+test_name: expression_block_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Block([
+            Expression(Variable("x")),
+            Expression(Variable("y")),
+            Expression(Variable("z")),
+          ])),
+        ],
+        Span(0, 27),
+      ),
+    ),
+  ],
+)

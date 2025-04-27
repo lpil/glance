@@ -1,0 +1,34 @@
+---
+version: 1.2.7
+title: use_multiple
+file: ./test/glance_test.gleam
+test_name: use_multiple_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Use(
+            [
+              PatternVariable("x"),
+              PatternVariable("y"),
+              PatternVariable("z"),
+            ],
+            Variable("f"),
+          ),
+        ],
+        Span(0, 34),
+      ),
+    ),
+  ],
+)

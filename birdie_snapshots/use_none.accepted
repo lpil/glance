@@ -1,0 +1,25 @@
+---
+version: 1.2.7
+title: use_none
+file: ./test/glance_test.gleam
+test_name: use_none_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [Use([], Variable("x"))],
+        Span(1, 29),
+      ),
+    ),
+  ],
+)

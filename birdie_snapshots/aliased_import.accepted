@@ -1,0 +1,23 @@
+---
+version: 1.2.7
+title: aliased_import
+file: ./test/glance_test.gleam
+test_name: aliased_import_test
+---
+Module(
+  [
+    Definition(
+      [],
+      Import(
+        "one/two/three",
+        Some(Named("four")),
+        [],
+        [],
+      ),
+    ),
+  ],
+  [],
+  [],
+  [],
+  [],
+)

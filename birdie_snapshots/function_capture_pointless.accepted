@@ -1,0 +1,32 @@
+---
+version: 1.2.7
+title: function_capture_pointless
+file: ./test/glance_test.gleam
+test_name: function_capture_pointless_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(FnCapture(
+            None,
+            Variable("wibble"),
+            [],
+            [],
+          )),
+        ],
+        Span(0, 27),
+      ),
+    ),
+  ],
+)

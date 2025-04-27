@@ -1,0 +1,32 @@
+---
+version: 1.2.7
+title: constant_labelled_constructor
+file: ./test/glance_test.gleam
+test_name: constant_labelled_constructor_test
+---
+Module(
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Constant(
+        "x",
+        Private,
+        None,
+        Call(
+          Variable("Box"),
+          [
+            UnlabelledField(Int("1")),
+            LabelledField(
+              "wobber",
+              Float("2.0"),
+            ),
+          ],
+        ),
+      ),
+    ),
+  ],
+  [],
+)

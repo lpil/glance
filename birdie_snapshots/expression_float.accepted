@@ -1,0 +1,29 @@
+---
+version: 1.2.7
+title: expression_float
+file: ./test/glance_test.gleam
+test_name: expression_float_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Float("1.0")),
+          Expression(Float("2.0")),
+          Expression(Float("3.0")),
+        ],
+        Span(0, 29),
+      ),
+    ),
+  ],
+)

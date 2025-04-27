@@ -1,10 +1,19 @@
+import birdie
 import glance.{type Error, type Module, Module}
 import gleeunit
 import gleeunit/should
+import pprint
 import simplifile
 
 pub fn main() {
   gleeunit.main()
+}
+
+fn to_snapshot(result: Result(Module, Error)) -> String {
+  case result {
+    Ok(ast) -> pprint.format(ast)
+    Error(_) -> pprint.format(result)
+  }
 }
 
 pub fn parse_self_test() {
@@ -1257,8 +1266,4 @@ pub type Wibble {
 "
   |> glance.module
   |> should.be_error
-}
-
-fn to_snapshot(result: Result(Module, Error)) -> String {
-  todo
 }

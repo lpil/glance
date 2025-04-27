@@ -1,0 +1,32 @@
+---
+version: 1.2.7
+title: record_update_empty
+file: ./test/glance_test.gleam
+test_name: record_update_empty_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(RecordUpdate(
+            None,
+            "Wibble",
+            Variable("wibble"),
+            [],
+          )),
+        ],
+        Span(0, 34),
+      ),
+    ),
+  ],
+)

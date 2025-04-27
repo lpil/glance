@@ -1,0 +1,36 @@
+---
+version: 1.2.7
+title: concatenate_discard_pattern
+file: ./test/glance_test.gleam
+test_name: concatenate_discard_pattern_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Let,
+            PatternConcatenate(
+              "ok",
+              None,
+              Discarded("nah"),
+            ),
+            None,
+            Int("1"),
+          ),
+        ],
+        Span(0, 38),
+      ),
+    ),
+  ],
+)

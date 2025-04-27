@@ -1,0 +1,38 @@
+---
+version: 1.2.7
+title: list_rest_pattern
+file: ./test/glance_test.gleam
+test_name: list_rest_pattern_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Let,
+            PatternList(
+              [
+                PatternInt("1"),
+                PatternInt("2"),
+              ],
+              Some(PatternVariable("y")),
+            ),
+            None,
+            Variable("x"),
+          ),
+        ],
+        Span(0, 37),
+      ),
+    ),
+  ],
+)

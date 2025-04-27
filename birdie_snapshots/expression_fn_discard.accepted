@@ -1,0 +1,36 @@
+---
+version: 1.2.7
+title: expression_fn_discard
+file: ./test/glance_test.gleam
+test_name: expression_fn_discard_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Fn(
+            [
+              FnParameter(
+                Discarded("x"),
+                Some(VariableType("a")),
+              ),
+            ],
+            None,
+            [Expression(Int("1"))],
+          )),
+        ],
+        Span(0, 33),
+      ),
+    ),
+  ],
+)

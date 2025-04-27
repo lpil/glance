@@ -1,0 +1,23 @@
+---
+version: 1.2.7
+title: constant_variable
+file: ./test/glance_test.gleam
+test_name: constant_variable_test
+---
+Module(
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Constant(
+        "x",
+        Private,
+        None,
+        Variable("y"),
+      ),
+    ),
+  ],
+  [],
+)

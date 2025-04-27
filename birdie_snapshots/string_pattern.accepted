@@ -1,0 +1,32 @@
+---
+version: 1.2.7
+title: string_pattern
+file: ./test/glance_test.gleam
+test_name: string_pattern_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Let,
+            PatternString("123"),
+            None,
+            Int("1"),
+          ),
+        ],
+        Span(0, 31),
+      ),
+    ),
+  ],
+)

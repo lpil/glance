@@ -1,0 +1,26 @@
+---
+version: 1.2.7
+title: alias_tuple
+file: ./test/glance_test.gleam
+test_name: alias_tuple_test
+---
+Module(
+  [],
+  [],
+  [
+    Definition(
+      [],
+      TypeAlias(
+        "X",
+        Public,
+        [],
+        TupleType([
+          NamedType("A", None, []),
+          NamedType("B", None, []),
+        ]),
+      ),
+    ),
+  ],
+  [],
+  [],
+)

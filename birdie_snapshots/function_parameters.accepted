@@ -1,0 +1,64 @@
+---
+version: 1.2.7
+title: function_parameters
+file: ./test/glance_test.gleam
+test_name: function_parameters_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Private,
+        [
+          FunctionParameter(
+            None,
+            Named("a"),
+            None,
+          ),
+          FunctionParameter(
+            None,
+            Named("b"),
+            Some(TupleType([])),
+          ),
+          FunctionParameter(
+            Some("c"),
+            Named("d"),
+            None,
+          ),
+          FunctionParameter(
+            Some("e"),
+            Named("f"),
+            Some(NamedType(
+              "G",
+              None,
+              [],
+            )),
+          ),
+          FunctionParameter(
+            Some("h"),
+            Discarded("i"),
+            None,
+          ),
+          FunctionParameter(
+            Some("j"),
+            Discarded("k"),
+            Some(NamedType(
+              "L",
+              None,
+              [],
+            )),
+          ),
+        ],
+        None,
+        [],
+        Span(0, 49),
+      ),
+    ),
+  ],
+)

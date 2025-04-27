@@ -1,0 +1,49 @@
+---
+version: 1.2.7
+title: external_attribute
+file: ./test/glance_test.gleam
+test_name: external_attribute_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [
+        Attribute(
+          "external",
+          [
+            Variable("erlang"),
+            String("gb_trees"),
+            String("empty"),
+          ],
+        ),
+        Attribute(
+          "external",
+          [
+            Variable("javascript"),
+            String("./gb_trees.js"),
+            String("empty"),
+          ],
+        ),
+      ],
+      Function(
+        "new_gb_tree",
+        Public,
+        [],
+        Some(NamedType(
+          "GbTree",
+          None,
+          [
+            VariableType("k"),
+            VariableType("v"),
+          ],
+        )),
+        [],
+        Span(88, 109),
+      ),
+    ),
+  ],
+)

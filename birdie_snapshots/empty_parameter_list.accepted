@@ -1,0 +1,24 @@
+---
+version: 1.2.7
+title: empty_parameter_list
+file: ./test/glance_test.gleam
+test_name: empty_parameter_list_test
+---
+Module(
+  [],
+  [
+    Definition(
+      [],
+      CustomType(
+        "Box",
+        Public,
+        False,
+        [],
+        [Variant("Box", [])],
+      ),
+    ),
+  ],
+  [],
+  [],
+  [],
+)

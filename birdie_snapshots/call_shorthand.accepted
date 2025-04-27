@@ -1,0 +1,30 @@
+---
+version: 1.2.7
+title: call_shorthand
+file: ./test/glance_test.gleam
+test_name: call_shorthand_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "wibble",
+        Public,
+        [],
+        None,
+        [
+          Expression(Call(
+            Variable("wobble"),
+            [ShorthandField("field")],
+          )),
+        ],
+        Span(1, 37),
+      ),
+    ),
+  ],
+)

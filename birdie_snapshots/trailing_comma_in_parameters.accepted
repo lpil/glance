@@ -1,0 +1,24 @@
+---
+version: 1.2.7
+title: trailing_comma_in_parameters
+file: ./test/glance_test.gleam
+test_name: trailing_comma_in_parameters_test
+---
+Module(
+  [],
+  [
+    Definition(
+      [],
+      CustomType(
+        "Box",
+        Public,
+        False,
+        ["x"],
+        [Variant("Box", [])],
+      ),
+    ),
+  ],
+  [],
+  [],
+  [],
+)

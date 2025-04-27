@@ -1,0 +1,35 @@
+---
+version: 1.2.7
+title: addint2
+file: ./test/glance_test.gleam
+test_name: addint2_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(BinaryOperator(
+            AddInt,
+            BinaryOperator(
+              AddInt,
+              Variable("x"),
+              Variable("y"),
+            ),
+            Variable("z"),
+          )),
+        ],
+        Span(0, 27),
+      ),
+    ),
+  ],
+)

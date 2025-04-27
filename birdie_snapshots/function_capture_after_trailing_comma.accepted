@@ -1,0 +1,36 @@
+---
+version: 1.2.7
+title: function_capture_after_trailing_comma
+file: ./test/glance_test.gleam
+test_name: function_capture_after_trailing_comma_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(FnCapture(
+            None,
+            Variable("wibble"),
+            [],
+            [
+              UnlabelledField(Int("1")),
+              UnlabelledField(Int("2")),
+              UnlabelledField(Int("3")),
+            ],
+          )),
+        ],
+        Span(0, 34),
+      ),
+    ),
+  ],
+)

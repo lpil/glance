@@ -1,0 +1,36 @@
+---
+version: 1.2.7
+title: expression_fn_annotated_parens
+file: ./test/glance_test.gleam
+test_name: expression_fn_annotated_parens_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Fn(
+            [
+              FnParameter(
+                Named("x"),
+                Some(VariableType("a")),
+              ),
+            ],
+            None,
+            [Expression(Variable("x"))],
+          )),
+        ],
+        Span(0, 32),
+      ),
+    ),
+  ],
+)

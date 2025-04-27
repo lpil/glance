@@ -1,0 +1,28 @@
+---
+version: 1.2.7
+title: import_with_underscore_alias
+file: ./test/glance_test.gleam
+test_name: import_with_underscore_alias_test
+---
+Module(
+  [
+    Definition(
+      [],
+      Import(
+        "gleam/list",
+        Some(Discarded("alias")),
+        [],
+        [
+          UnqualifiedImport(
+            "range",
+            None,
+          ),
+        ],
+      ),
+    ),
+  ],
+  [],
+  [],
+  [],
+  [],
+)

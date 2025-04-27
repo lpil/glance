@@ -1,0 +1,18 @@
+---
+version: 1.2.7
+title: import
+file: ./test/glance_test.gleam
+test_name: import_test
+---
+Module(
+  [
+    Definition(
+      [],
+      Import("one", None, [], []),
+    ),
+  ],
+  [],
+  [],
+  [],
+  [],
+)

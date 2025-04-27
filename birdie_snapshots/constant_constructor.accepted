@@ -1,0 +1,29 @@
+---
+version: 1.2.7
+title: constant_constructor
+file: ./test/glance_test.gleam
+test_name: constant_constructor_test
+---
+Module(
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Constant(
+        "x",
+        Private,
+        None,
+        Call(
+          Variable("Box"),
+          [
+            UnlabelledField(Int("1")),
+            UnlabelledField(Float("2.0")),
+          ],
+        ),
+      ),
+    ),
+  ],
+  [],
+)

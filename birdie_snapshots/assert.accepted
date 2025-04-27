@@ -1,0 +1,33 @@
+---
+version: 1.2.7
+title: assert
+file: ./test/glance_test.gleam
+test_name: assert_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Assert,
+            PatternVariable("x"),
+            None,
+            Int("1"),
+          ),
+          Expression(Int("2")),
+        ],
+        Span(0, 36),
+      ),
+    ),
+  ],
+)

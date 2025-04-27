@@ -1,0 +1,45 @@
+---
+version: 1.2.7
+title: discard_list_rest
+file: ./test/glance_test.gleam
+test_name: discard_list_rest_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Case(
+            [Variable("x")],
+            [
+              Clause(
+                [
+                  [
+                    PatternList(
+                      [
+                        PatternVariable("x"),
+                      ],
+                      Some(PatternDiscard("")),
+                    ),
+                  ],
+                ],
+                None,
+                Variable("Nil"),
+              ),
+            ],
+          )),
+        ],
+        Span(0, 43),
+      ),
+    ),
+  ],
+)

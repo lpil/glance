@@ -1,0 +1,25 @@
+---
+version: 1.2.7
+title: attributes_no_paren
+file: ./test/glance_test.gleam
+test_name: attributes_no_paren_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [Attribute("thingbobby", [])],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [Expression(Variable("Nil"))],
+        Span(13, 34),
+      ),
+    ),
+  ],
+)

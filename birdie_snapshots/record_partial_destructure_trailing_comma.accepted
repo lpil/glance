@@ -1,0 +1,45 @@
+---
+version: 1.2.7
+title: record_partial_destructure_trailing_comma
+file: ./test/glance_test.gleam
+test_name: record_partial_destructure_trailing_comma_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [
+          FunctionParameter(
+            None,
+            Named("x"),
+            None,
+          ),
+        ],
+        None,
+        [
+          Assignment(
+            Let,
+            PatternConstructor(
+              None,
+              "Wibble",
+              [
+                UnlabelledField(PatternVariable("y")),
+              ],
+              True,
+            ),
+            None,
+            Variable("x"),
+          ),
+        ],
+        Span(0, 41),
+      ),
+    ),
+  ],
+)

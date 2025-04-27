@@ -1,0 +1,38 @@
+---
+version: 1.2.7
+title: multiple_field_call
+file: ./test/glance_test.gleam
+test_name: multiple_field_call_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "wibble",
+        Public,
+        [],
+        None,
+        [
+          Expression(Call(
+            Variable("wobble"),
+            [
+              UnlabelledField(Variable("unlabelled")),
+              ShorthandField("shorthand_mid"),
+              LabelledField(
+                "non_shorthand",
+                Variable("a"),
+              ),
+              ShorthandField("shorthand_end"),
+            ],
+          )),
+        ],
+        Span(1, 91),
+      ),
+    ),
+  ],
+)

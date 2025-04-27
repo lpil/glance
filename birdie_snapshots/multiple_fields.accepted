@@ -1,0 +1,33 @@
+---
+version: 1.2.7
+title: multiple_fields
+file: ./test/glance_test.gleam
+test_name: multiple_fields_test
+---
+Module(
+  [],
+  [
+    Definition(
+      [],
+      CustomType(
+        "Box",
+        Public,
+        False,
+        ["x", "y", "z"],
+        [
+          Variant(
+            "Box",
+            [
+              UnlabelledVariantField(VariableType("x")),
+              UnlabelledVariantField(VariableType("y")),
+              UnlabelledVariantField(VariableType("z")),
+            ],
+          ),
+        ],
+      ),
+    ),
+  ],
+  [],
+  [],
+  [],
+)

@@ -1,0 +1,23 @@
+---
+version: 1.2.7
+title: constant_string
+file: ./test/glance_test.gleam
+test_name: constant_string_test
+---
+Module(
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Constant(
+        "x",
+        Private,
+        None,
+        String("123"),
+      ),
+    ),
+  ],
+  [],
+)

@@ -1,0 +1,40 @@
+---
+version: 1.2.7
+title: call_recursive
+file: ./test/glance_test.gleam
+test_name: call_recursive_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Call(
+            Call(
+              Call(
+                Variable("wobble"),
+                [
+                  UnlabelledField(Int("1")),
+                  UnlabelledField(Int("2")),
+                  UnlabelledField(Int("3")),
+                ],
+              ),
+              [],
+            ),
+            [],
+          )),
+        ],
+        Span(0, 37),
+      ),
+    ),
+  ],
+)

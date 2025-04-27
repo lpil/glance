@@ -1,0 +1,27 @@
+---
+version: 1.2.7
+title: expression_negate_bool
+file: ./test/glance_test.gleam
+test_name: expression_negate_bool_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(NegateBool(Variable("x"))),
+        ],
+        Span(0, 20),
+      ),
+    ),
+  ],
+)

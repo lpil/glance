@@ -1,0 +1,23 @@
+---
+version: 1.2.7
+title: empty_unqualified
+file: ./test/glance_test.gleam
+test_name: empty_unqualified_test
+---
+Module(
+  [
+    Definition(
+      [],
+      Import(
+        "one/two/three",
+        Some(Named("four")),
+        [],
+        [],
+      ),
+    ),
+  ],
+  [],
+  [],
+  [],
+  [],
+)

@@ -1,0 +1,30 @@
+---
+version: 1.2.7
+title: constant_list
+file: ./test/glance_test.gleam
+test_name: constant_list_test
+---
+Module(
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Constant(
+        "x",
+        Private,
+        None,
+        List(
+          [
+            Int("1"),
+            Float("2.0"),
+            Int("3"),
+          ],
+          None,
+        ),
+      ),
+    ),
+  ],
+  [],
+)

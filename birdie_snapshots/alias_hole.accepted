@@ -1,0 +1,23 @@
+---
+version: 1.2.7
+title: alias_hole
+file: ./test/glance_test.gleam
+test_name: alias_hole_test
+---
+Module(
+  [],
+  [],
+  [
+    Definition(
+      [],
+      TypeAlias(
+        "X",
+        Public,
+        [],
+        HoleType("whatever"),
+      ),
+    ),
+  ],
+  [],
+  [],
+)

@@ -1,0 +1,29 @@
+---
+version: 1.2.7
+title: expression_string
+file: ./test/glance_test.gleam
+test_name: expression_string_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(String("10")),
+          Expression(String("20")),
+          Expression(String("30")),
+        ],
+        Span(0, 32),
+      ),
+    ),
+  ],
+)

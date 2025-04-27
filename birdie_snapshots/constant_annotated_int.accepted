@@ -1,0 +1,23 @@
+---
+version: 1.2.7
+title: constant_annotated_int
+file: ./test/glance_test.gleam
+test_name: constant_annotated_int_test
+---
+Module(
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Constant(
+        "x",
+        Public,
+        Some(NamedType("Int", None, [])),
+        Int("123"),
+      ),
+    ),
+  ],
+  [],
+)

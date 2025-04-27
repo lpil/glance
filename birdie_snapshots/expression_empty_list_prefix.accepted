@@ -1,0 +1,30 @@
+---
+version: 1.2.7
+title: expression_empty_list_prefix
+file: ./test/glance_test.gleam
+test_name: expression_empty_list_prefix_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(List(
+            [],
+            Some(Variable("x")),
+          )),
+        ],
+        Span(0, 23),
+      ),
+    ),
+  ],
+)

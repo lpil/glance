@@ -1,0 +1,29 @@
+---
+version: 1.2.7
+title: todo_as_block
+file: ./test/glance_test.gleam
+test_name: todo_as_block_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Todo(Some(Block([
+            Expression(String("oh no")),
+          ])))),
+        ],
+        Span(0, 39),
+      ),
+    ),
+  ],
+)

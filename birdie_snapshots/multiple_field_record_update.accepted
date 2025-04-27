@@ -1,0 +1,45 @@
+---
+version: 1.2.7
+title: multiple_field_record_update
+file: ./test/glance_test.gleam
+test_name: multiple_field_record_update_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "wibble",
+        Public,
+        [],
+        None,
+        [
+          Expression(RecordUpdate(
+            None,
+            "Wobble",
+            Variable("wobble"),
+            [
+              RecordUpdateField(
+                "shorthand_mid",
+                None,
+              ),
+              RecordUpdateField(
+                "non_shorthand",
+                Some(Variable("a")),
+              ),
+              RecordUpdateField(
+                "shorthand_end",
+                None,
+              ),
+            ],
+          )),
+        ],
+        Span(1, 89),
+      ),
+    ),
+  ],
+)

@@ -1,0 +1,37 @@
+---
+version: 1.2.7
+title: unqualified_aliased
+file: ./test/glance_test.gleam
+test_name: unqualified_aliased_test
+---
+Module(
+  [
+    Definition(
+      [],
+      Import(
+        "one/two/three",
+        Some(Named("four")),
+        [],
+        [
+          UnqualifiedImport(
+            "One",
+            Some("Two"),
+          ),
+          UnqualifiedImport(
+            "Three",
+            None,
+          ),
+          UnqualifiedImport(
+            "four",
+            Some("five"),
+          ),
+          UnqualifiedImport("six", None),
+        ],
+      ),
+    ),
+  ],
+  [],
+  [],
+  [],
+  [],
+)

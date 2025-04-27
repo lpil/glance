@@ -1,0 +1,27 @@
+---
+version: 1.2.7
+title: panic_as
+file: ./test/glance_test.gleam
+test_name: panic_as_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Panic(Some(String("oh no")))),
+        ],
+        Span(0, 36),
+      ),
+    ),
+  ],
+)

@@ -1,0 +1,25 @@
+---
+version: 1.2.7
+title: negative_int_bug
+file: ./test/glance_test.gleam
+test_name: negative_int_bug_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [Expression(Int("-11"))],
+        Span(1, 24),
+      ),
+    ),
+  ],
+)

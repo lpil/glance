@@ -1,0 +1,30 @@
+---
+version: 1.2.7
+title: tuple_index
+file: ./test/glance_test.gleam
+test_name: tuple_index_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(TupleIndex(
+            Variable("wobble"),
+            12,
+          )),
+        ],
+        Span(0, 27),
+      ),
+    ),
+  ],
+)

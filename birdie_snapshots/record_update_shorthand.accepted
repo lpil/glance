@@ -1,0 +1,37 @@
+---
+version: 1.2.7
+title: record_update_shorthand
+file: ./test/glance_test.gleam
+test_name: record_update_shorthand_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "wibble",
+        Public,
+        [],
+        None,
+        [
+          Expression(RecordUpdate(
+            None,
+            "Wobble",
+            Variable("wabble"),
+            [
+              RecordUpdateField(
+                "field",
+                None,
+              ),
+            ],
+          )),
+        ],
+        Span(1, 47),
+      ),
+    ),
+  ],
+)

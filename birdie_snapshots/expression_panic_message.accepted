@@ -1,0 +1,32 @@
+---
+version: 1.2.7
+title: expression_panic_message
+file: ./test/glance_test.gleam
+test_name: expression_panic_message_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Call(
+            Panic(None),
+            [
+              UnlabelledField(String("huh")),
+            ],
+          )),
+        ],
+        Span(0, 30),
+      ),
+    ),
+  ],
+)

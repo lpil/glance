@@ -1,0 +1,31 @@
+---
+version: 1.2.7
+title: expression_tuple_trailing_comma
+file: ./test/glance_test.gleam
+test_name: expression_tuple_trailing_comma_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Tuple([
+            Int("1"),
+            Int("2"),
+            Int("3"),
+          ])),
+        ],
+        Span(0, 30),
+      ),
+    ),
+  ],
+)

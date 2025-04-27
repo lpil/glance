@@ -1,0 +1,28 @@
+---
+version: 1.2.7
+title: expression_panic
+file: ./test/glance_test.gleam
+test_name: expression_panic_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Panic(None)),
+          Expression(Panic(None)),
+        ],
+        Span(0, 29),
+      ),
+    ),
+  ],
+)

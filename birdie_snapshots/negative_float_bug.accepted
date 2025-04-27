@@ -1,0 +1,25 @@
+---
+version: 1.2.7
+title: negative_float_bug
+file: ./test/glance_test.gleam
+test_name: negative_float_bug_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [Expression(Float("-1.1"))],
+        Span(1, 25),
+      ),
+    ),
+  ],
+)

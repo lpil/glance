@@ -1,0 +1,29 @@
+---
+version: 1.2.7
+title: panic_as_block
+file: ./test/glance_test.gleam
+test_name: panic_as_block_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Panic(Some(Block([
+            Expression(String("oh no")),
+          ])))),
+        ],
+        Span(0, 40),
+      ),
+    ),
+  ],
+)

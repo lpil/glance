@@ -1,0 +1,51 @@
+---
+version: 1.2.7
+title: bit_string_others
+file: ./test/glance_test.gleam
+test_name: bit_string_others_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(BitString([
+            #(Int("1"), []),
+            #(
+              Int("2"),
+              [
+                BytesOption,
+                BytesOption,
+                IntOption,
+                FloatOption,
+                BitsOption,
+                BitsOption,
+                Utf8Option,
+                Utf16Option,
+                Utf32Option,
+                Utf8CodepointOption,
+                Utf16CodepointOption,
+                Utf32CodepointOption,
+                SignedOption,
+                UnsignedOption,
+                BigOption,
+                LittleOption,
+                NativeOption,
+              ],
+            ),
+          ])),
+        ],
+        Span(0, 165),
+      ),
+    ),
+  ],
+)

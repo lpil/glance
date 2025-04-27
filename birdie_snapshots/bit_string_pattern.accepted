@@ -1,0 +1,38 @@
+---
+version: 1.2.7
+title: bit_string_pattern
+file: ./test/glance_test.gleam
+test_name: bit_string_pattern_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Let,
+            PatternBitString([
+              #(PatternInt("1"), []),
+              #(
+                PatternInt("2"),
+                [SizeOption(4)],
+              ),
+            ]),
+            None,
+            Int("1"),
+          ),
+        ],
+        Span(0, 36),
+      ),
+    ),
+  ],
+)

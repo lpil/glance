@@ -1,0 +1,46 @@
+---
+version: 1.2.7
+title: case_multi
+file: ./test/glance_test.gleam
+test_name: case_multi_test
+---
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Case(
+            [
+              Variable("x"),
+              Variable("y"),
+              Variable("z"),
+            ],
+            [
+              Clause(
+                [
+                  [
+                    PatternVariable("a"),
+                    PatternVariable("b"),
+                    PatternVariable("c"),
+                  ],
+                ],
+                None,
+                Int("1"),
+              ),
+            ],
+          )),
+        ],
+        Span(0, 47),
+      ),
+    ),
+  ],
+)

@@ -1,0 +1,31 @@
+---
+version: 1.2.7
+title: fields_trailing_comma
+file: ./test/glance_test.gleam
+test_name: fields_trailing_comma_test
+---
+Module(
+  [],
+  [
+    Definition(
+      [],
+      CustomType(
+        "Box",
+        Public,
+        False,
+        ["a"],
+        [
+          Variant(
+            "Box",
+            [
+              UnlabelledVariantField(VariableType("a")),
+            ],
+          ),
+        ],
+      ),
+    ),
+  ],
+  [],
+  [],
+  [],
+)

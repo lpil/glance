@@ -1,0 +1,29 @@
+---
+version: 1.2.7
+title: public_enum
+file: ./test/glance_test.gleam
+test_name: public_enum_test
+---
+Module(
+  [],
+  [
+    Definition(
+      [],
+      CustomType(
+        "Cardinal",
+        Public,
+        False,
+        [],
+        [
+          Variant("North", []),
+          Variant("East", []),
+          Variant("South", []),
+          Variant("West", []),
+        ],
+      ),
+    ),
+  ],
+  [],
+  [],
+  [],
+)
