@@ -24,7 +24,7 @@ Module(
         None,
         [
           Assignment(
-            AssertAssignment(None),
+            LetAssert(None),
             PatternVariable("x"),
             None,
             Todo(Some(String("This is the todo message"))),

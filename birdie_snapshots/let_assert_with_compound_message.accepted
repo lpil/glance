@@ -24,7 +24,7 @@ Module(
         None,
         [
           Assignment(
-            AssertAssignment(Some(Block([
+            LetAssert(Some(Block([
               Expression(BinaryOperator(
                 Concatenate,
                 String("some"),

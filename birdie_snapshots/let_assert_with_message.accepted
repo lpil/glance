@@ -24,7 +24,7 @@ Module(
         None,
         [
           Assignment(
-            AssertAssignment(Some(String("This shouldn't fail"))),
+            LetAssert(Some(String("This shouldn't fail"))),
             PatternVariable("x"),
             None,
             Int("1"),

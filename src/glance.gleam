@@ -57,7 +57,7 @@ pub type Statement {
 
 pub type AssignmentKind {
   Let
-  AssertAssignment(message: Option(Expression))
+  LetAssert(message: Option(Expression))
 }
 
 pub type Pattern {
@@ -733,7 +733,7 @@ fn statements(
 fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
   case tokens {
     [#(t.Let, _), #(t.Assert, _), ..tokens] ->
-      assignment(AssertAssignment(None), tokens)
+      assignment(LetAssert(None), tokens)
     [#(t.Let, _), ..tokens] -> assignment(Let, tokens)
     [#(t.Use, _), ..tokens] -> use_(tokens)
     [#(t.Assert, _), ..tokens] -> assert_(tokens)
@@ -777,11 +777,11 @@ fn assignment(
   use #(value, tokens) <- result.try(expression(tokens))
 
   use #(kind, tokens) <- result.try(case kind, tokens {
-    AssertAssignment(None), [#(t.As, _), ..tokens] -> {
+    LetAssert(None), [#(t.As, _), ..tokens] -> {
       use #(message, tokens) <- result.map(expression(tokens))
-      #(AssertAssignment(message: Some(message)), tokens)
+      #(LetAssert(message: Some(message)), tokens)
     }
-    AssertAssignment(_), _ | Let, _ -> Ok(#(kind, tokens))
+    LetAssert(_), _ | Let, _ -> Ok(#(kind, tokens))
   })
 
   let statement = Assignment(kind, pattern, annotation, value)
