@@ -123,7 +123,6 @@ pub type Expression {
 
   Case(subjects: List(Expression), clauses: List(Clause))
   BinaryOperator(name: BinaryOperator, left: Expression, right: Expression)
-
   Echo(expression: Option(Expression))
 }
 
