@@ -24,7 +24,7 @@ Module(
         None,
         [
           Assignment(
-            AssertAssignment(None),
+            LetAssert(None),
             PatternVariable("x"),
             None,
             Int("1"),
