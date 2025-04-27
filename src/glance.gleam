@@ -66,7 +66,7 @@ pub type Pattern {
   PatternString(value: String)
   PatternDiscard(name: String)
   PatternVariable(name: String)
-  PatternTuple(elems: List(Pattern))
+  PatternTuple(elements: List(Pattern))
   PatternList(elements: List(Pattern), tail: Option(Pattern))
   PatternAssignment(pattern: Pattern, name: String)
   PatternConcatenate(
@@ -77,7 +77,7 @@ pub type Pattern {
   PatternBitString(
     segments: List(#(Pattern, List(BitStringSegmentOption(Pattern)))),
   )
-  PatternConstructor(
+  PatternVariant(
     module: Option(String),
     constructor: String,
     arguments: List(Field(Pattern)),
@@ -93,9 +93,9 @@ pub type Expression {
   NegateInt(Expression)
   NegateBool(Expression)
   Block(List(Statement))
-  Panic(Option(Expression))
-  Todo(Option(Expression))
-  Tuple(List(Expression))
+  Panic(message: Option(Expression))
+  Todo(message: Option(Expression))
+  Tuple(elements: List(Expression))
   List(elements: List(Expression), rest: Option(Expression))
   Fn(
     arguments: List(FnParameter),
@@ -797,11 +797,11 @@ fn pattern_constructor(
       let result = pattern_constructor_arguments([], tokens)
       use #(patterns, spread, tokens) <- result.try(result)
       let arguments = list.reverse(patterns)
-      let pattern = PatternConstructor(module, constructor, arguments, spread)
+      let pattern = PatternVariant(module, constructor, arguments, spread)
       Ok(#(pattern, tokens))
     }
     _ -> {
-      let pattern = PatternConstructor(module, constructor, [], False)
+      let pattern = PatternVariant(module, constructor, [], False)
       Ok(#(pattern, tokens))
     }
   }

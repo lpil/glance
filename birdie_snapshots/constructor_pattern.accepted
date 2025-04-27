@@ -25,7 +25,7 @@ Module(
         [
           Assignment(
             Let,
-            PatternConstructor(
+            PatternVariant(
               None,
               "None",
               [],

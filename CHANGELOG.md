@@ -9,6 +9,8 @@
 - Attributes on individual variant constructors is now supported.
 - The `echo` expression is now supported.
 - The `assert` expression is now supported.
+- The `elems` labels have been changed to `elements`.
+- The `PatternConstructor` variant has been renamed to `PatternVariant`
 
 ## v3.0.0 - 2025-02-21
 
