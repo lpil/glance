@@ -11,6 +11,9 @@
 - The `assert` expression is now supported.
 - The `elems` labels have been changed to `elements`.
 - The `PatternConstructor` variant has been renamed to `PatternVariant`
+- Type annotations in `use` expressions are now supported.
+- The `patterns` field of the `Use` variant is now a `List(UsePattern)`, which
+  also contains an optional type annotation.
 
 ## v3.0.0 - 2025-02-21
 
