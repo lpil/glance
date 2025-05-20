@@ -25,9 +25,18 @@ Module(
         [
           Use(
             [
-              PatternVariable("x"),
-              PatternVariable("y"),
-              PatternVariable("z"),
+              UsePattern(
+                PatternVariable("x"),
+                None,
+              ),
+              UsePattern(
+                PatternVariable("y"),
+                None,
+              ),
+              UsePattern(
+                PatternVariable("z"),
+                None,
+              ),
             ],
             Variable("f"),
           ),
