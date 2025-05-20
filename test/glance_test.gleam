@@ -1212,3 +1212,14 @@ pub fn main() {
   |> to_snapshot
   |> birdie.snap(title: "assert_precedence_with_todo")
 }
+
+pub fn use_with_annotations_test() {
+  "
+fn x() {
+  use x: Int <- todo
+  todo
+}
+"
+  |> to_snapshot
+  |> birdie.snap(title: "use_with_annotations")
+}

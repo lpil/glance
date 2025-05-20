@@ -24,7 +24,12 @@ Module(
         None,
         [
           Use(
-            [PatternVariable("x")],
+            [
+              UsePattern(
+                PatternVariable("x"),
+                None,
+              ),
+            ],
             Variable("y"),
           ),
         ],

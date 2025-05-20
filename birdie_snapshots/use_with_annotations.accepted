@@ -1,0 +1,50 @@
+---
+version: 1.2.7
+title: use_with_annotations
+file: ./test/glance_test.gleam
+test_name: use_with_annotations_test
+---
+
+fn x() {
+  use x: Int <- todo
+  todo
+}
+
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(1, 39),
+        "x",
+        Private,
+        [],
+        None,
+        [
+          Use(
+            [
+              UsePattern(
+                PatternVariable("x"),
+                Some(NamedType(
+                  Span(19, 22),
+                  "Int",
+                  None,
+                  [],
+                )),
+              ),
+            ],
+            Todo(None),
+          ),
+          Expression(Todo(None)),
+        ],
+      ),
+    ),
+  ],
+)

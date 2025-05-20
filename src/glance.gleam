@@ -44,7 +44,7 @@ pub type Span {
 }
 
 pub type Statement {
-  Use(patterns: List(Pattern), function: Expression)
+  Use(patterns: List(UsePattern), function: Expression)
   Assignment(
     kind: AssignmentKind,
     pattern: Pattern,
@@ -58,6 +58,10 @@ pub type Statement {
 pub type AssignmentKind {
   Let
   LetAssert(message: Option(Expression))
+}
+
+pub type UsePattern {
+  UsePattern(pattern: Pattern, annotation: Option(Type))
 }
 
 pub type Pattern {
@@ -758,12 +762,20 @@ fn assert_(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
 fn use_(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
   use #(patterns, tokens) <- result.try(case tokens {
     [#(t.LeftArrow, _), ..] -> Ok(#([], tokens))
-    _ -> delimited([], tokens, pattern, t.Comma)
+    _ -> delimited([], tokens, use_pattern, t.Comma)
   })
 
   use _, tokens <- expect(t.LeftArrow, tokens)
   use #(function, tokens) <- result.try(expression(tokens))
   Ok(#(Use(patterns, function), tokens))
+}
+
+fn use_pattern(
+  tokens: List(#(Token, Position)),
+) -> Result(#(UsePattern, List(#(Token, Position))), Error) {
+  use #(pattern, tokens) <- result.try(pattern(tokens))
+  use #(annotation, tokens) <- result.try(optional_type_annotation(tokens))
+  Ok(#(UsePattern(pattern:, annotation:), tokens))
 }
 
 fn assignment(
