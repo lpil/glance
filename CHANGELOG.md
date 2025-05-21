@@ -1,6 +1,6 @@
 # Changelog
 
-## v4.0.0 - Unreleased.
+## v4.0.0 - 2025-05-21
 
 - All definitions have a location span as their first field.
 - All types have a location span as their first field.
