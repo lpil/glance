@@ -24,7 +24,7 @@ Module(
         None,
         [
           Expression(FnCapture(
-            Span(16, 33),
+            Span(16, 34),
             None,
             Variable(
               Span(16, 22),

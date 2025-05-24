@@ -20,7 +20,7 @@ Module(
         Private,
         None,
         Call(
-          Span(10, 28),
+          Span(10, 29),
           Variable(Span(10, 13), "Box"),
           [
             UnlabelledField(Int(

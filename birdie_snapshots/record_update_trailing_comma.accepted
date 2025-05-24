@@ -24,7 +24,7 @@ Module(
         None,
         [
           Expression(RecordUpdate(
-            Span(16, 48),
+            Span(16, 49),
             None,
             "Wibble",
             Variable(

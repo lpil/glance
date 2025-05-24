@@ -30,7 +30,7 @@ Module(
         None,
         [
           Expression(Case(
-            Span(21, 65),
+            Span(21, 66),
             [
               Variable(
                 Span(26, 32),
@@ -42,7 +42,7 @@ Module(
                 [
                   [
                     PatternVariant(
-                      Span(39, 52),
+                      Span(39, 53),
                       None,
                       "Wabble",
                       [

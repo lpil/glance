@@ -16,7 +16,7 @@ Module(
     Definition(
       [],
       CustomType(
-        Span(0, 40),
+        Span(0, 41),
         "Box",
         Public,
         False,

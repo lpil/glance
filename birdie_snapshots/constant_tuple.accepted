@@ -20,7 +20,7 @@ Module(
         Private,
         None,
         Tuple(
-          Span(10, 21),
+          Span(10, 22),
           [
             Int(Span(12, 13), "1"),
             Float(Span(15, 18), "2.0"),

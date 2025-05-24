@@ -15,28 +15,28 @@ Module(
     Definition(
       [],
       TypeAlias(
-        Span(0, 27),
+        Span(0, 26),
         "X",
         Public,
         [],
         FunctionType(
-          Span(13, 27),
+          Span(13, 26),
           [
             NamedType(
-              Span(16, 18),
+              Span(16, 17),
               "A",
               None,
               [],
             ),
             NamedType(
-              Span(19, 21),
+              Span(19, 20),
               "B",
               None,
               [],
             ),
           ],
           NamedType(
-            Span(25, 27),
+            Span(25, 26),
             "C",
             None,
             [],

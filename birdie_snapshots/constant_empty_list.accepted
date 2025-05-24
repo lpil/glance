@@ -19,7 +19,7 @@ Module(
         "x",
         Private,
         None,
-        List(Span(10, 11), [], None),
+        List(Span(10, 12), [], None),
       ),
     ),
   ],

@@ -30,7 +30,7 @@ Module(
           Assert(
             Span(19, 69),
             Call(
-              Span(26, 40),
+              Span(26, 41),
               Variable(
                 Span(26, 30),
                 "lock",

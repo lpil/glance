@@ -17,7 +17,7 @@ Module(
     Definition(
       [],
       CustomType(
-        Span(13, 61),
+        Span(13, 62),
         "Cardinal",
         Public,
         False,

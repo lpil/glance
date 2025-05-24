@@ -28,9 +28,9 @@ Module(
         None,
         [
           Assert(
-            Span(19, 36),
+            Span(19, 37),
             Call(
-              Span(26, 36),
+              Span(26, 37),
               Variable(
                 Span(26, 33),
                 "is_even",

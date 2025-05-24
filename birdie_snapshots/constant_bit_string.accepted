@@ -20,7 +20,7 @@ Module(
         Private,
         None,
         BitString(
-          Span(10, 20),
+          Span(10, 22),
           [
             #(
               Int(Span(12, 13), "1"),

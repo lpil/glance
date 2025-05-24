@@ -16,7 +16,7 @@ Module(
     Definition(
       [],
       CustomType(
-        Span(0, 34),
+        Span(0, 35),
         "Spooky",
         Public,
         False,

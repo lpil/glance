@@ -35,7 +35,7 @@ Module(
               "money",
             ),
             Some(NamedType(
-              Span(31, 35),
+              Span(31, 34),
               "Int",
               None,
               [],

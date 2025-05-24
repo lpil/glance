@@ -56,7 +56,7 @@ Module(
         ),
       ],
       Function(
-        Span(88, 109),
+        Span(88, 124),
         "new_gb_tree",
         Public,
         [],

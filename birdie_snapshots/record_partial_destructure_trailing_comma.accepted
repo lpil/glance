@@ -33,7 +33,7 @@ Module(
             Span(17, 39),
             Let,
             PatternVariant(
-              Span(21, 34),
+              Span(21, 35),
               None,
               "Wibble",
               [

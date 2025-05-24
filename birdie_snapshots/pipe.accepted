@@ -24,17 +24,17 @@ Module(
         None,
         [
           Expression(BinaryOperator(
-            Span(16, 35),
+            Span(16, 36),
             Pipe,
             BinaryOperator(
-              Span(16, 24),
+              Span(16, 25),
               Pipe,
               Variable(
                 Span(16, 17),
                 "x",
               ),
               Call(
-                Span(21, 24),
+                Span(21, 25),
                 Variable(
                   Span(21, 22),
                   "y",
@@ -48,7 +48,7 @@ Module(
               ),
             ),
             Call(
-              Span(29, 35),
+              Span(29, 36),
               Variable(
                 Span(29, 30),
                 "z",
