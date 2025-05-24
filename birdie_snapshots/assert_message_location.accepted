@@ -1,0 +1,11 @@
+---
+version: 1.2.7
+title: assert_message_location
+file: ./test/glance_test.gleam
+test_name: assert_message_location_test
+---
+
+pub fn main() {
+  assert a == b as "Values are not equal"
+  ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+}

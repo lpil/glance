@@ -1227,7 +1227,10 @@ fn expression_unit(
     [#(t.Float(value), P(start)), ..tokens] ->
       Ok(#(Some(Float(span_from_string(start, value), value)), tokens))
     [#(t.String(value), P(start)), ..tokens] ->
-      Ok(#(Some(String(span_from_string(start, value), value)), tokens))
+      Ok(#(
+        Some(String(Span(start, string_offset(start, value) + 2), value)),
+        tokens,
+      ))
     [#(t.Name(name), P(start)), ..tokens] ->
       Ok(#(Some(Variable(span_from_string(start, name), name)), tokens))
 

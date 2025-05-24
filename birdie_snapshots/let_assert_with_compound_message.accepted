@@ -29,14 +29,14 @@ Module(
               Span(36, 59),
               [
                 Expression(BinaryOperator(
-                  Span(38, 55),
+                  Span(38, 57),
                   Concatenate,
                   String(
-                    Span(38, 42),
+                    Span(38, 44),
                     "some",
                   ),
                   String(
-                    Span(48, 55),
+                    Span(48, 57),
                     "message",
                   ),
                 )),

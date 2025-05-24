@@ -25,7 +25,6 @@ type Entity {
   TypeAlias
   Constant
   Function
-  Statement
   Expression
 }
 
@@ -53,7 +52,7 @@ fn check_location(src: String, entity: Entity) -> String {
       alias.definition.location
     }
 
-    Statement -> {
+    Expression -> {
       let assert [function, ..] = module.functions as "Function not found"
       let assert [statement, ..] = function.definition.body as "Body is empty"
       case statement {
@@ -62,13 +61,6 @@ fn check_location(src: String, entity: Entity) -> String {
         | glance.Use(location:, ..) -> location
         glance.Expression(expression) -> expression.location
       }
-    }
-    Expression -> {
-      let assert [function, ..] = module.functions as "Function not found"
-      let assert [statement, ..] = function.definition.body as "Body is empty"
-      let assert glance.Expression(expression) = statement
-        as "Statement is not an expression"
-      expression.location
     }
   }
 
@@ -1468,4 +1460,64 @@ pub fn wibble(x) { x }
 "
   |> check_location(Function)
   |> birdie.snap("public_function_location")
+}
+
+pub fn let_location_test() {
+  "
+pub fn main() {
+  let a = b
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("let_location")
+}
+
+pub fn let_assert_location_test() {
+  "
+pub fn main() {
+  let assert Ok(a) = b
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("let_assert_location")
+}
+
+pub fn let_assert_message_location_test() {
+  "
+pub fn main() {
+  let assert Ok(a) = b as \"Value was not Ok\"
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("let_assert_message_location")
+}
+
+pub fn assert_location_test() {
+  "
+pub fn main() {
+  assert a == b
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("assert_location")
+}
+
+pub fn assert_message_location_test() {
+  "
+pub fn main() {
+  assert a == b as \"Values are not equal\"
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("assert_message_location")
+}
+
+pub fn use_location_test() {
+  "
+pub fn main() {
+  use x <- result.try(something)
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("use_location")
 }

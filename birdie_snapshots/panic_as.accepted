@@ -26,9 +26,9 @@ Module(
         None,
         [
           Expression(Panic(
-            Span(18, 32),
+            Span(18, 34),
             Some(String(
-              Span(27, 32),
+              Span(27, 34),
               "oh no",
             )),
           )),

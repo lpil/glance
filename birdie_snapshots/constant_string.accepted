@@ -16,11 +16,11 @@ Module(
     Definition(
       [],
       Constant(
-        Span(0, 13),
+        Span(0, 15),
         "x",
         Private,
         None,
-        String(Span(10, 13), "123"),
+        String(Span(10, 15), "123"),
       ),
     ),
   ],

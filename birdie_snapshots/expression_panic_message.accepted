@@ -28,7 +28,7 @@ Module(
             Panic(Span(16, 21), None),
             [
               UnlabelledField(String(
-                Span(22, 25),
+                Span(22, 27),
                 "huh",
               )),
             ],

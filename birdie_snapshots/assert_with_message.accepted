@@ -28,7 +28,7 @@ Module(
         None,
         [
           Assert(
-            Span(19, 69),
+            Span(19, 71),
             Call(
               Span(26, 41),
               Variable(
@@ -43,7 +43,7 @@ Module(
               ],
             ),
             Some(String(
-              Span(45, 69),
+              Span(45, 71),
               "Failed to lock directory",
             )),
           ),

@@ -24,7 +24,7 @@ Module(
         None,
         [
           Assignment(
-            Span(16, 36),
+            Span(16, 38),
             Let,
             PatternConcatenate(
               Span(20, 33),
@@ -33,7 +33,7 @@ Module(
               Named("y"),
             ),
             None,
-            String(Span(36, 36), ""),
+            String(Span(36, 38), ""),
           ),
         ],
       ),

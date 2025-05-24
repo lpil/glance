@@ -24,9 +24,9 @@ Module(
         None,
         [
           Assignment(
-            Span(16, 55),
+            Span(16, 57),
             LetAssert(Some(String(
-              Span(36, 55),
+              Span(36, 57),
               "This shouldn't fail",
             ))),
             PatternVariable(
