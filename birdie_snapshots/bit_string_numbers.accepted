@@ -24,7 +24,7 @@ Module(
         None,
         [
           Expression(BitString(
-            Span(16, 25),
+            Span(16, 27),
             [
               #(
                 Int(Span(18, 19), "1"),

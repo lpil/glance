@@ -37,7 +37,7 @@ Module(
                   "x",
                 ),
                 Some(NamedType(
-                  Span(19, 23),
+                  Span(19, 22),
                   "Int",
                   None,
                   [],

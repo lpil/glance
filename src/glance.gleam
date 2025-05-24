@@ -434,7 +434,8 @@ fn until(
 ) -> Result(#(acc, Int, Tokens), Error) {
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
-    [#(token, P(i)), ..tokens] if token == limit -> Ok(#(acc, i, tokens))
+    [#(token, P(i)), ..tokens] if token == limit ->
+      Ok(#(acc, string_offset(i, t.to_source(token)), tokens))
     [_, ..] -> {
       case callback(acc, tokens) {
         Ok(#(acc, tokens)) -> until(limit, acc, tokens, callback)
@@ -699,6 +700,8 @@ fn function_definition(
 ) -> Result(#(Module, Tokens), Error) {
   // Parameters
   use P(end), tokens <- expect(t.LeftParen, tokens)
+  let end = end + 1
+
   let result = comma_delimited([], tokens, function_parameter, t.RightParen)
   use #(parameters, _, tokens) <- result.try(result)
 
@@ -724,9 +727,9 @@ fn optional_return_annotation(
   tokens: Tokens,
 ) -> Result(#(Option(Type), Int, Tokens), Error) {
   case tokens {
-    [#(t.RightArrow, P(end)), ..tokens] -> {
+    [#(t.RightArrow, _), ..tokens] -> {
       use #(return_type, tokens) <- result.try(type_(tokens))
-      Ok(#(Some(return_type), end, tokens))
+      Ok(#(Some(return_type), return_type.location.end, tokens))
     }
     _ -> Ok(#(None, end, tokens))
   }
@@ -864,11 +867,11 @@ fn pattern_constructor_arguments(
 ) -> Result(PatternConstructorArguments, Error) {
   case tokens {
     [#(t.RightParen, P(end)), ..tokens] ->
-      Ok(PatternConstructorArguments(arguments, False, end, tokens))
+      Ok(PatternConstructorArguments(arguments, False, end + 1, tokens))
 
     [#(t.DotDot, _), #(t.Comma, _), #(t.RightParen, P(end)), ..tokens]
     | [#(t.DotDot, _), #(t.RightParen, P(end)), ..tokens] ->
-      Ok(PatternConstructorArguments(arguments, True, end, tokens))
+      Ok(PatternConstructorArguments(arguments, True, end + 1, tokens))
 
     tokens -> {
       use #(pattern, tokens) <- result.try(field(tokens, pattern))
@@ -876,10 +879,10 @@ fn pattern_constructor_arguments(
 
       case tokens {
         [#(t.RightParen, P(end)), ..tokens] ->
-          Ok(PatternConstructorArguments(arguments, False, end, tokens))
+          Ok(PatternConstructorArguments(arguments, False, end + 1, tokens))
 
         [#(t.Comma, _), #(t.DotDot, _), #(t.RightParen, P(end)), ..tokens] ->
-          Ok(PatternConstructorArguments(arguments, True, end, tokens))
+          Ok(PatternConstructorArguments(arguments, True, end + 1, tokens))
 
         [#(t.Comma, _), ..tokens] ->
           pattern_constructor_arguments(arguments, tokens)
@@ -1433,7 +1436,7 @@ fn call(
     [#(t.RightParen, P(end)), ..tokens] -> {
       let call =
         Call(
-          Span(function.location.start, end),
+          Span(function.location.start, end + 1),
           function,
           list.reverse(arguments),
         )
@@ -1457,7 +1460,7 @@ fn call(
       ] -> {
       let capture =
         FnCapture(
-          Span(function.location.start, end),
+          Span(function.location.start, end + 1),
           Some(label),
           function,
           list.reverse(arguments),
@@ -1481,7 +1484,7 @@ fn call(
     | [#(t.DiscardName(""), _), #(t.RightParen, P(end)), ..tokens] -> {
       let capture =
         FnCapture(
-          Span(function.location.start, end),
+          Span(function.location.start, end + 1),
           None,
           function,
           list.reverse(arguments),
@@ -1505,7 +1508,7 @@ fn call(
         [#(t.RightParen, P(end)), ..tokens] -> {
           let call =
             Call(
-              Span(function.location.start, end),
+              Span(function.location.start, end + 1),
               function,
               list.reverse(arguments),
             )
@@ -1533,7 +1536,7 @@ fn fn_capture(
     [#(t.RightParen, P(end)), ..tokens] -> {
       let capture =
         FnCapture(
-          Span(function.location.start, end),
+          Span(function.location.start, end + 1),
           label,
           function,
           before,
@@ -1552,7 +1555,7 @@ fn fn_capture(
         [#(t.RightParen, P(end)), ..tokens] -> {
           let call =
             FnCapture(
-              Span(function.location.start, end),
+              Span(function.location.start, end + 1),
               label,
               function,
               before,
@@ -1580,7 +1583,9 @@ fn record_update(
   case tokens {
     [#(t.RightParen, P(end)), ..tokens] -> {
       Ok(#(
-        Some(RecordUpdate(Span(start, end), module, constructor, record, [])),
+        Some(
+          RecordUpdate(Span(start, end + 1), module, constructor, record, []),
+        ),
         tokens,
       ))
     }
@@ -1647,7 +1652,7 @@ fn case_clauses(
   let clauses = [clause, ..clauses]
   case tokens {
     [#(t.RightBrace, P(end)), ..tokens] ->
-      Ok(#(list.reverse(clauses), tokens, end))
+      Ok(#(list.reverse(clauses), tokens, end + 1))
     _ -> case_clauses(clauses, tokens)
   }
 }
@@ -1725,10 +1730,10 @@ fn list(
 ) -> Result(ParsedList(t), Error) {
   case tokens {
     [#(t.RightSquare, P(end)), ..tokens] ->
-      Ok(ParsedList(list.reverse(acc), None, tokens, end))
+      Ok(ParsedList(list.reverse(acc), None, tokens, end + 1))
 
     [#(t.Comma, _), #(t.RightSquare, P(end)), ..tokens] if acc != [] ->
-      Ok(ParsedList(list.reverse(acc), None, tokens, end))
+      Ok(ParsedList(list.reverse(acc), None, tokens, end + 1))
     [#(t.DotDot, P(start)), #(t.RightSquare, P(end)) as close, ..tokens] -> {
       case discard {
         None -> unexpected_error([close, ..tokens])
@@ -1737,7 +1742,7 @@ fn list(
             list.reverse(acc),
             Some(discard(Span(start, start + 1))),
             tokens,
-            end,
+            end + 1,
           ))
       }
     }
@@ -1873,8 +1878,12 @@ fn comma_delimited(
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
 
-    [#(token, P(i)), ..tokens] if token == final -> {
-      Ok(#(list.reverse(items), i, tokens))
+    [#(token, P(token_start)), ..tokens] if token == final -> {
+      Ok(#(
+        list.reverse(items),
+        string_offset(token_start, t.to_source(token)),
+        tokens,
+      ))
     }
 
     _ -> {
@@ -1883,8 +1892,12 @@ fn comma_delimited(
         [#(t.Comma, _), ..tokens] -> {
           comma_delimited([element, ..items], tokens, parser, final)
         }
-        [#(token, P(i)), ..tokens] if token == final -> {
-          Ok(#(list.reverse([element, ..items]), i, tokens))
+        [#(token, P(token_start)), ..tokens] if token == final -> {
+          Ok(#(
+            list.reverse([element, ..items]),
+            string_offset(token_start, t.to_source(token)),
+            tokens,
+          ))
         }
         [#(other, position), ..] -> {
           Error(UnexpectedToken(other, position))
@@ -1905,10 +1918,10 @@ fn type_definition(
 ) -> Result(#(Module, Tokens), Error) {
   // Name(a, b, c)
   use name_value, name_start, tokens <- expect_upper_name(tokens)
-  use #(parameters, _, tokens) <- result.try(case tokens {
+  use #(parameters, end, tokens) <- result.try(case tokens {
     [#(t.LeftParen, _), ..tokens] ->
       comma_delimited([], tokens, name, until: t.RightParen)
-    _ -> Ok(#([], 0, tokens))
+    _ -> Ok(#([], string_offset(name_start, name_value), tokens))
   })
 
   case tokens {
@@ -1936,7 +1949,7 @@ fn type_definition(
       )
     }
     _ -> {
-      let span = Span(start, name_start + string.byte_size(name_value))
+      let span = Span(start, end)
       let ct = CustomType(span, name_value, publicity, opaque_, parameters, [])
       let module = push_custom_type(module, attributes, ct)
       Ok(#(module, tokens))
@@ -1981,11 +1994,11 @@ fn type_(tokens: Tokens) -> Result(#(Type, Tokens), Error) {
       named_type(name, None, tokens, start, start)
     }
     [#(t.DiscardName(name), P(i)), ..tokens] -> {
-      let value = HoleType(Span(i, i + string.byte_size(name)), name)
+      let value = HoleType(span_from_string(i, name), name)
       Ok(#(value, tokens))
     }
     [#(t.Name(name), P(i)), ..tokens] -> {
-      let value = VariableType(Span(i, i + string.byte_size(name)), name)
+      let value = VariableType(span_from_string(i, name), name)
       Ok(#(value, tokens))
     }
     [#(token, position), ..] -> {
@@ -2010,7 +2023,7 @@ fn named_type(
       Ok(#([], end, tokens))
     }
   })
-  let t = NamedType(Span(start, end + 1), name, module, parameters)
+  let t = NamedType(Span(start, end), name, module, parameters)
   Ok(#(t, tokens))
 }
 
@@ -2026,7 +2039,7 @@ fn fn_type(start: Int, tokens: Tokens) -> Result(#(Type, Tokens), Error) {
 fn tuple_type(start: Int, tokens: Tokens) -> Result(#(Type, Tokens), Error) {
   let result = comma_delimited([], tokens, type_, until: t.RightParen)
   use #(types, end, tokens) <- result.try(result)
-  let span = Span(start, end + 1)
+  let span = Span(start, end)
   Ok(#(TupleType(span, types), tokens))
 }
 

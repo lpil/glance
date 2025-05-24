@@ -24,7 +24,7 @@ Module(
         None,
         [
           Expression(Call(
-            Span(16, 37),
+            Span(16, 38),
             FieldAccess(
               Span(16, 29),
               Variable(

@@ -15,12 +15,12 @@ Module(
     Definition(
       [],
       TypeAlias(
-        Span(0, 22),
+        Span(0, 21),
         "X",
         Public,
         [],
         NamedType(
-          Span(13, 22),
+          Span(13, 21),
           "Y",
           Some("wibble"),
           [],

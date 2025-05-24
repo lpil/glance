@@ -27,7 +27,7 @@ Module(
             Span(16, 42),
             Let,
             PatternVariant(
-              Span(20, 37),
+              Span(20, 38),
               None,
               "Thing",
               [

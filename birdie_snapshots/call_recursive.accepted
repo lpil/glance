@@ -24,11 +24,11 @@ Module(
         None,
         [
           Expression(Call(
-            Span(16, 34),
+            Span(16, 35),
             Call(
-              Span(16, 32),
+              Span(16, 33),
               Call(
-                Span(16, 30),
+                Span(16, 31),
                 Variable(
                   Span(16, 22),
                   "wobble",

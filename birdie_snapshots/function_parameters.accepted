@@ -43,7 +43,7 @@ Module(
             Some("e"),
             Named("f"),
             Some(NamedType(
-              Span(29, 31),
+              Span(29, 30),
               "G",
               None,
               [],
@@ -58,7 +58,7 @@ Module(
             Some("j"),
             Discarded("k"),
             Some(NamedType(
-              Span(44, 46),
+              Span(44, 45),
               "L",
               None,
               [],

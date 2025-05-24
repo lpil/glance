@@ -22,7 +22,7 @@ Module(
         Private,
         None,
         Call(
-          Span(16, 29),
+          Span(16, 30),
           Variable(
             Span(16, 22),
             "Wibble",

@@ -28,7 +28,7 @@ Module(
         None,
         [
           Expression(Call(
-            Span(21, 34),
+            Span(21, 35),
             Variable(
               Span(21, 27),
               "wobble",

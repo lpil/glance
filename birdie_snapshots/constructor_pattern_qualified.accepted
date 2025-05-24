@@ -27,7 +27,7 @@ Module(
             Span(16, 49),
             Let,
             PatternVariant(
-              Span(20, 44),
+              Span(20, 45),
               Some("wobble"),
               "Thing",
               [

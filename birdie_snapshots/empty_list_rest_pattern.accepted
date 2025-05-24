@@ -27,7 +27,7 @@ Module(
             Span(16, 28),
             Let,
             PatternList(
-              Span(20, 23),
+              Span(20, 24),
               [],
               Some(PatternDiscard(
                 Span(21, 22),

@@ -19,7 +19,7 @@ Module(
         "x",
         Public,
         Some(NamedType(
-          Span(13, 17),
+          Span(13, 16),
           "Int",
           None,
           [],

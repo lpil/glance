@@ -25,7 +25,7 @@ Module(
         None,
         [
           Expression(Case(
-            Span(16, 40),
+            Span(16, 41),
             [
               Variable(
                 Span(21, 22),

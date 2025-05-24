@@ -16,7 +16,7 @@ Module(
     Definition(
       [],
       CustomType(
-        Span(0, 44),
+        Span(0, 45),
         "Cardinal",
         Private,
         False,

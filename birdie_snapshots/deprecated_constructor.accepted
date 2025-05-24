@@ -21,7 +21,7 @@ Module(
     Definition(
       [],
       CustomType(
-        Span(1, 103),
+        Span(1, 104),
         "HashAlgorithm",
         Public,
         False,

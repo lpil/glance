@@ -27,7 +27,7 @@ Module(
             Span(16, 34),
             Let,
             PatternBitString(
-              Span(20, 28),
+              Span(20, 30),
               [
                 #(
                   PatternInt(
