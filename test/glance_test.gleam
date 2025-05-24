@@ -1337,7 +1337,7 @@ pub fn import_location_test() {
 import glance
 "
   |> check_location(Import)
-  |> birdie.snap("import_location")
+  |> birdie.snap(title: "import_location")
 }
 
 pub fn import_nested_location_test() {
@@ -1345,7 +1345,7 @@ pub fn import_nested_location_test() {
 import gleam/io
 "
   |> check_location(Import)
-  |> birdie.snap("import_nested_location")
+  |> birdie.snap(title: "import_nested_location")
 }
 
 pub fn import_unqualified_location_test() {
@@ -1353,7 +1353,7 @@ pub fn import_unqualified_location_test() {
 import glance.{Module}
 "
   |> check_location(Import)
-  |> birdie.snap("import_unqualified_location")
+  |> birdie.snap(title: "import_unqualified_location")
 }
 
 pub fn import_alias_location_test() {
@@ -1361,7 +1361,7 @@ pub fn import_alias_location_test() {
 import glance.{Module} as parser
 "
   |> check_location(Import)
-  |> birdie.snap("import_alias_location")
+  |> birdie.snap(title: "import_alias_location")
 }
 
 pub fn import_alias_discard_location_test() {
@@ -1369,7 +1369,7 @@ pub fn import_alias_discard_location_test() {
 import glance as _ignore
 "
   |> check_location(Import)
-  |> birdie.snap("import_alias_discard_location")
+  |> birdie.snap(title: "import_alias_discard_location")
 }
 
 pub fn external_type_location_test() {
@@ -1377,7 +1377,7 @@ pub fn external_type_location_test() {
 type Wibble
 "
   |> check_location(CustomType)
-  |> birdie.snap("external_type_location")
+  |> birdie.snap(title: "external_type_location")
 }
 
 pub fn public_external_type_location_test() {
@@ -1385,7 +1385,7 @@ pub fn public_external_type_location_test() {
 pub type Wibble
 "
   |> check_location(CustomType)
-  |> birdie.snap("public_external_type_location")
+  |> birdie.snap(title: "public_external_type_location")
 }
 
 pub fn external_type_with_parameters_location_test() {
@@ -1393,7 +1393,7 @@ pub fn external_type_with_parameters_location_test() {
 type Dict(key, value)
 "
   |> check_location(CustomType)
-  |> birdie.snap("external_type_with_parameters_location")
+  |> birdie.snap(title: "external_type_with_parameters_location")
 }
 
 pub fn custom_type_location_test() {
@@ -1404,7 +1404,7 @@ type Result(v, e) {
 }
 "
   |> check_location(CustomType)
-  |> birdie.snap("custom_type_location")
+  |> birdie.snap(title: "custom_type_location")
 }
 
 pub fn type_alias_location_test() {
@@ -1412,7 +1412,7 @@ pub fn type_alias_location_test() {
 type Wibble = Wobble
 "
   |> check_location(TypeAlias)
-  |> birdie.snap("type_alias_location")
+  |> birdie.snap(title: "type_alias_location")
 }
 
 pub fn public_type_alias_location_test() {
@@ -1420,7 +1420,7 @@ pub fn public_type_alias_location_test() {
 pub type Wibble = Wobble
 "
   |> check_location(TypeAlias)
-  |> birdie.snap("public_type_alias_location")
+  |> birdie.snap(title: "public_type_alias_location")
 }
 
 pub fn constant_location_test() {
@@ -1428,7 +1428,7 @@ pub fn constant_location_test() {
 const pi = 3.14
 "
   |> check_location(Constant)
-  |> birdie.snap("constant_location")
+  |> birdie.snap(title: "constant_location")
 }
 
 pub fn public_constant_location_test() {
@@ -1436,7 +1436,7 @@ pub fn public_constant_location_test() {
 pub const pi = 3.14
 "
   |> check_location(Constant)
-  |> birdie.snap("public_constant_location")
+  |> birdie.snap(title: "public_constant_location")
 }
 
 pub fn external_function_location_test() {
@@ -1444,7 +1444,7 @@ pub fn external_function_location_test() {
 fn something_external(args)
 "
   |> check_location(Function)
-  |> birdie.snap("external_function_location")
+  |> birdie.snap(title: "external_function_location")
 }
 
 pub fn external_function_with_return_location_test() {
@@ -1452,7 +1452,7 @@ pub fn external_function_with_return_location_test() {
 fn something_external(args) -> ReturnType
 "
   |> check_location(Function)
-  |> birdie.snap("external_function_with_return_location")
+  |> birdie.snap(title: "external_function_with_return_location")
 }
 
 pub fn function_location_test() {
@@ -1460,7 +1460,7 @@ pub fn function_location_test() {
 fn wibble(x) { x }
 "
   |> check_location(Function)
-  |> birdie.snap("function_location")
+  |> birdie.snap(title: "function_location")
 }
 
 pub fn public_function_location_test() {
@@ -1468,7 +1468,7 @@ pub fn public_function_location_test() {
 pub fn wibble(x) { x }
 "
   |> check_location(Function)
-  |> birdie.snap("public_function_location")
+  |> birdie.snap(title: "public_function_location")
 }
 
 pub fn let_location_test() {
@@ -1478,7 +1478,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("let_location")
+  |> birdie.snap(title: "let_location")
 }
 
 pub fn let_assert_location_test() {
@@ -1488,7 +1488,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("let_assert_location")
+  |> birdie.snap(title: "let_assert_location")
 }
 
 pub fn let_assert_message_location_test() {
@@ -1498,7 +1498,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("let_assert_message_location")
+  |> birdie.snap(title: "let_assert_message_location")
 }
 
 pub fn assert_location_test() {
@@ -1508,7 +1508,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("assert_location")
+  |> birdie.snap(title: "assert_location")
 }
 
 pub fn assert_message_location_test() {
@@ -1518,7 +1518,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("assert_message_location")
+  |> birdie.snap(title: "assert_message_location")
 }
 
 pub fn use_location_test() {
@@ -1528,7 +1528,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("use_location")
+  |> birdie.snap(title: "use_location")
 }
 
 pub fn int_location_test() {
@@ -1538,7 +1538,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("int_location")
+  |> birdie.snap(title: "int_location")
 }
 
 pub fn float_location_test() {
@@ -1548,7 +1548,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("float_location")
+  |> birdie.snap(title: "float_location")
 }
 
 pub fn string_location_test() {
@@ -1558,7 +1558,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("string_location")
+  |> birdie.snap(title: "string_location")
 }
 
 pub fn variable_location_test() {
@@ -1568,7 +1568,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("variable_location")
+  |> birdie.snap(title: "variable_location")
 }
 
 pub fn negate_int_location_test() {
@@ -1578,7 +1578,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("negate_int_location")
+  |> birdie.snap(title: "negate_int_location")
 }
 
 pub fn negative_float_location_test() {
@@ -1588,7 +1588,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("negative_float_location")
+  |> birdie.snap(title: "negative_float_location")
 }
 
 pub fn block_location_test() {
@@ -1601,7 +1601,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("block_location")
+  |> birdie.snap(title: "block_location")
 }
 
 pub fn panic_location_test() {
@@ -1611,7 +1611,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("panic_location")
+  |> birdie.snap(title: "panic_location")
 }
 
 pub fn panic_message_location_test() {
@@ -1621,7 +1621,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("panic_message_location")
+  |> birdie.snap(title: "panic_message_location")
 }
 
 pub fn todo_location_test() {
@@ -1631,7 +1631,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("todo_location")
+  |> birdie.snap(title: "todo_location")
 }
 
 pub fn todo_message_location_test() {
@@ -1641,7 +1641,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("todo_message_location")
+  |> birdie.snap(title: "todo_message_location")
 }
 
 pub fn tuple_location_test() {
@@ -1651,7 +1651,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("tuple_location")
+  |> birdie.snap(title: "tuple_location")
 }
 
 pub fn list_location_test() {
@@ -1661,7 +1661,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("list_location")
+  |> birdie.snap(title: "list_location")
 }
 
 pub fn list_spread_location_test() {
@@ -1671,7 +1671,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("list_spread_location")
+  |> birdie.snap(title: "list_spread_location")
 }
 
 pub fn field_access_location_test() {
@@ -1681,7 +1681,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("field_access_location")
+  |> birdie.snap(title: "field_access_location")
 }
 
 pub fn call_location_test() {
@@ -1691,7 +1691,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("call_location")
+  |> birdie.snap(title: "call_location")
 }
 
 pub fn tuple_index_location_test() {
@@ -1701,7 +1701,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("tuple_index_location")
+  |> birdie.snap(title: "tuple_index_location")
 }
 
 pub fn case_location_test() {
@@ -1715,7 +1715,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("case_location")
+  |> birdie.snap(title: "case_location")
 }
 
 pub fn echo_location_test() {
@@ -1725,7 +1725,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("echo_location")
+  |> birdie.snap(title: "echo_location")
 }
 
 pub fn fn_location_test() {
@@ -1737,7 +1737,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("fn_location")
+  |> birdie.snap(title: "fn_location")
 }
 
 pub fn record_update_location_test() {
@@ -1747,7 +1747,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("record_update_location")
+  |> birdie.snap(title: "record_update_location")
 }
 
 pub fn function_capture_location_test() {
@@ -1757,7 +1757,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("function_capture_location")
+  |> birdie.snap(title: "function_capture_location")
 }
 
 pub fn bit_array_location_test() {
@@ -1767,7 +1767,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("bit_array_location")
+  |> birdie.snap(title: "bit_array_location")
 }
 
 pub fn binary_operator_location_test() {
@@ -1777,7 +1777,7 @@ pub fn main() {
 }
 "
   |> check_location(Expression)
-  |> birdie.snap("binary_operator_location")
+  |> birdie.snap(title: "binary_operator_location")
 }
 
 pub fn int_pattern_location_test() {
@@ -1787,7 +1787,7 @@ pub fn main() {
 }
 "
   |> check_location(Pattern)
-  |> birdie.snap("int_pattern_location")
+  |> birdie.snap(title: "int_pattern_location")
 }
 
 pub fn float_pattern_location_test() {
@@ -1797,7 +1797,7 @@ pub fn main() {
 }
 "
   |> check_location(Pattern)
-  |> birdie.snap("float_pattern_location")
+  |> birdie.snap(title: "float_pattern_location")
 }
 
 pub fn string_pattern_location_test() {
@@ -1807,7 +1807,7 @@ pub fn main() {
 }
 "
   |> check_location(Pattern)
-  |> birdie.snap("string_pattern_location")
+  |> birdie.snap(title: "string_pattern_location")
 }
 
 pub fn discard_pattern_location_test() {
@@ -1817,7 +1817,7 @@ pub fn main() {
 }
 "
   |> check_location(Pattern)
-  |> birdie.snap("discard_pattern_location")
+  |> birdie.snap(title: "discard_pattern_location")
 }
 
 pub fn variable_pattern_location_test() {
@@ -1827,7 +1827,7 @@ pub fn main() {
 }
 "
   |> check_location(Pattern)
-  |> birdie.snap("variable_pattern_location")
+  |> birdie.snap(title: "variable_pattern_location")
 }
 
 pub fn tuple_pattern_location_test() {
@@ -1837,7 +1837,7 @@ pub fn main() {
 }
 "
   |> check_location(Pattern)
-  |> birdie.snap("tuple_pattern_location")
+  |> birdie.snap(title: "tuple_pattern_location")
 }
 
 pub fn list_pattern_location_test() {
@@ -1847,7 +1847,7 @@ pub fn main() {
 }
 "
   |> check_location(Pattern)
-  |> birdie.snap("list_pattern_location")
+  |> birdie.snap(title: "list_pattern_location")
 }
 
 pub fn list_pattern_spread_location_test() {
@@ -1857,7 +1857,7 @@ pub fn main() {
 }
 "
   |> check_location(Pattern)
-  |> birdie.snap("list_pattern_spread_location")
+  |> birdie.snap(title: "list_pattern_spread_location")
 }
 
 pub fn assignment_pattern_location_test() {
@@ -1867,7 +1867,7 @@ pub fn main() {
 }
 "
   |> check_location(Pattern)
-  |> birdie.snap("assignment_pattern_location")
+  |> birdie.snap(title: "assignment_pattern_location")
 }
 
 pub fn concatenate_pattern_location_test() {
@@ -1877,7 +1877,7 @@ pub fn main() {
 }
 "
   |> check_location(Pattern)
-  |> birdie.snap("concatenate_pattern_location")
+  |> birdie.snap(title: "concatenate_pattern_location")
 }
 
 pub fn concatenate_pattern_discard_location_test() {
@@ -1887,7 +1887,7 @@ pub fn main() {
 }
 "
   |> check_location(Pattern)
-  |> birdie.snap("concatenate_pattern_discard_location")
+  |> birdie.snap(title: "concatenate_pattern_discard_location")
 }
 
 pub fn concatenate_pattern_assignment_location_test() {
@@ -1897,7 +1897,7 @@ pub fn main() {
 }
 "
   |> check_location(Pattern)
-  |> birdie.snap("concatenate_pattern_assignment_location")
+  |> birdie.snap(title: "concatenate_pattern_assignment_location")
 }
 
 pub fn bit_array_pattern_location_test() {
@@ -1907,7 +1907,7 @@ pub fn main() {
 }
 "
   |> check_location(Pattern)
-  |> birdie.snap("bit_array_pattern_location")
+  |> birdie.snap(title: "bit_array_pattern_location")
 }
 
 pub fn variant_pattern_location_test() {
@@ -1917,7 +1917,7 @@ pub fn main() {
 }
 "
   |> check_location(Pattern)
-  |> birdie.snap("variant_pattern_location")
+  |> birdie.snap(title: "variant_pattern_location")
 }
 
 pub fn constructor_pattern_location_test() {
@@ -1927,5 +1927,5 @@ pub fn main() {
 }
 "
   |> check_location(Pattern)
-  |> birdie.snap("constructor_pattern_location")
+  |> birdie.snap(title: "constructor_pattern_location")
 }
