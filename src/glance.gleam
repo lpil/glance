@@ -480,34 +480,40 @@ fn slurp(
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
+
     [#(t.Pub, P(start)), #(t.Type, _), ..tokens] -> {
       let result =
         type_definition(module, attributes, Public, False, tokens, start)
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
+
     [#(t.Pub, P(start)), #(t.Opaque, _), #(t.Type, _), ..tokens] -> {
       let result =
         type_definition(module, attributes, Public, True, tokens, start)
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
+
     [#(t.Type, P(start)), ..tokens] -> {
       let result =
         type_definition(module, attributes, Private, False, tokens, start)
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
+
     [#(t.Pub, P(start)), #(t.Const, _), ..tokens] -> {
       let result = const_definition(module, attributes, Public, tokens, start)
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
+
     [#(t.Const, P(start)), ..tokens] -> {
       let result = const_definition(module, attributes, Private, tokens, start)
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
+
     [#(t.Pub, start), #(t.Fn, _), #(t.Name(name), _), ..tokens] -> {
       let P(start) = start
       let result =
@@ -515,6 +521,7 @@ fn slurp(
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
+
     [#(t.Fn, start), #(t.Name(name), _), ..tokens] -> {
       let P(start) = start
       let result =
@@ -522,6 +529,7 @@ fn slurp(
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
+
     [] -> Ok(module)
     tokens -> unexpected_error(tokens)
   }
@@ -814,13 +822,16 @@ fn assert_(tokens: Tokens, start: Int) -> Result(#(Statement, Tokens), Error) {
     [#(t.As, _), ..tokens] ->
       case expression(tokens) {
         Error(error) -> Error(error)
-        Ok(#(message, tokens)) ->
-          Ok(#(
-            Assert(Span(start, message.location.end), subject, Some(message)),
-            tokens,
-          ))
+        Ok(#(message, tokens)) -> {
+          let statement =
+            Assert(Span(start, message.location.end), subject, Some(message))
+          Ok(#(statement, tokens))
+        }
       }
-    _ -> Ok(#(Assert(Span(start, subject.location.end), subject, None), tokens))
+    _ -> {
+      let statement = Assert(Span(start, subject.location.end), subject, None)
+      Ok(#(statement, tokens))
+    }
   }
 }
 
@@ -884,14 +895,8 @@ fn pattern_constructor(
       Ok(#(pattern, tokens))
     }
     _ -> {
-      let pattern =
-        PatternVariant(
-          Span(start, string_offset(name_start, constructor)),
-          module,
-          constructor,
-          [],
-          False,
-        )
+      let span = Span(start, string_offset(name_start, constructor))
+      let pattern = PatternVariant(span, module, constructor, [], False)
       Ok(#(pattern, tokens))
     }
   }
@@ -957,16 +962,11 @@ fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
       #(t.LessGreater, _),
       #(t.Name(r), P(name_start)),
       ..tokens
-    ] ->
-      Ok(#(
-        PatternConcatenate(
-          Span(start, string_offset(name_start, r)),
-          v,
-          Some(Named(l)),
-          Named(r),
-        ),
-        tokens,
-      ))
+    ] -> {
+      let span = Span(start, string_offset(name_start, r))
+      let pattern = PatternConcatenate(span, v, Some(Named(l)), Named(r))
+      Ok(#(pattern, tokens))
+    }
     [
       #(t.String(v), P(start)),
       #(t.As, _),
@@ -974,46 +974,31 @@ fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
       #(t.LessGreater, _),
       #(t.Name(r), P(name_start)),
       ..tokens
-    ] ->
-      Ok(#(
-        PatternConcatenate(
-          Span(start, string_offset(name_start, r)),
-          v,
-          Some(Discarded(l)),
-          Named(r),
-        ),
-        tokens,
-      ))
+    ] -> {
+      let span = Span(start, string_offset(name_start, r))
+      let pattern = PatternConcatenate(span, v, Some(Discarded(l)), Named(r))
+      Ok(#(pattern, tokens))
+    }
     [
       #(t.String(v), P(start)),
       #(t.LessGreater, _),
       #(t.Name(n), P(name_start)),
       ..tokens
-    ] ->
-      Ok(#(
-        PatternConcatenate(
-          Span(start, string_offset(name_start, n)),
-          v,
-          None,
-          Named(n),
-        ),
-        tokens,
-      ))
+    ] -> {
+      let span = Span(start, string_offset(name_start, n))
+      let pattern = PatternConcatenate(span, v, None, Named(n))
+      Ok(#(pattern, tokens))
+    }
     [
       #(t.String(v), P(start)),
       #(t.LessGreater, _),
       #(t.DiscardName(n), P(name_start)),
       ..tokens
-    ] ->
-      Ok(#(
-        PatternConcatenate(
-          Span(start, string_offset(name_start, n) + 1),
-          v,
-          None,
-          Discarded(n),
-        ),
-        tokens,
-      ))
+    ] -> {
+      let span = Span(start, string_offset(name_start, n) + 1)
+      let pattern = PatternConcatenate(span, v, None, Discarded(n))
+      Ok(#(pattern, tokens))
+    }
 
     [#(t.Int(value), P(start)), ..tokens] ->
       Ok(#(PatternInt(span_from_string(start, value), value), tokens))
@@ -1057,14 +1042,9 @@ fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
 
   case tokens {
     [#(t.As, _), #(t.Name(name), P(name_start)), ..tokens] -> {
-      Ok(#(
-        PatternAssignment(
-          Span(pattern.location.start, string_offset(name_start, name)),
-          pattern,
-          name,
-        ),
-        tokens,
-      ))
+      let span = Span(pattern.location.start, string_offset(name_start, name))
+      let pattern = PatternAssignment(span, pattern, name)
+      Ok(#(pattern, tokens))
     }
     _ -> Ok(#(pattern, tokens))
   }
@@ -1165,15 +1145,9 @@ fn handle_operator(
     Some(next), [previous, ..operators], [a, b, ..rest_values] -> {
       case precedence(previous) >= precedence(next) {
         True -> {
-          let values = [
-            BinaryOperator(
-              Span(b.location.start, a.location.end),
-              previous,
-              b,
-              a,
-            ),
-            ..rest_values
-          ]
+          let span = Span(b.location.start, a.location.end)
+          let expression = BinaryOperator(span, previous, b, a)
+          let values = [expression, ..rest_values]
           handle_operator(Some(next), operators, values)
         }
         False -> {
@@ -1228,17 +1202,22 @@ fn expression_unit(
     [#(t.UpperName(name), P(start)), ..tokens] ->
       Ok(#(Some(Variable(span_from_string(start, name), name)), tokens))
 
-    [#(t.Int(value), P(start)), ..tokens] ->
-      Ok(#(Some(Int(span_from_string(start, value), value)), tokens))
-    [#(t.Float(value), P(start)), ..tokens] ->
-      Ok(#(Some(Float(span_from_string(start, value), value)), tokens))
-    [#(t.String(value), P(start)), ..tokens] ->
-      Ok(#(
-        Some(String(Span(start, string_offset(start, value) + 2), value)),
-        tokens,
-      ))
-    [#(t.Name(name), P(start)), ..tokens] ->
-      Ok(#(Some(Variable(span_from_string(start, name), name)), tokens))
+    [#(t.Int(value), P(start)), ..tokens] -> {
+      let span = span_from_string(start, value)
+      Ok(#(Some(Int(span, value)), tokens))
+    }
+    [#(t.Float(value), P(start)), ..tokens] -> {
+      let span = span_from_string(start, value)
+      Ok(#(Some(Float(span, value)), tokens))
+    }
+    [#(t.String(value), P(start)), ..tokens] -> {
+      let span = Span(start, string_offset(start, value) + 2)
+      Ok(#(Some(String(span, value)), tokens))
+    }
+    [#(t.Name(name), P(start)), ..tokens] -> {
+      let span = span_from_string(start, name)
+      Ok(#(Some(Variable(span, name)), tokens))
+    }
 
     [#(t.Fn, P(start)), ..tokens] -> fn_(tokens, start)
     [#(t.Case, P(start)), ..tokens] -> case_(tokens, start)
@@ -1292,15 +1271,16 @@ fn expression_unit(
     [#(t.Echo, P(start)), ..tokens] ->
       case context {
         // `echo` in a pipeline doesn't have an expression after it
-        ExpressionUnitAfterPipe ->
-          Ok(#(Some(Echo(span_from_string(start, "echo"), None)), tokens))
+        ExpressionUnitAfterPipe -> {
+          let span = span_from_string(start, "echo")
+          Ok(#(Some(Echo(span, None)), tokens))
+        }
         RegularExpressionUnit ->
           result.map(expression(tokens), fn(expression_and_tokens) {
             let #(expression, tokens) = expression_and_tokens
-            #(
-              Some(Echo(Span(start, expression.location.end), Some(expression))),
-              tokens,
-            )
+            let span = Span(start, expression.location.end)
+            let expression = Echo(span, Some(expression))
+            #(Some(expression), tokens)
           })
       }
 
@@ -1327,16 +1307,15 @@ fn todo_panic(
   case tokens {
     [#(t.As, _), ..tokens] -> {
       use #(reason, tokens) <- result.try(expression(tokens))
-      Ok(#(
-        Some(constructor(Span(start, reason.location.end), Some(reason))),
-        tokens,
-      ))
+      let span = Span(start, reason.location.end)
+      let expression = constructor(span, Some(reason))
+      Ok(#(Some(expression), tokens))
     }
-    _ ->
-      Ok(#(
-        Some(constructor(span_from_string(start, keyword_name), None)),
-        tokens,
-      ))
+    _ -> {
+      let span = span_from_string(start, keyword_name)
+      let expression = constructor(span, None)
+      Ok(#(Some(expression), tokens))
+    }
   }
 }
 
@@ -1441,31 +1420,20 @@ fn after_expression(
     // Record or module access
     [#(t.Dot, _), #(t.Name(label), P(label_start)), ..tokens]
     | [#(t.Dot, _), #(t.UpperName(label), P(label_start)), ..tokens] -> {
-      after_expression(
-        FieldAccess(
-          Span(parsed.location.start, string_offset(label_start, label)),
-          parsed,
-          label,
-        ),
-        tokens,
-      )
+      let span = Span(parsed.location.start, string_offset(label_start, label))
+      let expression = FieldAccess(span, parsed, label)
+      after_expression(expression, tokens)
     }
 
     // Tuple index
     [#(t.Dot, _), #(t.Int(value) as token, position), ..tokens] -> {
       case int.parse(value) {
-        Ok(i) ->
-          after_expression(
-            TupleIndex(
-              Span(
-                parsed.location.start,
-                string_offset(position.byte_offset, value),
-              ),
-              parsed,
-              i,
-            ),
-            tokens,
-          )
+        Ok(i) -> {
+          let end = string_offset(position.byte_offset, value)
+          let span = Span(parsed.location.start, end)
+          let expression = TupleIndex(span, parsed, i)
+          after_expression(expression, tokens)
+        }
         Error(_) -> Error(UnexpectedToken(token, position))
       }
     }
@@ -1488,12 +1456,8 @@ fn call(
     [] -> Error(UnexpectedEndOfInput)
 
     [#(t.RightParen, P(end)), ..tokens] -> {
-      let call =
-        Call(
-          Span(function.location.start, end + 1),
-          function,
-          list.reverse(arguments),
-        )
+      let span = Span(function.location.start, end + 1)
+      let call = Call(span, function, list.reverse(arguments))
       after_expression(call, tokens)
     }
 
@@ -1512,14 +1476,9 @@ fn call(
         #(t.RightParen, P(end)),
         ..tokens
       ] -> {
+      let span = Span(function.location.start, end + 1)
       let capture =
-        FnCapture(
-          Span(function.location.start, end + 1),
-          Some(label),
-          function,
-          list.reverse(arguments),
-          [],
-        )
+        FnCapture(span, Some(label), function, list.reverse(arguments), [])
       after_expression(capture, tokens)
     }
 
@@ -1536,14 +1495,8 @@ fn call(
 
     [#(t.DiscardName(""), _), #(t.Comma, _), #(t.RightParen, P(end)), ..tokens]
     | [#(t.DiscardName(""), _), #(t.RightParen, P(end)), ..tokens] -> {
-      let capture =
-        FnCapture(
-          Span(function.location.start, end + 1),
-          None,
-          function,
-          list.reverse(arguments),
-          [],
-        )
+      let span = Span(function.location.start, end + 1)
+      let capture = FnCapture(span, None, function, list.reverse(arguments), [])
       after_expression(capture, tokens)
     }
 
@@ -1560,12 +1513,8 @@ fn call(
           call(arguments, function, tokens)
         }
         [#(t.RightParen, P(end)), ..tokens] -> {
-          let call =
-            Call(
-              Span(function.location.start, end + 1),
-              function,
-              list.reverse(arguments),
-            )
+          let span = Span(function.location.start, end + 1)
+          let call = Call(span, function, list.reverse(arguments))
           after_expression(call, tokens)
         }
         [#(other, position), ..] -> {
@@ -1588,14 +1537,9 @@ fn fn_capture(
     [] -> Error(UnexpectedEndOfInput)
 
     [#(t.RightParen, P(end)), ..tokens] -> {
+      let span = Span(function.location.start, end + 1)
       let capture =
-        FnCapture(
-          Span(function.location.start, end + 1),
-          label,
-          function,
-          before,
-          list.reverse(after),
-        )
+        FnCapture(span, label, function, before, list.reverse(after))
       after_expression(capture, tokens)
     }
 
@@ -1607,14 +1551,9 @@ fn fn_capture(
           fn_capture(label, function, before, after, tokens)
         }
         [#(t.RightParen, P(end)), ..tokens] -> {
+          let span = Span(function.location.start, end + 1)
           let call =
-            FnCapture(
-              Span(function.location.start, end + 1),
-              label,
-              function,
-              before,
-              list.reverse(after),
-            )
+            FnCapture(span, label, function, before, list.reverse(after))
           after_expression(call, tokens)
         }
         [#(other, position), ..] -> {
@@ -1636,21 +1575,17 @@ fn record_update(
 
   case tokens {
     [#(t.RightParen, P(end)), ..tokens] -> {
-      Ok(#(
-        Some(
-          RecordUpdate(Span(start, end + 1), module, constructor, record, []),
-        ),
-        tokens,
-      ))
+      let span = Span(start, end + 1)
+      let expression = RecordUpdate(span, module, constructor, record, [])
+      Ok(#(Some(expression), tokens))
     }
     [#(t.Comma, _), ..tokens] -> {
       let result =
         comma_delimited([], tokens, record_update_field, t.RightParen)
       use #(fields, end, tokens) <- result.try(result)
-      Ok(#(
-        Some(RecordUpdate(Span(start, end), module, constructor, record, fields)),
-        tokens,
-      ))
+      let span = Span(start, end)
+      let expression = RecordUpdate(span, module, constructor, record, fields)
+      Ok(#(Some(expression), tokens))
     }
     _ -> Ok(#(None, tokens))
   }
@@ -1791,13 +1726,12 @@ fn list(
     [#(t.DotDot, P(start)), #(t.RightSquare, P(end)) as close, ..tokens] -> {
       case discard {
         None -> unexpected_error([close, ..tokens])
-        Some(discard) ->
-          Ok(ParsedList(
-            list.reverse(acc),
-            Some(discard(Span(start, start + 1))),
-            tokens,
-            end + 1,
-          ))
+        Some(discard) -> {
+          let value = discard(Span(start, start + 1))
+          let parsed_list =
+            ParsedList(list.reverse(acc), Some(value), tokens, end + 1)
+          Ok(parsed_list)
+        }
       }
     }
 
@@ -1822,13 +1756,12 @@ fn list(
         ] -> {
           case discard {
             None -> unexpected_error([close, ..tokens])
-            Some(discard) ->
-              Ok(ParsedList(
-                list.reverse(acc),
-                Some(discard(Span(start, start + 1))),
-                tokens,
-                end + 1,
-              ))
+            Some(discard) -> {
+              let value = discard(Span(start, start + 1))
+              let parsed_list =
+                ParsedList(list.reverse(acc), Some(value), tokens, end + 1)
+              Ok(parsed_list)
+            }
           }
         }
 
@@ -1955,11 +1888,8 @@ fn comma_delimited(
           comma_delimited([element, ..items], tokens, parser, final)
         }
         [#(token, P(token_start)), ..tokens] if token == final -> {
-          Ok(#(
-            list.reverse([element, ..items]),
-            string_offset(token_start, t.to_source(token)),
-            tokens,
-          ))
+          let offset = string_offset(token_start, t.to_source(token))
+          Ok(#(list.reverse([element, ..items]), offset, tokens))
         }
         [#(other, position), ..] -> {
           Error(UnexpectedToken(other, position))
