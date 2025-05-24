@@ -1,0 +1,9 @@
+---
+version: 1.2.7
+title: import_nested_location
+file: ./test/glance_test.gleam
+test_name: import_nested_location_test
+---
+
+import gleam/io
+▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔

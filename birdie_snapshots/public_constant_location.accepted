@@ -1,0 +1,9 @@
+---
+version: 1.2.7
+title: public_constant_location
+file: ./test/glance_test.gleam
+test_name: public_constant_location_test
+---
+
+pub const pi = 3.14
+▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔

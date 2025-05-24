@@ -259,6 +259,7 @@ pub type Import {
 
 pub type Constant {
   Constant(
+    location: Span,
     name: String,
     publicity: Publicity,
     annotation: Option(Type),
@@ -497,13 +498,13 @@ fn slurp(
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
-    [#(t.Pub, _), #(t.Const, _), ..tokens] -> {
-      let result = const_definition(module, attributes, Public, tokens)
+    [#(t.Pub, P(start)), #(t.Const, _), ..tokens] -> {
+      let result = const_definition(module, attributes, Public, tokens, start)
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
-    [#(t.Const, _), ..tokens] -> {
-      let result = const_definition(module, attributes, Private, tokens)
+    [#(t.Const, P(start)), ..tokens] -> {
+      let result = const_definition(module, attributes, Private, tokens, start)
       use #(module, tokens) <- result.try(result)
       slurp(module, [], tokens)
     }
@@ -533,8 +534,10 @@ fn import_statement(
   start: Int,
 ) -> Result(#(Module, Tokens), Error) {
   use #(module_name, end, tokens) <- result.try(module_name("", 0, tokens))
-  use #(ts, vs, tokens) <- result.try(optional_unqualified_imports(tokens))
-  let #(alias, tokens) = optional_module_alias(tokens)
+  use UnqualifiedImports(ts, vs, end, tokens) <- result.try(
+    optional_unqualified_imports(tokens, end),
+  )
+  let #(alias, end, tokens) = optional_module_alias(tokens, end)
   let span = Span(start, end)
   let import_ = Import(span, module_name, alias, ts, vs)
   let definition = Definition(list.reverse(attributes), import_)
@@ -565,24 +568,42 @@ fn module_name(
   }
 }
 
-fn optional_module_alias(tokens: Tokens) -> #(Option(AssignmentName), Tokens) {
+fn optional_module_alias(
+  tokens: Tokens,
+  end: Int,
+) -> #(Option(AssignmentName), Int, Tokens) {
   case tokens {
-    [#(t.As, _), #(t.Name(alias), _), ..tokens] -> #(Some(Named(alias)), tokens)
-    [#(t.As, _), #(t.DiscardName(alias), _), ..tokens] -> #(
-      Some(Discarded(alias)),
+    [#(t.As, _), #(t.Name(alias), P(alias_start)), ..tokens] -> #(
+      Some(Named(alias)),
+      string_offset(alias_start, alias),
       tokens,
     )
-    _ -> #(None, tokens)
+    [#(t.As, _), #(t.DiscardName(alias), P(alias_start)), ..tokens] -> #(
+      Some(Discarded(alias)),
+      string_offset(alias_start, alias) + 1,
+      tokens,
+    )
+    _ -> #(None, end, tokens)
   }
+}
+
+type UnqualifiedImports {
+  UnqualifiedImports(
+    types: List(UnqualifiedImport),
+    values: List(UnqualifiedImport),
+    end: Int,
+    remaining_tokens: Tokens,
+  )
 }
 
 fn optional_unqualified_imports(
   tokens: Tokens,
-) -> Result(#(List(UnqualifiedImport), List(UnqualifiedImport), Tokens), Error) {
+  end: Int,
+) -> Result(UnqualifiedImports, Error) {
   case tokens {
     [#(t.Dot, _), #(t.LeftBrace, _), ..tokens] ->
       unqualified_imports([], [], tokens)
-    _ -> Ok(#([], [], tokens))
+    _ -> Ok(UnqualifiedImports([], [], end, tokens))
   }
 }
 
@@ -590,12 +611,17 @@ fn unqualified_imports(
   types: List(UnqualifiedImport),
   values: List(UnqualifiedImport),
   tokens: Tokens,
-) -> Result(#(List(UnqualifiedImport), List(UnqualifiedImport), Tokens), Error) {
+) -> Result(UnqualifiedImports, Error) {
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
 
-    [#(t.RightBrace, _), ..tokens] ->
-      Ok(#(list.reverse(types), list.reverse(values), tokens))
+    [#(t.RightBrace, P(end)), ..tokens] ->
+      Ok(UnqualifiedImports(
+        list.reverse(types),
+        list.reverse(values),
+        end + 1,
+        tokens,
+      ))
 
     // Aliased non-final value
     [
@@ -621,18 +647,23 @@ fn unqualified_imports(
       #(t.UpperName(name), _),
       #(t.As, _),
       #(t.UpperName(alias), _),
-      #(t.RightBrace, _),
+      #(t.RightBrace, P(end)),
       ..tokens
     ]
     | [
         #(t.Name(name), _),
         #(t.As, _),
         #(t.Name(alias), _),
-        #(t.RightBrace, _),
+        #(t.RightBrace, P(end)),
         ..tokens
       ] -> {
       let import_ = UnqualifiedImport(name, Some(alias))
-      Ok(#(list.reverse(types), list.reverse([import_, ..values]), tokens))
+      Ok(UnqualifiedImports(
+        list.reverse(types),
+        list.reverse([import_, ..values]),
+        end + 1,
+        tokens,
+      ))
     }
 
     // Unaliased non-final value
@@ -643,10 +674,15 @@ fn unqualified_imports(
     }
 
     // Unaliased final value
-    [#(t.UpperName(name), _), #(t.RightBrace, _), ..tokens]
-    | [#(t.Name(name), _), #(t.RightBrace, _), ..tokens] -> {
+    [#(t.UpperName(name), _), #(t.RightBrace, P(end)), ..tokens]
+    | [#(t.Name(name), _), #(t.RightBrace, P(end)), ..tokens] -> {
       let import_ = UnqualifiedImport(name, None)
-      Ok(#(list.reverse(types), list.reverse([import_, ..values]), tokens))
+      Ok(UnqualifiedImports(
+        list.reverse(types),
+        list.reverse([import_, ..values]),
+        end + 1,
+        tokens,
+      ))
     }
 
     // Aliased non-final type
@@ -668,11 +704,16 @@ fn unqualified_imports(
       #(t.UpperName(name), _),
       #(t.As, _),
       #(t.UpperName(alias), _),
-      #(t.RightBrace, _),
+      #(t.RightBrace, P(end)),
       ..tokens
     ] -> {
       let import_ = UnqualifiedImport(name, Some(alias))
-      Ok(#(list.reverse([import_, ..types]), list.reverse(values), tokens))
+      Ok(UnqualifiedImports(
+        list.reverse([import_, ..types]),
+        list.reverse(values),
+        end + 1,
+        tokens,
+      ))
     }
 
     // Unaliased non-final type
@@ -682,9 +723,14 @@ fn unqualified_imports(
     }
 
     // Unaliased final type
-    [#(t.Type, _), #(t.UpperName(name), _), #(t.RightBrace, _), ..tokens] -> {
+    [#(t.Type, _), #(t.UpperName(name), _), #(t.RightBrace, P(end)), ..tokens] -> {
       let import_ = UnqualifiedImport(name, None)
-      Ok(#(list.reverse([import_, ..types]), list.reverse(values), tokens))
+      Ok(UnqualifiedImports(
+        list.reverse([import_, ..types]),
+        list.reverse(values),
+        end + 1,
+        tokens,
+      ))
     }
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
   }
@@ -699,11 +745,10 @@ fn function_definition(
   tokens: Tokens,
 ) -> Result(#(Module, Tokens), Error) {
   // Parameters
-  use P(end), tokens <- expect(t.LeftParen, tokens)
-  let end = end + 1
+  use _, tokens <- expect(t.LeftParen, tokens)
 
   let result = comma_delimited([], tokens, function_parameter, t.RightParen)
-  use #(parameters, _, tokens) <- result.try(result)
+  use #(parameters, end, tokens) <- result.try(result)
 
   // Return type
   let result = optional_return_annotation(end, tokens)
@@ -1840,6 +1885,7 @@ fn const_definition(
   attributes: List(Attribute),
   publicity: Publicity,
   tokens: Tokens,
+  start: Int,
 ) -> Result(#(Module, Tokens), Error) {
   // name
   use name, tokens <- expect_name(tokens)
@@ -1852,7 +1898,14 @@ fn const_definition(
 
   use #(expression, tokens) <- result.try(expression(tokens))
 
-  let constant = Constant(name, publicity, annotation, expression)
+  let constant =
+    Constant(
+      Span(start, expression.location.end),
+      name,
+      publicity,
+      annotation,
+      expression,
+    )
   let module = push_constant(module, attributes, constant)
   Ok(#(module, tokens))
 }

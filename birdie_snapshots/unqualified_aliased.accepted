@@ -13,7 +13,7 @@ Module(
     Definition(
       [],
       Import(
-        Span(0, 20),
+        Span(0, 67),
         "one/two/three",
         Some(Named("four")),
         [],

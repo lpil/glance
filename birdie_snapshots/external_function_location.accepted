@@ -1,0 +1,9 @@
+---
+version: 1.2.7
+title: external_function_location
+file: ./test/glance_test.gleam
+test_name: external_function_location_test
+---
+
+fn something_external(args)
+▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔

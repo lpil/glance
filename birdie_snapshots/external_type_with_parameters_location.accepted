@@ -1,0 +1,9 @@
+---
+version: 1.2.7
+title: external_type_with_parameters_location
+file: ./test/glance_test.gleam
+test_name: external_type_with_parameters_location_test
+---
+
+type Dict(key, value)
+▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔

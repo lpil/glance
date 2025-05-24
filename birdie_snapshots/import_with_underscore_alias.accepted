@@ -15,7 +15,7 @@ Module(
     Definition(
       [],
       Import(
-        Span(1, 18),
+        Span(1, 36),
         "gleam/list",
         Some(Discarded("alias")),
         [],

@@ -18,6 +18,7 @@ Module(
     Definition(
       [],
       Constant(
+        Span(1, 30),
         "wibble",
         Private,
         None,

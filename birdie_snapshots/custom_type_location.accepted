@@ -1,0 +1,15 @@
+---
+version: 1.2.7
+title: custom_type_location
+file: ./test/glance_test.gleam
+test_name: custom_type_location_test
+---
+
+type Result(v, e) {
+▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+  Ok(v)
+▔▔▔▔▔▔▔
+  Error(e)
+▔▔▔▔▔▔▔▔▔▔
+}
+▔

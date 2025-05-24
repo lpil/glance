@@ -1,0 +1,9 @@
+---
+version: 1.2.7
+title: public_external_type_location
+file: ./test/glance_test.gleam
+test_name: public_external_type_location_test
+---
+
+pub type Wibble
+▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
