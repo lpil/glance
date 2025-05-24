@@ -27,7 +27,7 @@ Module(
             Span(16, 29),
             Let,
             PatternString(
-              Span(20, 23),
+              Span(20, 25),
               "123",
             ),
             None,

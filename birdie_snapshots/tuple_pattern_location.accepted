@@ -1,0 +1,11 @@
+---
+version: 1.2.7
+title: tuple_pattern_location
+file: ./test/glance_test.gleam
+test_name: tuple_pattern_location_test
+---
+
+pub fn main() {
+  let #(a, b, 4) = todo
+      ▔▔▔▔▔▔▔▔▔▔
+}

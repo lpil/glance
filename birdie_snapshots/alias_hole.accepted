@@ -15,12 +15,12 @@ Module(
     Definition(
       [],
       TypeAlias(
-        Span(0, 21),
+        Span(0, 22),
         "X",
         Public,
         [],
         HoleType(
-          Span(13, 21),
+          Span(13, 22),
           "whatever",
         ),
       ),

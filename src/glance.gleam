@@ -1007,7 +1007,7 @@ fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
     ] ->
       Ok(#(
         PatternConcatenate(
-          Span(start, string_offset(name_start, n)),
+          Span(start, string_offset(name_start, n) + 1),
           v,
           None,
           Discarded(n),
@@ -1020,9 +1020,15 @@ fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
     [#(t.Float(value), P(start)), ..tokens] ->
       Ok(#(PatternFloat(span_from_string(start, value), value), tokens))
     [#(t.String(value), P(start)), ..tokens] ->
-      Ok(#(PatternString(span_from_string(start, value), value), tokens))
+      Ok(#(
+        PatternString(Span(start, string_offset(start, value) + 2), value),
+        tokens,
+      ))
     [#(t.DiscardName(name), P(start)), ..tokens] ->
-      Ok(#(PatternDiscard(span_from_string(start, name), name), tokens))
+      Ok(#(
+        PatternDiscard(Span(start, string_offset(start, name) + 1), name),
+        tokens,
+      ))
     [#(t.Name(name), P(start)), ..tokens] ->
       Ok(#(PatternVariable(span_from_string(start, name), name), tokens))
 
@@ -2050,7 +2056,7 @@ fn type_(tokens: Tokens) -> Result(#(Type, Tokens), Error) {
       named_type(name, None, tokens, start, start)
     }
     [#(t.DiscardName(name), P(i)), ..tokens] -> {
-      let value = HoleType(span_from_string(i, name), name)
+      let value = HoleType(Span(i, string_offset(i, name) + 1), name)
       Ok(#(value, tokens))
     }
     [#(t.Name(name), P(i)), ..tokens] -> {

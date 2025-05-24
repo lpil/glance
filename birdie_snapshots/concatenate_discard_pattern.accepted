@@ -27,7 +27,7 @@ Module(
             Span(16, 36),
             Let,
             PatternConcatenate(
-              Span(20, 31),
+              Span(20, 32),
               "ok",
               None,
               Discarded("nah"),

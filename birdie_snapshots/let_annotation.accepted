@@ -31,7 +31,7 @@ Module(
             Span(19, 38),
             Let,
             PatternDiscard(
-              Span(23, 28),
+              Span(23, 29),
               "money",
             ),
             Some(NamedType(

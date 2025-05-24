@@ -27,7 +27,7 @@ Module(
             Span(16, 28),
             Let,
             PatternDiscard(
-              Span(20, 23),
+              Span(20, 24),
               "nah",
             ),
             None,

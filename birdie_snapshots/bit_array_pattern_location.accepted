@@ -1,0 +1,11 @@
+---
+version: 1.2.7
+title: bit_array_pattern_location
+file: ./test/glance_test.gleam
+test_name: bit_array_pattern_location_test
+---
+
+pub fn main() {
+  let <<1, 2, 3, rest:bits>> = todo
+      ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+}
