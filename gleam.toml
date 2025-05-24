@@ -1,7 +1,7 @@
 name = "glance"
 version = "4.0.0"
 description = "A Gleam source code parser, in Gleam!"
-gleam = ">= 1.4.0"
+gleam = ">= 1.7.0"
 
 licences = ["Apache-2.0"]
 repository = { type = "github", user = "lpil", repo = "glance" }

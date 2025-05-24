@@ -16,6 +16,7 @@ Module(
     Definition(
       [],
       Constant(
+        Span(0, 23),
         "x",
         Private,
         None,

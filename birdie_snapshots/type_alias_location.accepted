@@ -1,0 +1,9 @@
+---
+version: 1.2.7
+title: type_alias_location
+file: ./test/glance_test.gleam
+test_name: type_alias_location_test
+---
+
+type Wibble = Wobble
+▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔

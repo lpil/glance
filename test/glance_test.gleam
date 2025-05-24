@@ -1,5 +1,6 @@
 import birdie
 import glance
+import gleam/string
 import gleeunit
 import gleeunit/should
 import pprint
@@ -16,6 +17,112 @@ fn to_snapshot(src: String) -> String {
     Error(_) -> pprint.format(result)
   }
   src <> "\n\n---------------------------\n\n" <> out
+}
+
+type Entity {
+  Import
+  CustomType
+  TypeAlias
+  Constant
+  Function
+  Statement
+  Expression
+}
+
+fn check_location(src: String, entity: Entity) -> String {
+  let assert Ok(module) = glance.module(src) as "Failed to parse module"
+  let location = case entity {
+    Constant -> {
+      let assert [constant, ..] = module.constants as "Constant not found"
+      constant.definition.location
+    }
+    CustomType -> {
+      let assert [type_, ..] = module.custom_types as "Custom type not found"
+      type_.definition.location
+    }
+    Function -> {
+      let assert [function, ..] = module.functions as "Function not found"
+      function.definition.location
+    }
+    Import -> {
+      let assert [import_, ..] = module.imports as "Import not found"
+      import_.definition.location
+    }
+    TypeAlias -> {
+      let assert [alias, ..] = module.type_aliases as "Type alias not found"
+      alias.definition.location
+    }
+
+    Statement -> {
+      let assert [function, ..] = module.functions as "Function not found"
+      let assert [statement, ..] = function.definition.body as "Body is empty"
+      case statement {
+        glance.Assert(location:, ..)
+        | glance.Assignment(location:, ..)
+        | glance.Use(location:, ..) -> location
+        glance.Expression(expression) -> expression.location
+      }
+    }
+    Expression -> {
+      let assert [function, ..] = module.functions as "Function not found"
+      let assert [statement, ..] = function.definition.body as "Body is empty"
+      let assert glance.Expression(expression) = statement
+        as "Statement is not an expression"
+      expression.location
+    }
+  }
+
+  highlight_location(src, location, 0, "", "", False)
+}
+
+fn highlight_location(
+  src: String,
+  location: glance.Span,
+  position: Int,
+  text: String,
+  next_line: String,
+  underline_used: Bool,
+) -> String {
+  case src {
+    "" ->
+      case underline_used {
+        False -> text
+        True -> text <> "\n" <> next_line
+      }
+    "\n" <> src -> {
+      let text = case underline_used {
+        False -> text <> "\n"
+        True -> text <> "\n" <> next_line <> "\n"
+      }
+      case position + 1 >= location.end {
+        False ->
+          highlight_location(src, location, position + 1, text, "", False)
+        True -> text <> src
+      }
+    }
+    _ ->
+      case string.pop_grapheme(src) {
+        Ok(#(char, src)) -> {
+          let #(next_line, underline_used) = case position >= location.start {
+            False -> #(next_line <> " ", False)
+            True ->
+              case position < location.end {
+                False -> #(next_line, underline_used)
+                True -> #(next_line <> "▔", True)
+              }
+          }
+          highlight_location(
+            src,
+            location,
+            position + string.byte_size(char),
+            text <> char,
+            next_line,
+            underline_used,
+          )
+        }
+        Error(_) -> text
+      }
+  }
 }
 
 pub fn parse_self_test() {
@@ -1222,4 +1329,143 @@ fn x() {
 "
   |> to_snapshot
   |> birdie.snap(title: "use_with_annotations")
+}
+
+pub fn import_location_test() {
+  "
+import glance
+"
+  |> check_location(Import)
+  |> birdie.snap("import_location")
+}
+
+pub fn import_nested_location_test() {
+  "
+import gleam/io
+"
+  |> check_location(Import)
+  |> birdie.snap("import_nested_location")
+}
+
+pub fn import_unqualified_location_test() {
+  "
+import glance.{Module}
+"
+  |> check_location(Import)
+  |> birdie.snap("import_unqualified_location")
+}
+
+pub fn import_alias_location_test() {
+  "
+import glance.{Module} as parser
+"
+  |> check_location(Import)
+  |> birdie.snap("import_alias_location")
+}
+
+pub fn import_alias_discard_location_test() {
+  "
+import glance as _ignore
+"
+  |> check_location(Import)
+  |> birdie.snap("import_alias_discard_location")
+}
+
+pub fn external_type_location_test() {
+  "
+type Wibble
+"
+  |> check_location(CustomType)
+  |> birdie.snap("external_type_location")
+}
+
+pub fn public_external_type_location_test() {
+  "
+pub type Wibble
+"
+  |> check_location(CustomType)
+  |> birdie.snap("public_external_type_location")
+}
+
+pub fn external_type_with_parameters_location_test() {
+  "
+type Dict(key, value)
+"
+  |> check_location(CustomType)
+  |> birdie.snap("external_type_with_parameters_location")
+}
+
+pub fn custom_type_location_test() {
+  "
+type Result(v, e) {
+  Ok(v)
+  Error(e)
+}
+"
+  |> check_location(CustomType)
+  |> birdie.snap("custom_type_location")
+}
+
+pub fn type_alias_location_test() {
+  "
+type Wibble = Wobble
+"
+  |> check_location(TypeAlias)
+  |> birdie.snap("type_alias_location")
+}
+
+pub fn public_type_alias_location_test() {
+  "
+pub type Wibble = Wobble
+"
+  |> check_location(TypeAlias)
+  |> birdie.snap("public_type_alias_location")
+}
+
+pub fn constant_location_test() {
+  "
+const pi = 3.14
+"
+  |> check_location(Constant)
+  |> birdie.snap("constant_location")
+}
+
+pub fn public_constant_location_test() {
+  "
+pub const pi = 3.14
+"
+  |> check_location(Constant)
+  |> birdie.snap("public_constant_location")
+}
+
+pub fn external_function_location_test() {
+  "
+fn something_external(args)
+"
+  |> check_location(Function)
+  |> birdie.snap("external_function_location")
+}
+
+pub fn external_function_with_return_location_test() {
+  "
+fn something_external(args) -> ReturnType
+"
+  |> check_location(Function)
+  |> birdie.snap("external_function_with_return_location")
+}
+
+pub fn function_location_test() {
+  "
+fn wibble(x) { x }
+"
+  |> check_location(Function)
+  |> birdie.snap("function_location")
+}
+
+pub fn public_function_location_test() {
+  "
+pub fn wibble(x) { x }
+"
+  |> check_location(Function)
+  |> birdie.snap("public_function_location")
 }
