@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v5.0.0 - 2025-05-24
 
 - All expressions have a location span as their first field.
 - All patterns have a location span as their first field.
