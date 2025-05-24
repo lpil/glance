@@ -44,14 +44,15 @@ pub type Span {
 }
 
 pub type Statement {
-  Use(patterns: List(UsePattern), function: Expression)
+  Use(location: Span, patterns: List(UsePattern), function: Expression)
   Assignment(
+    location: Span,
     kind: AssignmentKind,
     pattern: Pattern,
     annotation: Option(Type),
     value: Expression,
   )
-  Assert(expression: Expression, message: Option(Expression))
+  Assert(location: Span, expression: Expression, message: Option(Expression))
   Expression(Expression)
 }
 
@@ -65,23 +66,26 @@ pub type UsePattern {
 }
 
 pub type Pattern {
-  PatternInt(value: String)
-  PatternFloat(value: String)
-  PatternString(value: String)
-  PatternDiscard(name: String)
-  PatternVariable(name: String)
-  PatternTuple(elements: List(Pattern))
-  PatternList(elements: List(Pattern), tail: Option(Pattern))
-  PatternAssignment(pattern: Pattern, name: String)
+  PatternInt(location: Span, value: String)
+  PatternFloat(location: Span, value: String)
+  PatternString(location: Span, value: String)
+  PatternDiscard(location: Span, name: String)
+  PatternVariable(location: Span, name: String)
+  PatternTuple(location: Span, elements: List(Pattern))
+  PatternList(location: Span, elements: List(Pattern), tail: Option(Pattern))
+  PatternAssignment(location: Span, attern: Pattern, name: String)
   PatternConcatenate(
+    location: Span,
     prefix: String,
     prefix_name: Option(AssignmentName),
     rest_name: AssignmentName,
   )
   PatternBitString(
+    location: Span,
     segments: List(#(Pattern, List(BitStringSegmentOption(Pattern)))),
   )
   PatternVariant(
+    location: Span,
     module: Option(String),
     constructor: String,
     arguments: List(Field(Pattern)),
@@ -90,44 +94,53 @@ pub type Pattern {
 }
 
 pub type Expression {
-  Int(String)
-  Float(String)
-  String(String)
-  Variable(String)
-  NegateInt(Expression)
-  NegateBool(Expression)
-  Block(List(Statement))
-  Panic(message: Option(Expression))
-  Todo(message: Option(Expression))
-  Tuple(elements: List(Expression))
-  List(elements: List(Expression), rest: Option(Expression))
+  Int(location: Span, value: String)
+  Float(location: Span, value: String)
+  String(location: Span, value: String)
+  Variable(location: Span, name: String)
+  NegateInt(location: Span, value: Expression)
+  NegateBool(location: Span, value: Expression)
+  Block(location: Span, statements: List(Statement))
+  Panic(location: Span, message: Option(Expression))
+  Todo(location: Span, message: Option(Expression))
+  Tuple(location: Span, elements: List(Expression))
+  List(location: Span, elements: List(Expression), rest: Option(Expression))
   Fn(
+    location: Span,
     arguments: List(FnParameter),
     return_annotation: Option(Type),
     body: List(Statement),
   )
   RecordUpdate(
+    location: Span,
     module: Option(String),
     constructor: String,
     record: Expression,
     fields: List(RecordUpdateField(Expression)),
   )
-  FieldAccess(container: Expression, label: String)
-  Call(function: Expression, arguments: List(Field(Expression)))
-  TupleIndex(tuple: Expression, index: Int)
+  FieldAccess(location: Span, container: Expression, label: String)
+  Call(location: Span, function: Expression, arguments: List(Field(Expression)))
+  TupleIndex(location: Span, tuple: Expression, index: Int)
   FnCapture(
+    location: Span,
     label: Option(String),
     function: Expression,
     arguments_before: List(Field(Expression)),
     arguments_after: List(Field(Expression)),
   )
   BitString(
+    location: Span,
     segments: List(#(Expression, List(BitStringSegmentOption(Expression)))),
   )
 
-  Case(subjects: List(Expression), clauses: List(Clause))
-  BinaryOperator(name: BinaryOperator, left: Expression, right: Expression)
-  Echo(expression: Option(Expression))
+  Case(location: Span, subjects: List(Expression), clauses: List(Clause))
+  BinaryOperator(
+    location: Span,
+    name: BinaryOperator,
+    left: Expression,
+    right: Expression,
+  )
+  Echo(location: Span, expression: Option(Expression))
 }
 
 pub type Clause {
@@ -735,11 +748,11 @@ fn statements(
 
 fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
   case tokens {
-    [#(t.Let, _), #(t.Assert, _), ..tokens] ->
-      assignment(LetAssert(None), tokens)
-    [#(t.Let, _), ..tokens] -> assignment(Let, tokens)
-    [#(t.Use, _), ..tokens] -> use_(tokens)
-    [#(t.Assert, _), ..tokens] -> assert_(tokens)
+    [#(t.Let, P(start)), #(t.Assert, _), ..tokens] ->
+      assignment(LetAssert(None), tokens, start)
+    [#(t.Let, P(start)), ..tokens] -> assignment(Let, tokens, start)
+    [#(t.Use, P(start)), ..tokens] -> use_(tokens, start)
+    [#(t.Assert, P(start)), ..tokens] -> assert_(tokens, start)
     tokens -> {
       use #(expression, tokens) <- result.try(expression(tokens))
       Ok(#(Expression(expression), tokens))
@@ -747,19 +760,23 @@ fn statement(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
   }
 }
 
-fn assert_(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
+fn assert_(tokens: Tokens, start: Int) -> Result(#(Statement, Tokens), Error) {
   use #(subject, tokens) <- result.try(expression(tokens))
   case tokens {
     [#(t.As, _), ..tokens] ->
       case expression(tokens) {
         Error(error) -> Error(error)
-        Ok(#(message, tokens)) -> Ok(#(Assert(subject, Some(message)), tokens))
+        Ok(#(message, tokens)) ->
+          Ok(#(
+            Assert(Span(start, message.location.end), subject, Some(message)),
+            tokens,
+          ))
       }
-    _ -> Ok(#(Assert(subject, None), tokens))
+    _ -> Ok(#(Assert(Span(start, subject.location.end), subject, None), tokens))
   }
 }
 
-fn use_(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
+fn use_(tokens: Tokens, start: Int) -> Result(#(Statement, Tokens), Error) {
   use #(patterns, tokens) <- result.try(case tokens {
     [#(t.LeftArrow, _), ..] -> Ok(#([], tokens))
     _ -> delimited([], tokens, use_pattern, t.Comma)
@@ -767,7 +784,7 @@ fn use_(tokens: Tokens) -> Result(#(Statement, Tokens), Error) {
 
   use _, tokens <- expect(t.LeftArrow, tokens)
   use #(function, tokens) <- result.try(expression(tokens))
-  Ok(#(Use(patterns, function), tokens))
+  Ok(#(Use(Span(start, function.location.end), patterns, function), tokens))
 }
 
 fn use_pattern(
@@ -781,21 +798,22 @@ fn use_pattern(
 fn assignment(
   kind: AssignmentKind,
   tokens: Tokens,
+  start: Int,
 ) -> Result(#(Statement, Tokens), Error) {
   use #(pattern, tokens) <- result.try(pattern(tokens))
   use #(annotation, tokens) <- result.try(optional_type_annotation(tokens))
   use _, tokens <- expect(t.Equal, tokens)
   use #(value, tokens) <- result.try(expression(tokens))
 
-  use #(kind, tokens) <- result.try(case kind, tokens {
+  use #(kind, tokens, end) <- result.try(case kind, tokens {
     LetAssert(None), [#(t.As, _), ..tokens] -> {
       use #(message, tokens) <- result.map(expression(tokens))
-      #(LetAssert(message: Some(message)), tokens)
+      #(LetAssert(message: Some(message)), tokens, message.location.end)
     }
-    LetAssert(_), _ | Let, _ -> Ok(#(kind, tokens))
+    LetAssert(_), _ | Let, _ -> Ok(#(kind, tokens, value.location.end))
   })
 
-  let statement = Assignment(kind, pattern, annotation, value)
+  let statement = Assignment(Span(start, end), kind, pattern, annotation, value)
   Ok(#(statement, tokens))
 }
 
@@ -803,42 +821,65 @@ fn pattern_constructor(
   module: Option(String),
   constructor: String,
   tokens: Tokens,
+  start: Int,
+  name_start: Int,
 ) -> Result(#(Pattern, Tokens), Error) {
   case tokens {
     [#(t.LeftParen, _), ..tokens] -> {
       let result = pattern_constructor_arguments([], tokens)
-      use #(patterns, spread, tokens) <- result.try(result)
+      use PatternConstructorArguments(patterns, spread, end, tokens) <- result.try(
+        result,
+      )
       let arguments = list.reverse(patterns)
-      let pattern = PatternVariant(module, constructor, arguments, spread)
+      let pattern =
+        PatternVariant(Span(start, end), module, constructor, arguments, spread)
       Ok(#(pattern, tokens))
     }
     _ -> {
-      let pattern = PatternVariant(module, constructor, [], False)
+      let pattern =
+        PatternVariant(
+          Span(start, string_offset(name_start, constructor)),
+          module,
+          constructor,
+          [],
+          False,
+        )
       Ok(#(pattern, tokens))
     }
   }
 }
 
+type PatternConstructorArguments {
+  PatternConstructorArguments(
+    fields: List(Field(Pattern)),
+    spread: Bool,
+    end: Int,
+    remaining_tokens: Tokens,
+  )
+}
+
 fn pattern_constructor_arguments(
   arguments: List(Field(Pattern)),
   tokens: Tokens,
-) -> Result(#(List(Field(Pattern)), Bool, Tokens), Error) {
+) -> Result(PatternConstructorArguments, Error) {
   case tokens {
-    [#(t.RightParen, _), ..tokens] -> Ok(#(arguments, False, tokens))
+    [#(t.RightParen, P(end)), ..tokens] ->
+      Ok(PatternConstructorArguments(arguments, False, end, tokens))
 
-    [#(t.DotDot, _), #(t.Comma, _), #(t.RightParen, _), ..tokens]
-    | [#(t.DotDot, _), #(t.RightParen, _), ..tokens] ->
-      Ok(#(arguments, True, tokens))
+    [#(t.DotDot, _), #(t.Comma, _), #(t.RightParen, P(end)), ..tokens]
+    | [#(t.DotDot, _), #(t.RightParen, P(end)), ..tokens] ->
+      Ok(PatternConstructorArguments(arguments, True, end, tokens))
 
     tokens -> {
       use #(pattern, tokens) <- result.try(field(tokens, pattern))
       let arguments = [pattern, ..arguments]
 
       case tokens {
-        [#(t.RightParen, _), ..tokens] -> Ok(#(arguments, False, tokens))
+        [#(t.RightParen, P(end)), ..tokens] ->
+          Ok(PatternConstructorArguments(arguments, False, end, tokens))
 
-        [#(t.Comma, _), #(t.DotDot, _), #(t.RightParen, _), ..tokens] ->
-          Ok(#(arguments, True, tokens))
+        [#(t.Comma, _), #(t.DotDot, _), #(t.RightParen, P(end)), ..tokens] ->
+          Ok(PatternConstructorArguments(arguments, True, end, tokens))
 
         [#(t.Comma, _), ..tokens] ->
           pattern_constructor_arguments(arguments, tokens)
@@ -852,55 +893,108 @@ fn pattern_constructor_arguments(
 
 fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
   use #(pattern, tokens) <- result.try(case tokens {
-    [#(t.UpperName(name), _), ..tokens] ->
-      pattern_constructor(None, name, tokens)
-    [#(t.Name(module), _), #(t.Dot, _), #(t.UpperName(name), _), ..tokens] ->
-      pattern_constructor(Some(module), name, tokens)
+    [#(t.UpperName(name), P(start)), ..tokens] ->
+      pattern_constructor(None, name, tokens, start, start)
+    [
+      #(t.Name(module), P(start)),
+      #(t.Dot, _),
+      #(t.UpperName(name), P(name_start)),
+      ..tokens
+    ] -> pattern_constructor(Some(module), name, tokens, start, name_start)
 
     [
-      #(t.String(v), _),
+      #(t.String(v), P(start)),
       #(t.As, _),
       #(t.Name(l), _),
       #(t.LessGreater, _),
-      #(t.Name(r), _),
+      #(t.Name(r), P(name_start)),
       ..tokens
-    ] -> Ok(#(PatternConcatenate(v, Some(Named(l)), Named(r)), tokens))
+    ] ->
+      Ok(#(
+        PatternConcatenate(
+          Span(start, string_offset(name_start, r)),
+          v,
+          Some(Named(l)),
+          Named(r),
+        ),
+        tokens,
+      ))
     [
-      #(t.String(v), _),
+      #(t.String(v), P(start)),
       #(t.As, _),
       #(t.DiscardName(l), _),
       #(t.LessGreater, _),
-      #(t.Name(r), _),
+      #(t.Name(r), P(name_start)),
       ..tokens
-    ] -> Ok(#(PatternConcatenate(v, Some(Discarded(l)), Named(r)), tokens))
-    [#(t.String(v), _), #(t.LessGreater, _), #(t.Name(n), _), ..tokens] ->
-      Ok(#(PatternConcatenate(v, None, Named(n)), tokens))
-    [#(t.String(v), _), #(t.LessGreater, _), #(t.DiscardName(n), _), ..tokens] ->
-      Ok(#(PatternConcatenate(v, None, Discarded(n)), tokens))
+    ] ->
+      Ok(#(
+        PatternConcatenate(
+          Span(start, string_offset(name_start, r)),
+          v,
+          Some(Discarded(l)),
+          Named(r),
+        ),
+        tokens,
+      ))
+    [
+      #(t.String(v), P(start)),
+      #(t.LessGreater, _),
+      #(t.Name(n), P(name_start)),
+      ..tokens
+    ] ->
+      Ok(#(
+        PatternConcatenate(
+          Span(start, string_offset(name_start, n)),
+          v,
+          None,
+          Named(n),
+        ),
+        tokens,
+      ))
+    [
+      #(t.String(v), P(start)),
+      #(t.LessGreater, _),
+      #(t.DiscardName(n), P(name_start)),
+      ..tokens
+    ] ->
+      Ok(#(
+        PatternConcatenate(
+          Span(start, string_offset(name_start, n)),
+          v,
+          None,
+          Discarded(n),
+        ),
+        tokens,
+      ))
 
-    [#(t.Int(value), _), ..tokens] -> Ok(#(PatternInt(value), tokens))
-    [#(t.Float(value), _), ..tokens] -> Ok(#(PatternFloat(value), tokens))
-    [#(t.String(value), _), ..tokens] -> Ok(#(PatternString(value), tokens))
-    [#(t.DiscardName(name), _), ..tokens] -> Ok(#(PatternDiscard(name), tokens))
-    [#(t.Name(name), _), ..tokens] -> Ok(#(PatternVariable(name), tokens))
+    [#(t.Int(value), P(start)), ..tokens] ->
+      Ok(#(PatternInt(span_from_string(start, value), value), tokens))
+    [#(t.Float(value), P(start)), ..tokens] ->
+      Ok(#(PatternFloat(span_from_string(start, value), value), tokens))
+    [#(t.String(value), P(start)), ..tokens] ->
+      Ok(#(PatternString(span_from_string(start, value), value), tokens))
+    [#(t.DiscardName(name), P(start)), ..tokens] ->
+      Ok(#(PatternDiscard(span_from_string(start, name), name), tokens))
+    [#(t.Name(name), P(start)), ..tokens] ->
+      Ok(#(PatternVariable(span_from_string(start, name), name), tokens))
 
-    [#(t.LeftSquare, _), ..tokens] -> {
-      let result = list(pattern, Some(PatternDiscard("")), [], tokens)
-      use #(elements, rest, tokens) <- result.map(result)
-      #(PatternList(elements, rest), tokens)
+    [#(t.LeftSquare, P(start)), ..tokens] -> {
+      let result = list(pattern, Some(PatternDiscard(_, "")), [], tokens)
+      use ParsedList(elements, rest, tokens, end) <- result.map(result)
+      #(PatternList(Span(start, end), elements, rest), tokens)
     }
 
-    [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> {
+    [#(t.Hash, P(start)), #(t.LeftParen, _), ..tokens] -> {
       let result = comma_delimited([], tokens, pattern, t.RightParen)
-      use #(patterns, _, tokens) <- result.try(result)
-      Ok(#(PatternTuple(patterns), tokens))
+      use #(patterns, end, tokens) <- result.try(result)
+      Ok(#(PatternTuple(Span(start, end), patterns), tokens))
     }
 
-    [#(t.LessLess, _), ..tokens] -> {
+    [#(t.LessLess, P(start)), ..tokens] -> {
       let parser = bit_string_segment(pattern, _)
       let result = comma_delimited([], tokens, parser, t.GreaterGreater)
-      use #(segments, _, tokens) <- result.try(result)
-      Ok(#(PatternBitString(segments), tokens))
+      use #(segments, end, tokens) <- result.try(result)
+      Ok(#(PatternBitString(Span(start, end), segments), tokens))
     }
 
     [#(other, position), ..] -> Error(UnexpectedToken(other, position))
@@ -908,8 +1002,15 @@ fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
   })
 
   case tokens {
-    [#(t.As, _), #(t.Name(name), _), ..tokens] -> {
-      Ok(#(PatternAssignment(pattern, name), tokens))
+    [#(t.As, _), #(t.Name(name), P(name_start)), ..tokens] -> {
+      Ok(#(
+        PatternAssignment(
+          Span(pattern.location.start, string_offset(name_start, name)),
+          pattern,
+          name,
+        ),
+        tokens,
+      ))
     }
     _ -> Ok(#(pattern, tokens))
   }
@@ -1010,7 +1111,15 @@ fn handle_operator(
     Some(next), [previous, ..operators], [a, b, ..rest_values] -> {
       case precedence(previous) >= precedence(next) {
         True -> {
-          let values = [BinaryOperator(previous, b, a), ..rest_values]
+          let values = [
+            BinaryOperator(
+              Span(b.location.start, a.location.end),
+              previous,
+              b,
+              a,
+            ),
+            ..rest_values
+          ]
           handle_operator(Some(next), operators, values)
         }
         False -> {
@@ -1020,7 +1129,10 @@ fn handle_operator(
     }
 
     None, [operator, ..operators], [a, b, ..values] -> {
-      let values = [BinaryOperator(operator, b, a), ..values]
+      let values = [
+        BinaryOperator(Span(b.location.start, a.location.end), operator, b, a),
+        ..values
+      ]
       handle_operator(None, operators, values)
     }
 
@@ -1035,85 +1147,103 @@ type ParseExpressionUnitContext {
   ExpressionUnitAfterPipe
 }
 
+fn span_from_string(start: Int, string: String) -> Span {
+  Span(start:, end: start + string.byte_size(string) - 1)
+}
+
 fn expression_unit(
   tokens: Tokens,
   context: ParseExpressionUnitContext,
 ) -> Result(#(Option(Expression), Tokens), Error) {
   use #(parsed, tokens) <- result.try(case tokens {
     [
-      #(t.Name(module), _),
+      #(t.Name(module), P(start)),
       #(t.Dot, _),
       #(t.UpperName(constructor), _),
       #(t.LeftParen, _),
       #(t.DotDot, _),
       ..tokens
-    ] -> record_update(Some(module), constructor, tokens)
+    ] -> record_update(Some(module), constructor, tokens, start)
     [
-      #(t.UpperName(constructor), _),
+      #(t.UpperName(constructor), P(start)),
       #(t.LeftParen, _),
       #(t.DotDot, _),
       ..tokens
-    ] -> record_update(None, constructor, tokens)
+    ] -> record_update(None, constructor, tokens, start)
 
-    [#(t.UpperName(name), _), ..tokens] -> Ok(#(Some(Variable(name)), tokens))
+    [#(t.UpperName(name), P(start)), ..tokens] ->
+      Ok(#(Some(Variable(span_from_string(start, name), name)), tokens))
 
-    [#(t.Int(value), _), ..tokens] -> Ok(#(Some(Int(value)), tokens))
-    [#(t.Float(value), _), ..tokens] -> Ok(#(Some(Float(value)), tokens))
-    [#(t.String(value), _), ..tokens] -> Ok(#(Some(String(value)), tokens))
-    [#(t.Name(name), _), ..tokens] -> Ok(#(Some(Variable(name)), tokens))
+    [#(t.Int(value), P(start)), ..tokens] ->
+      Ok(#(Some(Int(span_from_string(start, value), value)), tokens))
+    [#(t.Float(value), P(start)), ..tokens] ->
+      Ok(#(Some(Float(span_from_string(start, value), value)), tokens))
+    [#(t.String(value), P(start)), ..tokens] ->
+      Ok(#(Some(String(span_from_string(start, value), value)), tokens))
+    [#(t.Name(name), P(start)), ..tokens] ->
+      Ok(#(Some(Variable(span_from_string(start, name), name)), tokens))
 
-    [#(t.Fn, _), ..tokens] -> fn_(tokens)
-    [#(t.Case, _), ..tokens] -> case_(tokens)
+    [#(t.Fn, P(start)), ..tokens] -> fn_(tokens, start)
+    [#(t.Case, P(start)), ..tokens] -> case_(tokens, start)
 
-    [#(t.Panic, _), ..tokens] -> todo_panic(tokens, Panic)
-    [#(t.Todo, _), ..tokens] -> todo_panic(tokens, Todo)
+    [#(t.Panic, P(start)), ..tokens] ->
+      todo_panic(tokens, Panic, start, "panic")
+    [#(t.Todo, P(start)), ..tokens] -> todo_panic(tokens, Todo, start, "todo")
 
-    [#(t.LeftSquare, _), ..tokens] -> {
+    [#(t.LeftSquare, P(start)), ..tokens] -> {
       let result = list(expression, None, [], tokens)
-      use #(elements, rest, tokens) <- result.map(result)
-      #(Some(List(elements, rest)), tokens)
+      use ParsedList(elements, rest, tokens, end) <- result.map(result)
+      #(Some(List(Span(start, end), elements, rest)), tokens)
     }
 
-    [#(t.Hash, _), #(t.LeftParen, _), ..tokens] -> {
+    [#(t.Hash, P(start)), #(t.LeftParen, _), ..tokens] -> {
       let result = comma_delimited([], tokens, expression, t.RightParen)
-      use #(expressions, _, tokens) <- result.map(result)
-      #(Some(Tuple(expressions)), tokens)
+      use #(expressions, end, tokens) <- result.map(result)
+      #(Some(Tuple(Span(start, end), expressions)), tokens)
     }
 
-    [#(t.Bang, _), ..tokens] -> {
+    [#(t.Bang, P(start)), ..tokens] -> {
       use #(expression, tokens) <- result.map(expression(tokens))
-      #(Some(NegateBool(expression)), tokens)
+      #(
+        Some(NegateBool(Span(start, expression.location.end), expression)),
+        tokens,
+      )
     }
 
-    [#(t.Minus, _), ..tokens] -> {
+    [#(t.Minus, P(start)), ..tokens] -> {
       use #(expression, tokens) <- result.map(expression(tokens))
       let expression = case expression {
-        Float(amount) -> Float("-" <> amount)
-        _ -> NegateInt(expression)
+        Float(location, amount) ->
+          Float(Span(start, location.end), "-" <> amount)
+        _ -> NegateInt(Span(start, expression.location.end), expression)
       }
       #(Some(expression), tokens)
     }
 
-    [#(t.LeftBrace, _), ..tokens] -> {
-      use #(statements, _, tokens) <- result.map(statements([], tokens))
-      #(Some(Block(statements)), tokens)
+    [#(t.LeftBrace, P(start)), ..tokens] -> {
+      use #(statements, end, tokens) <- result.map(statements([], tokens))
+      #(Some(Block(Span(start, end), statements)), tokens)
     }
 
-    [#(t.LessLess, _), ..tokens] -> {
+    [#(t.LessLess, P(start)), ..tokens] -> {
       let parser = bit_string_segment(expression, _)
       let result = comma_delimited([], tokens, parser, t.GreaterGreater)
-      use #(segments, _, tokens) <- result.map(result)
-      #(Some(BitString(segments)), tokens)
+      use #(segments, end, tokens) <- result.map(result)
+      #(Some(BitString(Span(start, end), segments)), tokens)
     }
 
-    [#(t.Echo, _), ..tokens] ->
+    [#(t.Echo, P(start)), ..tokens] ->
       case context {
         // `echo` in a pipeline doesn't have an expression after it
-        ExpressionUnitAfterPipe -> Ok(#(Some(Echo(None)), tokens))
+        ExpressionUnitAfterPipe ->
+          Ok(#(Some(Echo(span_from_string(start, "echo"), None)), tokens))
         RegularExpressionUnit ->
           result.map(expression(tokens), fn(expression_and_tokens) {
             let #(expression, tokens) = expression_and_tokens
-            #(Some(Echo(Some(expression))), tokens)
+            #(
+              Some(Echo(Span(start, expression.location.end), Some(expression))),
+              tokens,
+            )
           })
       }
 
@@ -1133,14 +1263,23 @@ fn expression_unit(
 
 fn todo_panic(
   tokens: Tokens,
-  constructor: fn(Option(Expression)) -> Expression,
+  constructor: fn(Span, Option(Expression)) -> Expression,
+  start: Int,
+  keyword_name: String,
 ) -> Result(#(Option(Expression), Tokens), Error) {
   case tokens {
     [#(t.As, _), ..tokens] -> {
       use #(reason, tokens) <- result.try(expression(tokens))
-      Ok(#(Some(constructor(Some(reason))), tokens))
+      Ok(#(
+        Some(constructor(Span(start, reason.location.end), Some(reason))),
+        tokens,
+      ))
     }
-    _ -> Ok(#(Some(constructor(None)), tokens))
+    _ ->
+      Ok(#(
+        Some(constructor(span_from_string(start, keyword_name), None)),
+        tokens,
+      ))
   }
 }
 
@@ -1233,21 +1372,43 @@ fn bit_string_segment_options(
   }
 }
 
+fn string_offset(start: Int, string: String) -> Int {
+  start + string.byte_size(string) - 1
+}
+
 fn after_expression(
   parsed: Expression,
   tokens: Tokens,
 ) -> Result(#(Expression, Tokens), Error) {
   case tokens {
     // Record or module access
-    [#(t.Dot, _), #(t.Name(label), _), ..tokens]
-    | [#(t.Dot, _), #(t.UpperName(label), _), ..tokens] -> {
-      after_expression(FieldAccess(parsed, label), tokens)
+    [#(t.Dot, _), #(t.Name(label), P(label_start)), ..tokens]
+    | [#(t.Dot, _), #(t.UpperName(label), P(label_start)), ..tokens] -> {
+      after_expression(
+        FieldAccess(
+          Span(parsed.location.start, string_offset(label_start, label)),
+          parsed,
+          label,
+        ),
+        tokens,
+      )
     }
 
     // Tuple index
     [#(t.Dot, _), #(t.Int(value) as token, position), ..tokens] -> {
       case int.parse(value) {
-        Ok(i) -> after_expression(TupleIndex(parsed, i), tokens)
+        Ok(i) ->
+          after_expression(
+            TupleIndex(
+              Span(
+                parsed.location.start,
+                string_offset(position.byte_offset, value),
+              ),
+              parsed,
+              i,
+            ),
+            tokens,
+          )
         Error(_) -> Error(UnexpectedToken(token, position))
       }
     }
@@ -1269,8 +1430,13 @@ fn call(
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
 
-    [#(t.RightParen, _), ..tokens] -> {
-      let call = Call(function, list.reverse(arguments))
+    [#(t.RightParen, P(end)), ..tokens] -> {
+      let call =
+        Call(
+          Span(function.location.start, end),
+          function,
+          list.reverse(arguments),
+        )
       after_expression(call, tokens)
     }
 
@@ -1279,18 +1445,24 @@ fn call(
       #(t.Colon, _),
       #(t.DiscardName(""), _),
       #(t.Comma, _),
-      #(t.RightParen, _),
+      #(t.RightParen, P(end)),
       ..tokens
     ]
     | [
         #(t.Name(label), _),
         #(t.Colon, _),
         #(t.DiscardName(""), _),
-        #(t.RightParen, _),
+        #(t.RightParen, P(end)),
         ..tokens
       ] -> {
       let capture =
-        FnCapture(Some(label), function, list.reverse(arguments), [])
+        FnCapture(
+          Span(function.location.start, end),
+          Some(label),
+          function,
+          list.reverse(arguments),
+          [],
+        )
       after_expression(capture, tokens)
     }
 
@@ -1305,9 +1477,16 @@ fn call(
       fn_capture(Some(label), function, list.reverse(arguments), [], tokens)
     }
 
-    [#(t.DiscardName(""), _), #(t.Comma, _), #(t.RightParen, _), ..tokens]
-    | [#(t.DiscardName(""), _), #(t.RightParen, _), ..tokens] -> {
-      let capture = FnCapture(None, function, list.reverse(arguments), [])
+    [#(t.DiscardName(""), _), #(t.Comma, _), #(t.RightParen, P(end)), ..tokens]
+    | [#(t.DiscardName(""), _), #(t.RightParen, P(end)), ..tokens] -> {
+      let capture =
+        FnCapture(
+          Span(function.location.start, end),
+          None,
+          function,
+          list.reverse(arguments),
+          [],
+        )
       after_expression(capture, tokens)
     }
 
@@ -1323,8 +1502,13 @@ fn call(
         [#(t.Comma, _), ..tokens] -> {
           call(arguments, function, tokens)
         }
-        [#(t.RightParen, _), ..tokens] -> {
-          let call = Call(function, list.reverse(arguments))
+        [#(t.RightParen, P(end)), ..tokens] -> {
+          let call =
+            Call(
+              Span(function.location.start, end),
+              function,
+              list.reverse(arguments),
+            )
           after_expression(call, tokens)
         }
         [#(other, position), ..] -> {
@@ -1346,8 +1530,15 @@ fn fn_capture(
   case tokens {
     [] -> Error(UnexpectedEndOfInput)
 
-    [#(t.RightParen, _), ..tokens] -> {
-      let capture = FnCapture(label, function, before, list.reverse(after))
+    [#(t.RightParen, P(end)), ..tokens] -> {
+      let capture =
+        FnCapture(
+          Span(function.location.start, end),
+          label,
+          function,
+          before,
+          list.reverse(after),
+        )
       after_expression(capture, tokens)
     }
 
@@ -1358,8 +1549,15 @@ fn fn_capture(
         [#(t.Comma, _), ..tokens] -> {
           fn_capture(label, function, before, after, tokens)
         }
-        [#(t.RightParen, _), ..tokens] -> {
-          let call = FnCapture(label, function, before, list.reverse(after))
+        [#(t.RightParen, P(end)), ..tokens] -> {
+          let call =
+            FnCapture(
+              Span(function.location.start, end),
+              label,
+              function,
+              before,
+              list.reverse(after),
+            )
           after_expression(call, tokens)
         }
         [#(other, position), ..] -> {
@@ -1375,18 +1573,25 @@ fn record_update(
   module: Option(String),
   constructor: String,
   tokens: Tokens,
+  start: Int,
 ) -> Result(#(Option(Expression), Tokens), Error) {
   use #(record, tokens) <- result.try(expression(tokens))
 
   case tokens {
-    [#(t.RightParen, _), ..tokens] -> {
-      Ok(#(Some(RecordUpdate(module, constructor, record, [])), tokens))
+    [#(t.RightParen, P(end)), ..tokens] -> {
+      Ok(#(
+        Some(RecordUpdate(Span(start, end), module, constructor, record, [])),
+        tokens,
+      ))
     }
     [#(t.Comma, _), ..tokens] -> {
       let result =
         comma_delimited([], tokens, record_update_field, t.RightParen)
-      use #(fields, _, tokens) <- result.try(result)
-      Ok(#(Some(RecordUpdate(module, constructor, record, fields)), tokens))
+      use #(fields, end, tokens) <- result.try(result)
+      Ok(#(
+        Some(RecordUpdate(Span(start, end), module, constructor, record, fields)),
+        tokens,
+      ))
     }
     _ -> Ok(#(None, tokens))
   }
@@ -1412,11 +1617,14 @@ fn record_update_field(
   }
 }
 
-fn case_(tokens: Tokens) -> Result(#(Option(Expression), Tokens), Error) {
+fn case_(
+  tokens: Tokens,
+  start: Int,
+) -> Result(#(Option(Expression), Tokens), Error) {
   use #(subjects, tokens) <- result.try(case_subjects([], tokens))
   use _, tokens <- expect(t.LeftBrace, tokens)
-  use #(clauses, tokens) <- result.try(case_clauses([], tokens))
-  Ok(#(Some(Case(subjects, clauses)), tokens))
+  use #(clauses, tokens, end) <- result.try(case_clauses([], tokens))
+  Ok(#(Some(Case(Span(start, end), subjects, clauses)), tokens))
 }
 
 fn case_subjects(
@@ -1434,11 +1642,12 @@ fn case_subjects(
 fn case_clauses(
   clauses: List(Clause),
   tokens: Tokens,
-) -> Result(#(List(Clause), Tokens), Error) {
+) -> Result(#(List(Clause), Tokens, Int), Error) {
   use #(clause, tokens) <- result.try(case_clause(tokens))
   let clauses = [clause, ..clauses]
   case tokens {
-    [#(t.RightBrace, _), ..tokens] -> Ok(#(list.reverse(clauses), tokens))
+    [#(t.RightBrace, P(end)), ..tokens] ->
+      Ok(#(list.reverse(clauses), tokens, end))
     _ -> case_clauses(clauses, tokens)
   }
 }
@@ -1480,7 +1689,10 @@ fn delimited(
   }
 }
 
-fn fn_(tokens: Tokens) -> Result(#(Option(Expression), Tokens), Error) {
+fn fn_(
+  tokens: Tokens,
+  start: Int,
+) -> Result(#(Option(Expression), Tokens), Error) {
   // Parameters
   use _, tokens <- expect(t.LeftParen, tokens)
   let result = comma_delimited([], tokens, fn_parameter, t.RightParen)
@@ -1491,53 +1703,80 @@ fn fn_(tokens: Tokens) -> Result(#(Option(Expression), Tokens), Error) {
 
   // The function body
   use _, tokens <- expect(t.LeftBrace, tokens)
-  use #(body, _, tokens) <- result.try(statements([], tokens))
+  use #(body, end, tokens) <- result.try(statements([], tokens))
 
-  Ok(#(Some(Fn(parameters, return, body)), tokens))
+  Ok(#(Some(Fn(Span(start, end), parameters, return, body)), tokens))
+}
+
+type ParsedList(ast_node) {
+  ParsedList(
+    values: List(ast_node),
+    spread: Option(ast_node),
+    remaining_tokens: Tokens,
+    end: Int,
+  )
 }
 
 fn list(
   parser: fn(Tokens) -> Result(#(t, Tokens), Error),
-  discard: Option(t),
+  discard: Option(fn(Span) -> t),
   acc: List(t),
   tokens: Tokens,
-) -> Result(#(List(t), Option(t), Tokens), Error) {
+) -> Result(ParsedList(t), Error) {
   case tokens {
-    [#(t.RightSquare, _), ..tokens] -> Ok(#(list.reverse(acc), None, tokens))
+    [#(t.RightSquare, P(end)), ..tokens] ->
+      Ok(ParsedList(list.reverse(acc), None, tokens, end))
 
-    [#(t.Comma, _), #(t.RightSquare, _), ..tokens] if acc != [] ->
-      Ok(#(list.reverse(acc), None, tokens))
-    [#(t.DotDot, _), #(t.RightSquare, _) as close, ..tokens] -> {
+    [#(t.Comma, _), #(t.RightSquare, P(end)), ..tokens] if acc != [] ->
+      Ok(ParsedList(list.reverse(acc), None, tokens, end))
+    [#(t.DotDot, P(start)), #(t.RightSquare, P(end)) as close, ..tokens] -> {
       case discard {
         None -> unexpected_error([close, ..tokens])
-        Some(discard) -> Ok(#(list.reverse(acc), Some(discard), tokens))
+        Some(discard) ->
+          Ok(ParsedList(
+            list.reverse(acc),
+            Some(discard(Span(start, start + 1))),
+            tokens,
+            end,
+          ))
       }
     }
 
     [#(t.DotDot, _), ..tokens] -> {
       use #(rest, tokens) <- result.try(parser(tokens))
-      use _, tokens <- expect(t.RightSquare, tokens)
-      Ok(#(list.reverse(acc), Some(rest), tokens))
+      use P(end), tokens <- expect(t.RightSquare, tokens)
+      Ok(ParsedList(list.reverse(acc), Some(rest), tokens, end))
     }
     _ -> {
       use #(element, tokens) <- result.try(parser(tokens))
       let acc = [element, ..acc]
       case tokens {
-        [#(t.RightSquare, _), ..tokens]
-        | [#(t.Comma, _), #(t.RightSquare, _), ..tokens] ->
-          Ok(#(list.reverse(acc), None, tokens))
+        [#(t.RightSquare, P(end)), ..tokens]
+        | [#(t.Comma, _), #(t.RightSquare, P(end)), ..tokens] ->
+          Ok(ParsedList(list.reverse(acc), None, tokens, end))
 
-        [#(t.Comma, _), #(t.DotDot, _), #(t.RightSquare, _) as close, ..tokens] -> {
+        [
+          #(t.Comma, _),
+          #(t.DotDot, P(start)),
+          #(t.RightSquare, P(end)) as close,
+          ..tokens
+        ] -> {
           case discard {
             None -> unexpected_error([close, ..tokens])
-            Some(discard) -> Ok(#(list.reverse(acc), Some(discard), tokens))
+            Some(discard) ->
+              Ok(ParsedList(
+                list.reverse(acc),
+                Some(discard(Span(start, start + 1))),
+                tokens,
+                end,
+              ))
           }
         }
 
         [#(t.Comma, _), #(t.DotDot, _), ..tokens] -> {
           use #(rest, tokens) <- result.try(parser(tokens))
-          use _, tokens <- expect(t.RightSquare, tokens)
-          Ok(#(list.reverse(acc), Some(rest), tokens))
+          use P(end), tokens <- expect(t.RightSquare, tokens)
+          Ok(ParsedList(list.reverse(acc), Some(rest), tokens, end))
         }
 
         [#(t.Comma, _), ..tokens] -> list(parser, discard, acc, tokens)
