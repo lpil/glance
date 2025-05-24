@@ -29,20 +29,27 @@ Module(
         None,
         [
           Use(
+            Span(12, 30),
             [
               UsePattern(
-                PatternVariable("x"),
+                PatternVariable(
+                  Span(16, 17),
+                  "x",
+                ),
                 Some(NamedType(
-                  Span(19, 22),
+                  Span(19, 23),
                   "Int",
                   None,
                   [],
                 )),
               ),
             ],
-            Todo(None),
+            Todo(Span(26, 30), None),
           ),
-          Expression(Todo(None)),
+          Expression(Todo(
+            Span(33, 37),
+            None,
+          )),
         ],
       ),
     ),

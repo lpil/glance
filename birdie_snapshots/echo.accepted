@@ -27,7 +27,10 @@ Module(
         [],
         None,
         [
-          Expression(Echo(Some(Int("10")))),
+          Expression(Echo(
+            Span(19, 26),
+            Some(Int(Span(24, 26), "10")),
+          )),
         ],
       ),
     ),

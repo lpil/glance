@@ -20,7 +20,11 @@ Module(
         Private,
         None,
         FieldAccess(
-          Variable("wibble"),
+          Span(10, 20),
+          Variable(
+            Span(10, 16),
+            "wibble",
+          ),
           "Nil",
         ),
       ),

@@ -19,7 +19,7 @@ Module(
         "x",
         Private,
         None,
-        String("123"),
+        String(Span(10, 13), "123"),
       ),
     ),
   ],

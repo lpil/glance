@@ -24,22 +24,44 @@ Module(
         None,
         [
           Expression(BinaryOperator(
+            Span(16, 35),
             Pipe,
             BinaryOperator(
+              Span(16, 24),
               Pipe,
-              Variable("x"),
+              Variable(
+                Span(16, 17),
+                "x",
+              ),
               Call(
-                Variable("y"),
+                Span(21, 24),
+                Variable(
+                  Span(21, 22),
+                  "y",
+                ),
                 [
-                  UnlabelledField(Int("1")),
+                  UnlabelledField(Int(
+                    Span(23, 24),
+                    "1",
+                  )),
                 ],
               ),
             ),
             Call(
-              Variable("z"),
+              Span(29, 35),
+              Variable(
+                Span(29, 30),
+                "z",
+              ),
               [
-                UnlabelledField(Int("2")),
-                UnlabelledField(Int("3")),
+                UnlabelledField(Int(
+                  Span(31, 32),
+                  "2",
+                )),
+                UnlabelledField(Int(
+                  Span(34, 35),
+                  "3",
+                )),
               ],
             ),
           )),

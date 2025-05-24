@@ -24,18 +24,26 @@ Module(
         None,
         [
           Assignment(
+            Span(16, 35),
             Let,
             PatternVariant(
+              Span(20, 30),
               None,
               "Thing",
               [
-                UnlabelledField(PatternInt("1")),
-                UnlabelledField(PatternInt("2")),
+                UnlabelledField(PatternInt(
+                  Span(26, 27),
+                  "1",
+                )),
+                UnlabelledField(PatternInt(
+                  Span(29, 30),
+                  "2",
+                )),
               ],
               False,
             ),
             None,
-            Variable("x"),
+            Variable(Span(34, 35), "x"),
           ),
         ],
       ),

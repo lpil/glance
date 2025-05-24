@@ -28,9 +28,13 @@ Module(
         None,
         [
           Expression(RecordUpdate(
+            Span(21, 44),
             None,
             "Wobble",
-            Variable("wabble"),
+            Variable(
+              Span(30, 36),
+              "wabble",
+            ),
             [
               RecordUpdateField(
                 "field",

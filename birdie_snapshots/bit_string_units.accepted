@@ -23,11 +23,23 @@ Module(
         [],
         None,
         [
-          Expression(BitString([
-            #(Int("1"), []),
-            #(Int("2"), [UnitOption(5)]),
-            #(Int("5"), [UnitOption(3)]),
-          ])),
+          Expression(BitString(
+            Span(16, 41),
+            [
+              #(
+                Int(Span(18, 19), "1"),
+                [],
+              ),
+              #(
+                Int(Span(21, 22), "2"),
+                [UnitOption(5)],
+              ),
+              #(
+                Int(Span(32, 33), "5"),
+                [UnitOption(3)],
+              ),
+            ],
+          )),
         ],
       ),
     ),

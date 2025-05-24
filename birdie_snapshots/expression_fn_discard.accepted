@@ -24,6 +24,7 @@ Module(
         None,
         [
           Expression(Fn(
+            Span(16, 31),
             [
               FnParameter(
                 Discarded("x"),
@@ -34,7 +35,12 @@ Module(
               ),
             ],
             None,
-            [Expression(Int("1"))],
+            [
+              Expression(Int(
+                Span(28, 29),
+                "1",
+              )),
+            ],
           )),
         ],
       ),

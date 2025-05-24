@@ -23,8 +23,14 @@ Module(
         [],
         None,
         [
-          Expression(Panic(None)),
-          Expression(Panic(None)),
+          Expression(Panic(
+            Span(16, 21),
+            None,
+          )),
+          Expression(Panic(
+            Span(22, 27),
+            None,
+          )),
         ],
       ),
     ),

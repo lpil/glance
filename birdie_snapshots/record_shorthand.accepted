@@ -28,7 +28,11 @@ Module(
         None,
         [
           Expression(Call(
-            Variable("Wobble"),
+            Span(21, 34),
+            Variable(
+              Span(21, 27),
+              "Wobble",
+            ),
             [ShorthandField("field")],
           )),
         ],

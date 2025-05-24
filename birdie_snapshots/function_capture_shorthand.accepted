@@ -28,8 +28,12 @@ Module(
         None,
         [
           Expression(FnCapture(
+            Span(21, 37),
             None,
-            Variable("wobble"),
+            Variable(
+              Span(21, 27),
+              "wobble",
+            ),
             [],
             [ShorthandField("field")],
           )),

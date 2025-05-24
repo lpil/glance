@@ -24,10 +24,11 @@ Module(
         None,
         [
           Expression(List(
+            Span(16, 26),
             [
-              Int("1"),
-              Int("2"),
-              Int("3"),
+              Int(Span(17, 18), "1"),
+              Int(Span(20, 21), "2"),
+              Int(Span(23, 24), "3"),
             ],
             None,
           )),

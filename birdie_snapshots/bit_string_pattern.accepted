@@ -24,16 +24,29 @@ Module(
         None,
         [
           Assignment(
+            Span(16, 34),
             Let,
-            PatternBitString([
-              #(PatternInt("1"), []),
-              #(
-                PatternInt("2"),
-                [SizeOption(4)],
-              ),
-            ]),
+            PatternBitString(
+              Span(20, 28),
+              [
+                #(
+                  PatternInt(
+                    Span(22, 23),
+                    "1",
+                  ),
+                  [],
+                ),
+                #(
+                  PatternInt(
+                    Span(25, 26),
+                    "2",
+                  ),
+                  [SizeOption(4)],
+                ),
+              ],
+            ),
             None,
-            Int("1"),
+            Int(Span(33, 34), "1"),
           ),
         ],
       ),

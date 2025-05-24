@@ -24,7 +24,11 @@ Module(
         None,
         [
           Expression(FieldAccess(
-            Variable("wobble"),
+            Span(16, 29),
+            Variable(
+              Span(16, 22),
+              "wobble",
+            ),
             "wibble",
           )),
         ],

@@ -24,8 +24,12 @@ Module(
         None,
         [
           Expression(List(
+            Span(16, 20),
             [],
-            Some(Variable("x")),
+            Some(Variable(
+              Span(19, 20),
+              "x",
+            )),
           )),
         ],
       ),

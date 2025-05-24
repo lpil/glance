@@ -19,10 +19,19 @@ Module(
         "x",
         Private,
         None,
-        BitString([
-          #(Int("1"), [SizeOption(2)]),
-          #(Float("2.0"), []),
-        ]),
+        BitString(
+          Span(10, 20),
+          [
+            #(
+              Int(Span(12, 13), "1"),
+              [SizeOption(2)],
+            ),
+            #(
+              Float(Span(17, 20), "2.0"),
+              [],
+            ),
+          ],
+        ),
       ),
     ),
   ],

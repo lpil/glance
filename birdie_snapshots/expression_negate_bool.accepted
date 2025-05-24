@@ -23,7 +23,10 @@ Module(
         [],
         None,
         [
-          Expression(NegateBool(Variable("x"))),
+          Expression(NegateBool(
+            Span(16, 18),
+            Variable(Span(17, 18), "x"),
+          )),
         ],
       ),
     ),

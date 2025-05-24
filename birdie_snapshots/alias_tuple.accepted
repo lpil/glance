@@ -23,13 +23,13 @@ Module(
           Span(13, 20),
           [
             NamedType(
-              Span(15, 16),
+              Span(15, 17),
               "A",
               None,
               [],
             ),
             NamedType(
-              Span(18, 19),
+              Span(18, 20),
               "B",
               None,
               [],

@@ -28,10 +28,18 @@ Module(
         None,
         [
           Assert(
+            Span(19, 36),
             Call(
-              Variable("is_even"),
+              Span(26, 36),
+              Variable(
+                Span(26, 33),
+                "is_even",
+              ),
               [
-                UnlabelledField(Int("10")),
+                UnlabelledField(Int(
+                  Span(34, 36),
+                  "10",
+                )),
               ],
             ),
             None,

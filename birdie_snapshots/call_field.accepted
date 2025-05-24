@@ -24,14 +24,28 @@ Module(
         None,
         [
           Expression(Call(
+            Span(16, 37),
             FieldAccess(
-              Variable("wibble"),
+              Span(16, 29),
+              Variable(
+                Span(16, 22),
+                "wibble",
+              ),
               "wobble",
             ),
             [
-              UnlabelledField(Int("1")),
-              UnlabelledField(Int("2")),
-              UnlabelledField(Int("3")),
+              UnlabelledField(Int(
+                Span(30, 31),
+                "1",
+              )),
+              UnlabelledField(Int(
+                Span(33, 34),
+                "2",
+              )),
+              UnlabelledField(Int(
+                Span(36, 37),
+                "3",
+              )),
             ],
           )),
         ],

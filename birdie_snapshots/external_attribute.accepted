@@ -23,17 +23,35 @@ Module(
         Attribute(
           "external",
           [
-            Variable("erlang"),
-            String("gb_trees"),
-            String("empty"),
+            Variable(
+              Span(11, 17),
+              "erlang",
+            ),
+            String(
+              Span(19, 27),
+              "gb_trees",
+            ),
+            String(
+              Span(31, 36),
+              "empty",
+            ),
           ],
         ),
         Attribute(
           "external",
           [
-            Variable("javascript"),
-            String("./gb_trees.js"),
-            String("empty"),
+            Variable(
+              Span(50, 60),
+              "javascript",
+            ),
+            String(
+              Span(62, 75),
+              "./gb_trees.js",
+            ),
+            String(
+              Span(79, 84),
+              "empty",
+            ),
           ],
         ),
       ],

@@ -24,16 +24,23 @@ Module(
         None,
         [
           Expression(Call(
-            Variable("wobble"),
+            Span(16, 40),
+            Variable(
+              Span(16, 22),
+              "wobble",
+            ),
             [
-              UnlabelledField(Int("1")),
+              UnlabelledField(Int(
+                Span(23, 24),
+                "1",
+              )),
               LabelledField(
                 "one",
-                Int("2"),
+                Int(Span(31, 32), "2"),
               ),
               LabelledField(
                 "two",
-                Int("3"),
+                Int(Span(39, 40), "3"),
               ),
             ],
           )),

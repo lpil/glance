@@ -24,22 +24,41 @@ Module(
         None,
         [
           Expression(Case(
+            Span(16, 44),
             [
-              Variable("x"),
-              Variable("y"),
-              Variable("z"),
+              Variable(
+                Span(21, 22),
+                "x",
+              ),
+              Variable(
+                Span(24, 25),
+                "y",
+              ),
+              Variable(
+                Span(27, 28),
+                "z",
+              ),
             ],
             [
               Clause(
                 [
                   [
-                    PatternVariable("a"),
-                    PatternVariable("b"),
-                    PatternVariable("c"),
+                    PatternVariable(
+                      Span(31, 32),
+                      "a",
+                    ),
+                    PatternVariable(
+                      Span(34, 35),
+                      "b",
+                    ),
+                    PatternVariable(
+                      Span(37, 38),
+                      "c",
+                    ),
                   ],
                 ],
                 None,
-                Int("1"),
+                Int(Span(42, 43), "1"),
               ),
             ],
           )),

@@ -19,11 +19,14 @@ Module(
         "x",
         Private,
         None,
-        Tuple([
-          Int("1"),
-          Float("2.0"),
-          Int("3"),
-        ]),
+        Tuple(
+          Span(10, 21),
+          [
+            Int(Span(12, 13), "1"),
+            Float(Span(15, 18), "2.0"),
+            Int(Span(20, 21), "3"),
+          ],
+        ),
       ),
     ),
   ],

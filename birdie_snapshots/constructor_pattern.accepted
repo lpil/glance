@@ -24,15 +24,17 @@ Module(
         None,
         [
           Assignment(
+            Span(16, 28),
             Let,
             PatternVariant(
+              Span(20, 24),
               None,
               "None",
               [],
               False,
             ),
             None,
-            Variable("x"),
+            Variable(Span(27, 28), "x"),
           ),
         ],
       ),

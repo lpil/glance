@@ -22,7 +22,12 @@ Module(
         Public,
         [],
         None,
-        [Expression(BitString([]))],
+        [
+          Expression(BitString(
+            Span(16, 18),
+            [],
+          )),
+        ],
       ),
     ),
   ],

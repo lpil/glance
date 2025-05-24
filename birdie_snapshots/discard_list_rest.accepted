@@ -25,21 +25,37 @@ Module(
         None,
         [
           Expression(Case(
-            [Variable("x")],
+            Span(16, 40),
+            [
+              Variable(
+                Span(21, 22),
+                "x",
+              ),
+            ],
             [
               Clause(
                 [
                   [
                     PatternList(
+                      Span(25, 31),
                       [
-                        PatternVariable("x"),
+                        PatternVariable(
+                          Span(26, 27),
+                          "x",
+                        ),
                       ],
-                      Some(PatternDiscard("")),
+                      Some(PatternDiscard(
+                        Span(29, 30),
+                        "",
+                      )),
                     ),
                   ],
                 ],
                 None,
-                Variable("Nil"),
+                Variable(
+                  Span(36, 39),
+                  "Nil",
+                ),
               ),
             ],
           )),

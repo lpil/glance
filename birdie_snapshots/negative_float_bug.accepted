@@ -26,7 +26,12 @@ Module(
         Public,
         [],
         None,
-        [Expression(Float("-1.1"))],
+        [
+          Expression(Float(
+            Span(19, 23),
+            "-1.1",
+          )),
+        ],
       ),
     ),
   ],

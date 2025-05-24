@@ -28,15 +28,19 @@ Module(
         None,
         [
           Assignment(
+            Span(19, 38),
             Let,
-            PatternDiscard("money"),
+            PatternDiscard(
+              Span(23, 28),
+              "money",
+            ),
             Some(NamedType(
-              Span(31, 34),
+              Span(31, 35),
               "Int",
               None,
               [],
             )),
-            Int("1"),
+            Int(Span(37, 38), "1"),
           ),
         ],
       ),

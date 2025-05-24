@@ -24,13 +24,28 @@ Module(
         None,
         [
           Expression(FnCapture(
+            Span(16, 33),
             None,
-            Variable("wibble"),
+            Variable(
+              Span(16, 22),
+              "wibble",
+            ),
             [
-              UnlabelledField(Int("1")),
-              UnlabelledField(Int("2")),
+              UnlabelledField(Int(
+                Span(23, 24),
+                "1",
+              )),
+              UnlabelledField(Int(
+                Span(26, 27),
+                "2",
+              )),
             ],
-            [UnlabelledField(Int("3"))],
+            [
+              UnlabelledField(Int(
+                Span(32, 33),
+                "3",
+              )),
+            ],
           )),
         ],
       ),

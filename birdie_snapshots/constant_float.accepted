@@ -19,7 +19,7 @@ Module(
         "x",
         Private,
         None,
-        Float("1.1"),
+        Float(Span(10, 13), "1.1"),
       ),
     ),
   ],

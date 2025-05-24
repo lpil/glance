@@ -24,10 +24,17 @@ Module(
         None,
         [
           Assignment(
-            LetAssert(Some(String("This shouldn't fail"))),
-            PatternVariable("x"),
+            Span(16, 55),
+            LetAssert(Some(String(
+              Span(36, 55),
+              "This shouldn't fail",
+            ))),
+            PatternVariable(
+              Span(27, 28),
+              "x",
+            ),
             None,
-            Int("1"),
+            Int(Span(31, 32), "1"),
           ),
         ],
       ),

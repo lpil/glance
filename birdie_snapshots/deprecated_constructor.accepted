@@ -34,7 +34,10 @@ Module(
               Attribute(
                 "deprecated",
                 [
-                  String("Please upgrade to another algorithm"),
+                  String(
+                    Span(40, 75),
+                    "Please upgrade to another algorithm",
+                  ),
                 ],
               ),
             ],

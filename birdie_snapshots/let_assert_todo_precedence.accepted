@@ -24,10 +24,20 @@ Module(
         None,
         [
           Assignment(
+            Span(16, 63),
             LetAssert(None),
-            PatternVariable("x"),
+            PatternVariable(
+              Span(27, 28),
+              "x",
+            ),
             None,
-            Todo(Some(String("This is the todo message"))),
+            Todo(
+              Span(31, 63),
+              Some(String(
+                Span(39, 63),
+                "This is the todo message",
+              )),
+            ),
           ),
         ],
       ),

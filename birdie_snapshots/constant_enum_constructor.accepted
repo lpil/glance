@@ -19,7 +19,7 @@ Module(
         "x",
         Private,
         None,
-        Variable("Nil"),
+        Variable(Span(10, 13), "Nil"),
       ),
     ),
   ],

@@ -28,13 +28,23 @@ Module(
         None,
         [
           Expression(Call(
-            Variable("wobble"),
+            Span(21, 88),
+            Variable(
+              Span(21, 27),
+              "wobble",
+            ),
             [
-              UnlabelledField(Variable("unlabelled")),
+              UnlabelledField(Variable(
+                Span(28, 38),
+                "unlabelled",
+              )),
               ShorthandField("shorthand_mid"),
               LabelledField(
                 "non_shorthand",
-                Variable("a"),
+                Variable(
+                  Span(71, 72),
+                  "a",
+                ),
               ),
               ShorthandField("shorthand_end"),
             ],

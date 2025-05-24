@@ -20,10 +20,17 @@ Module(
         Private,
         None,
         Call(
-          Variable("Box"),
+          Span(10, 20),
+          Variable(Span(10, 13), "Box"),
           [
-            UnlabelledField(Int("1")),
-            UnlabelledField(Float("2.0")),
+            UnlabelledField(Int(
+              Span(14, 15),
+              "1",
+            )),
+            UnlabelledField(Float(
+              Span(17, 20),
+              "2.0",
+            )),
           ],
         ),
       ),

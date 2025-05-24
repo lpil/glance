@@ -24,9 +24,15 @@ Module(
         None,
         [
           Expression(FieldAccess(
+            Span(16, 34),
             FieldAccess(
+              Span(16, 29),
               FieldAccess(
-                Variable("one"),
+                Span(16, 23),
+                Variable(
+                  Span(16, 19),
+                  "one",
+                ),
                 "two",
               ),
               "three",
