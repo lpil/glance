@@ -26,6 +26,7 @@ type Entity {
   Constant
   Function
   Expression
+  Pattern
 }
 
 fn check_location(src: String, entity: Entity) -> String {
@@ -61,6 +62,14 @@ fn check_location(src: String, entity: Entity) -> String {
         | glance.Use(location:, ..) -> location
         glance.Expression(expression) -> expression.location
       }
+    }
+
+    Pattern -> {
+      let assert [function, ..] = module.functions as "Function not found"
+      let assert [statement, ..] = function.definition.body as "Body is empty"
+      let assert glance.Assignment(pattern:, ..) = statement
+        as "Statement is not an assignment"
+      pattern.location
     }
   }
 
@@ -1655,6 +1664,16 @@ pub fn main() {
   |> birdie.snap("list_location")
 }
 
+pub fn list_spread_location_test() {
+  "
+pub fn main() {
+  [a, b, c, ..efg]
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("list_spread_location")
+}
+
 pub fn field_access_location_test() {
   "
 pub fn main() {
@@ -1759,4 +1778,154 @@ pub fn main() {
 "
   |> check_location(Expression)
   |> birdie.snap("binary_operator_location")
+}
+
+pub fn int_pattern_location_test() {
+  "
+pub fn main() {
+  let 0xABCD = todo
+}
+"
+  |> check_location(Pattern)
+  |> birdie.snap("int_pattern_location")
+}
+
+pub fn float_pattern_location_test() {
+  "
+pub fn main() {
+  let 1.4e19 = todo
+}
+"
+  |> check_location(Pattern)
+  |> birdie.snap("float_pattern_location")
+}
+
+pub fn string_pattern_location_test() {
+  "
+pub fn main() {
+  let \"Some string\" = todo
+}
+"
+  |> check_location(Pattern)
+  |> birdie.snap("string_pattern_location")
+}
+
+pub fn discard_pattern_location_test() {
+  "
+pub fn main() {
+  let _ignored = todo
+}
+"
+  |> check_location(Pattern)
+  |> birdie.snap("discard_pattern_location")
+}
+
+pub fn variable_pattern_location_test() {
+  "
+pub fn main() {
+  let something = todo
+}
+"
+  |> check_location(Pattern)
+  |> birdie.snap("variable_pattern_location")
+}
+
+pub fn tuple_pattern_location_test() {
+  "
+pub fn main() {
+  let #(a, b, 4) = todo
+}
+"
+  |> check_location(Pattern)
+  |> birdie.snap("tuple_pattern_location")
+}
+
+pub fn list_pattern_location_test() {
+  "
+pub fn main() {
+  let [1, 2, x] = todo
+}
+"
+  |> check_location(Pattern)
+  |> birdie.snap("list_pattern_location")
+}
+
+pub fn list_pattern_spread_location_test() {
+  "
+pub fn main() {
+  let [1, 2, ..rest] = todo
+}
+"
+  |> check_location(Pattern)
+  |> birdie.snap("list_pattern_spread_location")
+}
+
+pub fn assignment_pattern_location_test() {
+  "
+pub fn main() {
+  let 1 as x = todo
+}
+"
+  |> check_location(Pattern)
+  |> birdie.snap("assignment_pattern_location")
+}
+
+pub fn concatenate_pattern_location_test() {
+  "
+pub fn main() {
+  let \"prefix\" <> suffix = todo
+}
+"
+  |> check_location(Pattern)
+  |> birdie.snap("concatenate_pattern_location")
+}
+
+pub fn concatenate_pattern_discard_location_test() {
+  "
+pub fn main() {
+  let \"prefix\" <> _suffix = todo
+}
+"
+  |> check_location(Pattern)
+  |> birdie.snap("concatenate_pattern_discard_location")
+}
+
+pub fn concatenate_pattern_assignment_location_test() {
+  "
+pub fn main() {
+  let \"prefix\" as prefix <> suffix = todo
+}
+"
+  |> check_location(Pattern)
+  |> birdie.snap("concatenate_pattern_assignment_location")
+}
+
+pub fn bit_array_pattern_location_test() {
+  "
+pub fn main() {
+  let <<1, 2, 3, rest:bits>> = todo
+}
+"
+  |> check_location(Pattern)
+  |> birdie.snap("bit_array_pattern_location")
+}
+
+pub fn variant_pattern_location_test() {
+  "
+pub fn main() {
+  let Something = todo
+}
+"
+  |> check_location(Pattern)
+  |> birdie.snap("variant_pattern_location")
+}
+
+pub fn constructor_pattern_location_test() {
+  "
+pub fn main() {
+  let Wibble(x, wobble:, ..) = todo
+}
+"
+  |> check_location(Pattern)
+  |> birdie.snap("constructor_pattern_location")
 }

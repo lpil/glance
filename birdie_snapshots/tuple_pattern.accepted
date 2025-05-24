@@ -30,11 +30,11 @@ Module(
               Span(20, 27),
               [
                 PatternDiscard(
-                  Span(22, 22),
+                  Span(22, 23),
                   "",
                 ),
                 PatternDiscard(
-                  Span(25, 25),
+                  Span(25, 26),
                   "",
                 ),
               ],
