@@ -24,12 +24,19 @@ Module(
         None,
         [
           Assignment(
+            Span(16, 25),
             Let,
-            PatternVariable("x"),
+            PatternVariable(
+              Span(20, 21),
+              "x",
+            ),
             None,
-            Int("1"),
+            Int(Span(24, 25), "1"),
           ),
-          Expression(Int("2")),
+          Expression(Int(
+            Span(26, 27),
+            "2",
+          )),
         ],
       ),
     ),

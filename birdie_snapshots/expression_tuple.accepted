@@ -23,11 +23,14 @@ Module(
         [],
         None,
         [
-          Expression(Tuple([
-            Int("1"),
-            Int("2"),
-            Int("3"),
-          ])),
+          Expression(Tuple(
+            Span(16, 25),
+            [
+              Int(Span(18, 19), "1"),
+              Int(Span(21, 22), "2"),
+              Int(Span(24, 25), "3"),
+            ],
+          )),
         ],
       ),
     ),

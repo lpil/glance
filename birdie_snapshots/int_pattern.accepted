@@ -24,10 +24,14 @@ Module(
         None,
         [
           Assignment(
+            Span(16, 27),
             Let,
-            PatternInt("123"),
+            PatternInt(
+              Span(20, 23),
+              "123",
+            ),
             None,
-            Int("1"),
+            Int(Span(26, 27), "1"),
           ),
         ],
       ),

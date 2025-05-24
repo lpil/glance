@@ -20,10 +20,11 @@ Module(
         Private,
         None,
         List(
+          Span(10, 20),
           [
-            Int("1"),
-            Float("2.0"),
-            Int("3"),
+            Int(Span(11, 12), "1"),
+            Float(Span(14, 17), "2.0"),
+            Int(Span(19, 20), "3"),
           ],
           None,
         ),

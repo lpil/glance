@@ -26,8 +26,12 @@ Module(
         None,
         [
           Expression(FnCapture(
+            Span(18, 31),
             Some("x"),
-            Variable("wibble"),
+            Variable(
+              Span(18, 24),
+              "wibble",
+            ),
             [],
             [],
           )),

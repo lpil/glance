@@ -24,17 +24,27 @@ Module(
         None,
         [
           Expression(RecordUpdate(
+            Span(16, 47),
             None,
             "Wibble",
-            Variable("wibble"),
+            Variable(
+              Span(25, 31),
+              "wibble",
+            ),
             [
               RecordUpdateField(
                 "one",
-                Some(Int("1")),
+                Some(Int(
+                  Span(38, 39),
+                  "1",
+                )),
               ),
               RecordUpdateField(
                 "two",
-                Some(Int("2")),
+                Some(Int(
+                  Span(46, 47),
+                  "2",
+                )),
               ),
             ],
           )),

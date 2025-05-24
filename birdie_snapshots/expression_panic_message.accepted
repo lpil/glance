@@ -24,9 +24,13 @@ Module(
         None,
         [
           Expression(Call(
-            Panic(None),
+            Span(16, 27),
+            Panic(Span(16, 21), None),
             [
-              UnlabelledField(String("huh")),
+              UnlabelledField(String(
+                Span(22, 25),
+                "huh",
+              )),
             ],
           )),
         ],

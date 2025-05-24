@@ -24,16 +24,30 @@ Module(
         None,
         [
           Assignment(
-            LetAssert(Some(Block([
-              Expression(BinaryOperator(
-                Concatenate,
-                String("some"),
-                String("message"),
-              )),
-            ]))),
-            PatternVariable("x"),
+            Span(16, 59),
+            LetAssert(Some(Block(
+              Span(36, 59),
+              [
+                Expression(BinaryOperator(
+                  Span(38, 55),
+                  Concatenate,
+                  String(
+                    Span(38, 42),
+                    "some",
+                  ),
+                  String(
+                    Span(48, 55),
+                    "message",
+                  ),
+                )),
+              ],
+            ))),
+            PatternVariable(
+              Span(27, 28),
+              "x",
+            ),
             None,
-            Int("1"),
+            Int(Span(31, 32), "1"),
           ),
         ],
       ),

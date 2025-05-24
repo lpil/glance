@@ -23,9 +23,18 @@ Module(
         [],
         None,
         [
-          Expression(Variable("x")),
-          Expression(Variable("y")),
-          Expression(Variable("z")),
+          Expression(Variable(
+            Span(16, 17),
+            "x",
+          )),
+          Expression(Variable(
+            Span(18, 19),
+            "y",
+          )),
+          Expression(Variable(
+            Span(20, 21),
+            "z",
+          )),
         ],
       ),
     ),

@@ -23,9 +23,18 @@ Module(
         [],
         None,
         [
-          Expression(Float("1.0")),
-          Expression(Float("2.0")),
-          Expression(Float("3.0")),
+          Expression(Float(
+            Span(16, 19),
+            "1.0",
+          )),
+          Expression(Float(
+            Span(20, 23),
+            "2.0",
+          )),
+          Expression(Float(
+            Span(24, 27),
+            "3.0",
+          )),
         ],
       ),
     ),

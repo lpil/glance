@@ -28,19 +28,37 @@ Module(
         None,
         [
           Assert(
+            Span(19, 68),
             Call(
-              Variable("lock"),
+              Span(26, 40),
+              Variable(
+                Span(26, 30),
+                "lock",
+              ),
               [
-                UnlabelledField(Variable("directory")),
+                UnlabelledField(Variable(
+                  Span(31, 40),
+                  "directory",
+                )),
               ],
             ),
-            Some(Block([
-              Expression(BinaryOperator(
-                Concatenate,
-                Variable("some_message"),
-                String("!"),
-              )),
-            ])),
+            Some(Block(
+              Span(45, 68),
+              [
+                Expression(BinaryOperator(
+                  Span(47, 64),
+                  Concatenate,
+                  Variable(
+                    Span(47, 59),
+                    "some_message",
+                  ),
+                  String(
+                    Span(63, 64),
+                    "!",
+                  ),
+                )),
+              ],
+            )),
           ),
         ],
       ),

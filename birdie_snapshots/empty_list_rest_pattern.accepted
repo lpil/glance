@@ -24,13 +24,18 @@ Module(
         None,
         [
           Assignment(
+            Span(16, 28),
             Let,
             PatternList(
+              Span(20, 23),
               [],
-              Some(PatternDiscard("")),
+              Some(PatternDiscard(
+                Span(21, 22),
+                "",
+              )),
             ),
             None,
-            Variable("x"),
+            Variable(Span(27, 28), "x"),
           ),
         ],
       ),

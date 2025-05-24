@@ -24,9 +24,10 @@ Module(
         None,
         [
           Expression(BinaryOperator(
+            Span(16, 22),
             And,
-            Variable("x"),
-            Variable("y"),
+            Variable(Span(16, 17), "x"),
+            Variable(Span(21, 22), "y"),
           )),
         ],
       ),

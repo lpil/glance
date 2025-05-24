@@ -28,13 +28,24 @@ Module(
         None,
         [
           Assert(
+            Span(19, 69),
             Call(
-              Variable("lock"),
+              Span(26, 40),
+              Variable(
+                Span(26, 30),
+                "lock",
+              ),
               [
-                UnlabelledField(Variable("directory")),
+                UnlabelledField(Variable(
+                  Span(31, 40),
+                  "directory",
+                )),
               ],
             ),
-            Some(String("Failed to lock directory")),
+            Some(String(
+              Span(45, 69),
+              "Failed to lock directory",
+            )),
           ),
         ],
       ),

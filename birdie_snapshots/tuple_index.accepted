@@ -24,7 +24,11 @@ Module(
         None,
         [
           Expression(TupleIndex(
-            Variable("wobble"),
+            Span(16, 25),
+            Variable(
+              Span(16, 22),
+              "wobble",
+            ),
             12,
           )),
         ],

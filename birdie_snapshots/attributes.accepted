@@ -23,17 +23,26 @@ Module(
         Attribute(
           "thingbobby",
           [
-            Variable("erlang"),
-            String("one"),
-            String("two"),
+            Variable(
+              Span(13, 19),
+              "erlang",
+            ),
+            String(Span(21, 24), "one"),
+            String(Span(28, 31), "two"),
           ],
         ),
         Attribute(
           "thingbobby",
           [
-            Variable("javascript"),
-            String("three"),
-            String("four"),
+            Variable(
+              Span(47, 57),
+              "javascript",
+            ),
+            String(
+              Span(59, 64),
+              "three",
+            ),
+            String(Span(68, 72), "four"),
           ],
         ),
       ],
@@ -43,7 +52,12 @@ Module(
         Public,
         [],
         None,
-        [Expression(Variable("Nil"))],
+        [
+          Expression(Variable(
+            Span(92, 95),
+            "Nil",
+          )),
+        ],
       ),
     ),
   ],

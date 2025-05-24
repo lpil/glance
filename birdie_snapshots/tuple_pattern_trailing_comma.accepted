@@ -24,13 +24,23 @@ Module(
         None,
         [
           Assignment(
+            Span(16, 32),
             Let,
-            PatternTuple([
-              PatternDiscard(""),
-              PatternDiscard(""),
-            ]),
+            PatternTuple(
+              Span(20, 27),
+              [
+                PatternDiscard(
+                  Span(22, 22),
+                  "",
+                ),
+                PatternDiscard(
+                  Span(25, 25),
+                  "",
+                ),
+              ],
+            ),
             None,
-            Int("1"),
+            Int(Span(31, 32), "1"),
           ),
         ],
       ),

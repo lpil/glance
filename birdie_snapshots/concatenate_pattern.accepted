@@ -24,14 +24,16 @@ Module(
         None,
         [
           Assignment(
+            Span(16, 35),
             Let,
             PatternConcatenate(
+              Span(20, 31),
               "ok",
               None,
               Named("yah"),
             ),
             None,
-            Int("1"),
+            Int(Span(34, 35), "1"),
           ),
         ],
       ),

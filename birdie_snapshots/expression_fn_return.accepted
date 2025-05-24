@@ -24,6 +24,7 @@ Module(
         None,
         [
           Expression(Fn(
+            Span(16, 34),
             [
               FnParameter(
                 Named("x"),
@@ -35,8 +36,14 @@ Module(
               "a",
             )),
             [
-              Expression(Int("1")),
-              Expression(Variable("x")),
+              Expression(Int(
+                Span(29, 30),
+                "1",
+              )),
+              Expression(Variable(
+                Span(31, 32),
+                "x",
+              )),
             ],
           )),
         ],

@@ -22,7 +22,7 @@ Module(
         Private,
         [],
         Some(NamedType(
-          Span(13, 16),
+          Span(13, 17),
           "Nil",
           None,
           [],

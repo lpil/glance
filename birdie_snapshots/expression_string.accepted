@@ -23,9 +23,18 @@ Module(
         [],
         None,
         [
-          Expression(String("10")),
-          Expression(String("20")),
-          Expression(String("30")),
+          Expression(String(
+            Span(16, 18),
+            "10",
+          )),
+          Expression(String(
+            Span(21, 23),
+            "20",
+          )),
+          Expression(String(
+            Span(26, 28),
+            "30",
+          )),
         ],
       ),
     ),

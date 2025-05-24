@@ -28,9 +28,10 @@ Module(
         None,
         [
           Expression(BinaryOperator(
+            Span(19, 29),
             Pipe,
-            Int("10"),
-            Echo(None),
+            Int(Span(19, 21), "10"),
+            Echo(Span(25, 29), None),
           )),
         ],
       ),

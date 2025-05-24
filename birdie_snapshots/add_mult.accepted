@@ -24,12 +24,20 @@ Module(
         None,
         [
           Expression(BinaryOperator(
+            Span(16, 25),
             AddInt,
-            Variable("x"),
+            Variable(Span(16, 17), "x"),
             BinaryOperator(
+              Span(20, 25),
               MultInt,
-              Variable("y"),
-              Variable("z"),
+              Variable(
+                Span(20, 21),
+                "y",
+              ),
+              Variable(
+                Span(24, 25),
+                "z",
+              ),
             ),
           )),
         ],

@@ -25,9 +25,18 @@ Module(
         [],
         None,
         [
-          Expression(Todo(Some(Block([
-            Expression(String("oh no")),
-          ])))),
+          Expression(Todo(
+            Span(18, 37),
+            Some(Block(
+              Span(26, 37),
+              [
+                Expression(String(
+                  Span(28, 33),
+                  "oh no",
+                )),
+              ],
+            )),
+          )),
         ],
       ),
     ),

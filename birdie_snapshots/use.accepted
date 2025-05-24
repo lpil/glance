@@ -24,13 +24,17 @@ Module(
         None,
         [
           Use(
+            Span(16, 26),
             [
               UsePattern(
-                PatternVariable("x"),
+                PatternVariable(
+                  Span(20, 21),
+                  "x",
+                ),
                 None,
               ),
             ],
-            Variable("y"),
+            Variable(Span(25, 26), "y"),
           ),
         ],
       ),

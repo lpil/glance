@@ -24,16 +24,24 @@ Module(
         None,
         [
           Assignment(
+            Span(16, 30),
             Let,
             PatternList(
+              Span(20, 25),
               [
-                PatternInt("1"),
-                PatternInt("2"),
+                PatternInt(
+                  Span(21, 22),
+                  "1",
+                ),
+                PatternInt(
+                  Span(24, 25),
+                  "2",
+                ),
               ],
               None,
             ),
             None,
-            Variable("x"),
+            Variable(Span(29, 30), "x"),
           ),
         ],
       ),

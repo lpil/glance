@@ -24,21 +24,31 @@ Module(
         None,
         [
           Use(
+            Span(16, 32),
             [
               UsePattern(
-                PatternVariable("x"),
+                PatternVariable(
+                  Span(20, 21),
+                  "x",
+                ),
                 None,
               ),
               UsePattern(
-                PatternVariable("y"),
+                PatternVariable(
+                  Span(23, 24),
+                  "y",
+                ),
                 None,
               ),
               UsePattern(
-                PatternVariable("z"),
+                PatternVariable(
+                  Span(26, 27),
+                  "z",
+                ),
                 None,
               ),
             ],
-            Variable("f"),
+            Variable(Span(31, 32), "f"),
           ),
         ],
       ),

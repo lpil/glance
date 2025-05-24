@@ -19,7 +19,7 @@ Module(
         "x",
         Private,
         None,
-        Int("123"),
+        Int(Span(10, 13), "123"),
       ),
     ),
   ],

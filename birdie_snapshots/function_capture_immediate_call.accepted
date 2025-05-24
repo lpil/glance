@@ -24,9 +24,14 @@ Module(
         None,
         [
           Expression(Call(
+            Span(16, 26),
             FnCapture(
+              Span(16, 24),
               None,
-              Variable("wibble"),
+              Variable(
+                Span(16, 22),
+                "wibble",
+              ),
               [],
               [],
             ),

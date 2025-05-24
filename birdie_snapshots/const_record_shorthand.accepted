@@ -22,7 +22,11 @@ Module(
         Private,
         None,
         Call(
-          Variable("Wibble"),
+          Span(16, 29),
+          Variable(
+            Span(16, 22),
+            "Wibble",
+          ),
           [ShorthandField("field")],
         ),
       ),

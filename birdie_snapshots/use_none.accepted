@@ -26,7 +26,13 @@ Module(
         Public,
         [],
         None,
-        [Use([], Variable("x"))],
+        [
+          Use(
+            Span(19, 27),
+            [],
+            Variable(Span(26, 27), "x"),
+          ),
+        ],
       ),
     ),
   ],

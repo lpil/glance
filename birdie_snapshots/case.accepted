@@ -24,12 +24,25 @@ Module(
         None,
         [
           Expression(Case(
-            [Variable("x")],
+            Span(16, 32),
+            [
+              Variable(
+                Span(21, 22),
+                "x",
+              ),
+            ],
             [
               Clause(
-                [[PatternVariable("y")]],
+                [
+                  [
+                    PatternVariable(
+                      Span(25, 26),
+                      "y",
+                    ),
+                  ],
+                ],
                 None,
-                Int("1"),
+                Int(Span(30, 31), "1"),
               ),
             ],
           )),

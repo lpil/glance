@@ -30,12 +30,19 @@ Module(
         None,
         [
           Expression(Case(
-            [Variable("wobble")],
+            Span(21, 65),
+            [
+              Variable(
+                Span(26, 32),
+                "wobble",
+              ),
+            ],
             [
               Clause(
                 [
                   [
                     PatternVariant(
+                      Span(39, 52),
                       None,
                       "Wabble",
                       [
@@ -46,7 +53,10 @@ Module(
                   ],
                 ],
                 None,
-                Variable("field"),
+                Variable(
+                  Span(57, 62),
+                  "field",
+                ),
               ),
             ],
           )),

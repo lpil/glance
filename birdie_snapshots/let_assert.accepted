@@ -24,12 +24,19 @@ Module(
         None,
         [
           Assignment(
+            Span(16, 32),
             LetAssert(None),
-            PatternVariable("x"),
+            PatternVariable(
+              Span(27, 28),
+              "x",
+            ),
             None,
-            Int("1"),
+            Int(Span(31, 32), "1"),
           ),
-          Expression(Int("2")),
+          Expression(Int(
+            Span(33, 34),
+            "2",
+          )),
         ],
       ),
     ),

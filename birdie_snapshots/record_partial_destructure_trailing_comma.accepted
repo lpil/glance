@@ -30,17 +30,22 @@ Module(
         None,
         [
           Assignment(
+            Span(17, 39),
             Let,
             PatternVariant(
+              Span(21, 34),
               None,
               "Wibble",
               [
-                UnlabelledField(PatternVariable("y")),
+                UnlabelledField(PatternVariable(
+                  Span(28, 29),
+                  "y",
+                )),
               ],
               True,
             ),
             None,
-            Variable("x"),
+            Variable(Span(38, 39), "x"),
           ),
         ],
       ),

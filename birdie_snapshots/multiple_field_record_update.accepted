@@ -28,9 +28,13 @@ Module(
         None,
         [
           Expression(RecordUpdate(
+            Span(21, 86),
             None,
             "Wobble",
-            Variable("wobble"),
+            Variable(
+              Span(30, 36),
+              "wobble",
+            ),
             [
               RecordUpdateField(
                 "shorthand_mid",
@@ -38,7 +42,10 @@ Module(
               ),
               RecordUpdateField(
                 "non_shorthand",
-                Some(Variable("a")),
+                Some(Variable(
+                  Span(69, 70),
+                  "a",
+                )),
               ),
               RecordUpdateField(
                 "shorthand_end",

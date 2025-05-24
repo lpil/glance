@@ -19,7 +19,7 @@ Module(
         "x",
         Private,
         None,
-        Tuple([]),
+        Tuple(Span(10, 12), []),
       ),
     ),
   ],

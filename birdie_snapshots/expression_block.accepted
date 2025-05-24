@@ -23,11 +23,23 @@ Module(
         [],
         None,
         [
-          Expression(Block([
-            Expression(Variable("x")),
-            Expression(Variable("y")),
-            Expression(Variable("z")),
-          ])),
+          Expression(Block(
+            Span(16, 25),
+            [
+              Expression(Variable(
+                Span(18, 19),
+                "x",
+              )),
+              Expression(Variable(
+                Span(20, 21),
+                "y",
+              )),
+              Expression(Variable(
+                Span(22, 23),
+                "z",
+              )),
+            ],
+          )),
         ],
       ),
     ),
