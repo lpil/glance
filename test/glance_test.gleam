@@ -1521,3 +1521,242 @@ pub fn main() {
   |> check_location(Expression)
   |> birdie.snap("use_location")
 }
+
+pub fn int_location_test() {
+  "
+pub fn main() {
+  123_456
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("int_location")
+}
+
+pub fn float_location_test() {
+  "
+pub fn main() {
+  3.1415
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("float_location")
+}
+
+pub fn string_location_test() {
+  "
+pub fn main() {
+  \"Hello, world!\"
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("string_location")
+}
+
+pub fn variable_location_test() {
+  "
+pub fn main() {
+  some_variable
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("variable_location")
+}
+
+pub fn negate_int_location_test() {
+  "
+pub fn main() {
+  -123
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("negate_int_location")
+}
+
+pub fn negative_float_location_test() {
+  "
+pub fn main() {
+  -123.456
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("negative_float_location")
+}
+
+pub fn block_location_test() {
+  "
+pub fn main() {
+  {
+    something
+    something_else
+  }
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("block_location")
+}
+
+pub fn panic_location_test() {
+  "
+pub fn main() {
+  panic
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("panic_location")
+}
+
+pub fn panic_message_location_test() {
+  "
+pub fn main() {
+  panic as \"Crash\"
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("panic_message_location")
+}
+
+pub fn todo_location_test() {
+  "
+pub fn main() {
+  todo
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("todo_location")
+}
+
+pub fn todo_message_location_test() {
+  "
+pub fn main() {
+  todo as \"Not implemented\"
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("todo_message_location")
+}
+
+pub fn tuple_location_test() {
+  "
+pub fn main() {
+  #(1, 2, True)
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("tuple_location")
+}
+
+pub fn list_location_test() {
+  "
+pub fn main() {
+  [a, b, c]
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("list_location")
+}
+
+pub fn field_access_location_test() {
+  "
+pub fn main() {
+  something.wibble
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("field_access_location")
+}
+
+pub fn call_location_test() {
+  "
+pub fn main() {
+  io.println(\"Hello!\")
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("call_location")
+}
+
+pub fn tuple_index_location_test() {
+  "
+pub fn main() {
+  some_tuple.42
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("tuple_index_location")
+}
+
+pub fn case_location_test() {
+  "
+pub fn main() {
+  case abc {
+    1 -> 2
+    3 -> 4
+    _ -> 0
+  }
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("case_location")
+}
+
+pub fn echo_location_test() {
+  "
+pub fn main() {
+  echo some_variable
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("echo_location")
+}
+
+pub fn fn_location_test() {
+  "
+pub fn main() {
+  fn(arg) {
+    arg + 1
+  }
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("fn_location")
+}
+
+pub fn record_update_location_test() {
+  "
+pub fn main() {
+  Wibble(..w, wobble: 4)
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("record_update_location")
+}
+
+pub fn function_capture_location_test() {
+  "
+pub fn main() {
+  add(_, 1)
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("function_capture_location")
+}
+
+pub fn bit_array_location_test() {
+  "
+pub fn main() {
+  <<1, 2, 3, 4>>
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("bit_array_location")
+}
+
+pub fn binary_operator_location_test() {
+  "
+pub fn main() {
+  1 + 2
+}
+"
+  |> check_location(Expression)
+  |> birdie.snap("binary_operator_location")
+}

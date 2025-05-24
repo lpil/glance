@@ -27,7 +27,7 @@ Module(
             Span(16, 30),
             Let,
             PatternList(
-              Span(20, 25),
+              Span(20, 26),
               [
                 PatternInt(
                   Span(21, 22),

@@ -1,0 +1,11 @@
+---
+version: 1.2.7
+title: call_location
+file: ./test/glance_test.gleam
+test_name: call_location_test
+---
+
+pub fn main() {
+  io.println("Hello!")
+  ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+}

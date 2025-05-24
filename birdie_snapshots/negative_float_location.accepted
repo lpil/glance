@@ -1,0 +1,11 @@
+---
+version: 1.2.7
+title: negative_float_location
+file: ./test/glance_test.gleam
+test_name: negative_float_location_test
+---
+
+pub fn main() {
+  -123.456
+  ▔▔▔▔▔▔▔▔
+}

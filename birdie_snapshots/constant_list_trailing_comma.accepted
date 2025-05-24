@@ -16,12 +16,12 @@ Module(
     Definition(
       [],
       Constant(
-        Span(0, 21),
+        Span(0, 22),
         "x",
         Private,
         None,
         List(
-          Span(10, 21),
+          Span(10, 22),
           [
             Int(Span(11, 12), "1"),
             Float(Span(14, 17), "2.0"),

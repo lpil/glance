@@ -24,7 +24,7 @@ Module(
         None,
         [
           Expression(List(
-            Span(16, 29),
+            Span(16, 30),
             [
               Int(Span(17, 18), "1"),
               Int(Span(20, 21), "2"),
