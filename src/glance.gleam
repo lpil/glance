@@ -1148,7 +1148,7 @@ type ParseExpressionUnitContext {
 }
 
 fn span_from_string(start: Int, string: String) -> Span {
-  Span(start:, end: start + string.byte_size(string) - 1)
+  Span(start:, end: start + string.byte_size(string))
 }
 
 fn expression_unit(
@@ -1373,7 +1373,7 @@ fn bit_string_segment_options(
 }
 
 fn string_offset(start: Int, string: String) -> Int {
-  start + string.byte_size(string) - 1
+  start + string.byte_size(string)
 }
 
 fn after_expression(
@@ -2006,7 +2006,7 @@ fn named_type(
       comma_delimited([], tokens, type_, until: t.RightParen)
 
     _ -> {
-      let end = name_start + string.byte_size(name) - 1
+      let end = name_start + string.byte_size(name)
       Ok(#([], end, tokens))
     }
   })
