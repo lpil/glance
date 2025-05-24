@@ -1,0 +1,11 @@
+---
+version: 1.2.7
+title: variable_location
+file: ./test/glance_test.gleam
+test_name: variable_location_test
+---
+
+pub fn main() {
+  some_variable
+  ▔▔▔▔▔▔▔▔▔▔▔▔▔
+}

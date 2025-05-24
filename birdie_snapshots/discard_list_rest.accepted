@@ -37,7 +37,7 @@ Module(
                 [
                   [
                     PatternList(
-                      Span(25, 31),
+                      Span(25, 32),
                       [
                         PatternVariable(
                           Span(26, 27),

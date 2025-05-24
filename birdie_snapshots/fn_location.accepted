@@ -1,0 +1,15 @@
+---
+version: 1.2.7
+title: fn_location
+file: ./test/glance_test.gleam
+test_name: fn_location_test
+---
+
+pub fn main() {
+  fn(arg) {
+  ▔▔▔▔▔▔▔▔▔
+    arg + 1
+▔▔▔▔▔▔▔▔▔▔▔
+  }
+▔▔▔
+}

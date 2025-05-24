@@ -1,0 +1,17 @@
+---
+version: 1.2.7
+title: block_location
+file: ./test/glance_test.gleam
+test_name: block_location_test
+---
+
+pub fn main() {
+  {
+  ▔
+    something
+▔▔▔▔▔▔▔▔▔▔▔▔▔
+    something_else
+▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+  }
+▔▔▔
+}

@@ -1,0 +1,11 @@
+---
+version: 1.2.7
+title: field_access_location
+file: ./test/glance_test.gleam
+test_name: field_access_location_test
+---
+
+pub fn main() {
+  something.wibble
+  ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+}

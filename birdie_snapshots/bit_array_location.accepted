@@ -1,0 +1,11 @@
+---
+version: 1.2.7
+title: bit_array_location
+file: ./test/glance_test.gleam
+test_name: bit_array_location_test
+---
+
+pub fn main() {
+  <<1, 2, 3, 4>>
+  ▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+}

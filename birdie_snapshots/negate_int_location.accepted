@@ -1,0 +1,11 @@
+---
+version: 1.2.7
+title: negate_int_location
+file: ./test/glance_test.gleam
+test_name: negate_int_location_test
+---
+
+pub fn main() {
+  -123
+  ▔▔▔▔
+}

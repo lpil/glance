@@ -1,0 +1,11 @@
+---
+version: 1.2.7
+title: record_update_location
+file: ./test/glance_test.gleam
+test_name: record_update_location_test
+---
+
+pub fn main() {
+  Wibble(..w, wobble: 4)
+  ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
+}

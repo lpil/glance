@@ -1798,7 +1798,7 @@ fn list(
     [#(t.DotDot, _), ..tokens] -> {
       use #(rest, tokens) <- result.try(parser(tokens))
       use P(end), tokens <- expect(t.RightSquare, tokens)
-      Ok(ParsedList(list.reverse(acc), Some(rest), tokens, end))
+      Ok(ParsedList(list.reverse(acc), Some(rest), tokens, end + 1))
     }
     _ -> {
       use #(element, tokens) <- result.try(parser(tokens))
@@ -1806,7 +1806,7 @@ fn list(
       case tokens {
         [#(t.RightSquare, P(end)), ..tokens]
         | [#(t.Comma, _), #(t.RightSquare, P(end)), ..tokens] ->
-          Ok(ParsedList(list.reverse(acc), None, tokens, end))
+          Ok(ParsedList(list.reverse(acc), None, tokens, end + 1))
 
         [
           #(t.Comma, _),
@@ -1821,7 +1821,7 @@ fn list(
                 list.reverse(acc),
                 Some(discard(Span(start, start + 1))),
                 tokens,
-                end,
+                end + 1,
               ))
           }
         }
@@ -1829,7 +1829,7 @@ fn list(
         [#(t.Comma, _), #(t.DotDot, _), ..tokens] -> {
           use #(rest, tokens) <- result.try(parser(tokens))
           use P(end), tokens <- expect(t.RightSquare, tokens)
-          Ok(ParsedList(list.reverse(acc), Some(rest), tokens, end))
+          Ok(ParsedList(list.reverse(acc), Some(rest), tokens, end + 1))
         }
 
         [#(t.Comma, _), ..tokens] -> list(parser, discard, acc, tokens)
