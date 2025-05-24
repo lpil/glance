@@ -35,7 +35,7 @@ Module(
                 "deprecated",
                 [
                   String(
-                    Span(40, 75),
+                    Span(40, 77),
                     "Please upgrade to another algorithm",
                   ),
                 ],

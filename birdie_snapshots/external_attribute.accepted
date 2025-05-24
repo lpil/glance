@@ -28,11 +28,11 @@ Module(
               "erlang",
             ),
             String(
-              Span(19, 27),
+              Span(19, 29),
               "gb_trees",
             ),
             String(
-              Span(31, 36),
+              Span(31, 38),
               "empty",
             ),
           ],
@@ -45,11 +45,11 @@ Module(
               "javascript",
             ),
             String(
-              Span(62, 75),
+              Span(62, 77),
               "./gb_trees.js",
             ),
             String(
-              Span(79, 84),
+              Span(79, 86),
               "empty",
             ),
           ],

@@ -31,7 +31,7 @@ Module(
               Span(26, 37),
               [
                 Expression(String(
-                  Span(28, 33),
+                  Span(28, 35),
                   "oh no",
                 )),
               ],

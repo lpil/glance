@@ -24,7 +24,7 @@ Module(
         None,
         [
           Assignment(
-            Span(16, 63),
+            Span(16, 65),
             LetAssert(None),
             PatternVariable(
               Span(27, 28),
@@ -32,9 +32,9 @@ Module(
             ),
             None,
             Todo(
-              Span(31, 63),
+              Span(31, 65),
               Some(String(
-                Span(39, 63),
+                Span(39, 65),
                 "This is the todo message",
               )),
             ),

@@ -27,8 +27,8 @@ Module(
               Span(13, 19),
               "erlang",
             ),
-            String(Span(21, 24), "one"),
-            String(Span(28, 31), "two"),
+            String(Span(21, 26), "one"),
+            String(Span(28, 33), "two"),
           ],
         ),
         Attribute(
@@ -39,10 +39,10 @@ Module(
               "javascript",
             ),
             String(
-              Span(59, 64),
+              Span(59, 66),
               "three",
             ),
-            String(Span(68, 72), "four"),
+            String(Span(68, 74), "four"),
           ],
         ),
       ],

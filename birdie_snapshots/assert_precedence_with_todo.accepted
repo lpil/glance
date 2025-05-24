@@ -28,11 +28,11 @@ Module(
         None,
         [
           Assert(
-            Span(19, 46),
+            Span(19, 48),
             Todo(
-              Span(26, 46),
+              Span(26, 48),
               Some(String(
-                Span(34, 46),
+                Span(34, 48),
                 "todo message",
               )),
             ),
