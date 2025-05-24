@@ -81,19 +81,19 @@ fn highlight_location(
   location: glance.Span,
   position: Int,
   text: String,
-  next_line: String,
+  underline: String,
   underline_used: Bool,
 ) -> String {
   case src {
     "" ->
       case underline_used {
         False -> text
-        True -> text <> "\n" <> next_line
+        True -> text <> "\n" <> underline
       }
     "\n" <> src -> {
       let text = case underline_used {
         False -> text <> "\n"
-        True -> text <> "\n" <> next_line <> "\n"
+        True -> text <> "\n" <> underline <> "\n"
       }
       case position + 1 >= location.end {
         False ->
@@ -104,12 +104,12 @@ fn highlight_location(
     _ ->
       case string.pop_grapheme(src) {
         Ok(#(char, src)) -> {
-          let #(next_line, underline_used) = case position >= location.start {
-            False -> #(next_line <> " ", False)
+          let #(underline, underline_used) = case position >= location.start {
+            False -> #(underline <> " ", False)
             True ->
               case position < location.end {
-                False -> #(next_line, underline_used)
-                True -> #(next_line <> "▔", True)
+                False -> #(underline, underline_used)
+                True -> #(underline <> "▔", True)
               }
           }
           highlight_location(
@@ -117,7 +117,7 @@ fn highlight_location(
             location,
             position + string.byte_size(char),
             text <> char,
-            next_line,
+            underline,
             underline_used,
           )
         }
