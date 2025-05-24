@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- All expressions have a location span as their first field.
+- All patterns have a location span as their first field.
+- The `Constant` definition now has a location span as its first field.
+- Fixed a bug where some location spans would be wrong.
+
 ## v4.0.0 - 2025-05-21
 
 - All definitions have a location span as their first field.
