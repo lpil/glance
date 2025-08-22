@@ -1239,21 +1239,27 @@ fn expression_unit(
     }
 
     [#(t.Bang, P(start)), ..tokens] -> {
-      use #(expression, tokens) <- result.map(expression(tokens))
-      #(
-        Some(NegateBool(Span(start, expression.location.end), expression)),
-        tokens,
-      )
+      let unit = expression_unit(tokens, RegularExpressionUnit)
+      use #(maybe_expression, tokens) <- result.try(unit)
+      case maybe_expression {
+        Some(expression) -> {
+          let span = Span(start, expression.location.end)
+          Ok(#(Some(NegateBool(span, expression)), tokens))
+        }
+        None -> unexpected_error(tokens)
+      }
     }
 
     [#(t.Minus, P(start)), ..tokens] -> {
-      use #(expression, tokens) <- result.map(expression(tokens))
-      let expression = case expression {
-        Float(location, amount) ->
-          Float(Span(start, location.end), "-" <> amount)
-        _ -> NegateInt(Span(start, expression.location.end), expression)
+      let unit = expression_unit(tokens, RegularExpressionUnit)
+      use #(maybe_expression, tokens) <- result.try(unit)
+      case maybe_expression {
+        Some(expression) -> {
+          let span = Span(start, expression.location.end)
+          Ok(#(Some(NegateInt(span, expression)), tokens))
+        }
+        None -> unexpected_error(tokens)
       }
-      #(Some(expression), tokens)
     }
 
     [#(t.LeftBrace, P(start)), ..tokens] -> {

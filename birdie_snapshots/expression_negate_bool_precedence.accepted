@@ -1,0 +1,45 @@
+---
+version: 1.2.7
+title: expression_negate_bool_precedence
+file: ./test/glance_test.gleam
+test_name: expression_negate_bool_precedence_test
+---
+pub fn main() { !False && False }
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(0, 33),
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(BinaryOperator(
+            Span(16, 31),
+            And,
+            NegateBool(
+              Span(16, 22),
+              Variable(
+                Span(17, 22),
+                "False",
+              ),
+            ),
+            Variable(
+              Span(26, 31),
+              "False",
+            ),
+          )),
+        ],
+      ),
+    ),
+  ],
+)
