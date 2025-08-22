@@ -498,10 +498,22 @@ pub fn expression_negate_int_test() {
   |> birdie.snap(title: "expression_negate_int")
 }
 
+pub fn expression_negate_int_precedence_test() {
+  "pub fn main() { let a = 1 echo -a + a }"
+  |> to_snapshot
+  |> birdie.snap(title: "expression_negate_int_precedence")
+}
+
 pub fn expression_negate_bool_test() {
   "pub fn main() { !x }"
   |> to_snapshot
   |> birdie.snap(title: "expression_negate_bool")
+}
+
+pub fn expression_negate_bool_precedence_test() {
+  "pub fn main() { !False && False }"
+  |> to_snapshot
+  |> birdie.snap(title: "expression_negate_bool_precedence")
 }
 
 pub fn expression_block_test() {

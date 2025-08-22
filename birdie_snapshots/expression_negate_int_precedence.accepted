@@ -1,0 +1,58 @@
+---
+version: 1.2.7
+title: expression_negate_int_precedence
+file: ./test/glance_test.gleam
+test_name: expression_negate_int_precedence_test
+---
+pub fn main() { let a = 1 echo -a + a }
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(0, 39),
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Span(16, 25),
+            Let,
+            PatternVariable(
+              Span(20, 21),
+              "a",
+            ),
+            None,
+            Int(Span(24, 25), "1"),
+          ),
+          Expression(Echo(
+            Span(26, 37),
+            Some(BinaryOperator(
+              Span(31, 37),
+              AddInt,
+              NegateInt(
+                Span(31, 33),
+                Variable(
+                  Span(32, 33),
+                  "a",
+                ),
+              ),
+              Variable(
+                Span(36, 37),
+                "a",
+              ),
+            )),
+          )),
+        ],
+      ),
+    ),
+  ],
+)

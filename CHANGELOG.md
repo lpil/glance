@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fixed the precedence of boolean and integer negation operators.
+
 ## v5.0.0 - 2025-05-24
 
 - All expressions have a location span as their first field.
@@ -35,7 +39,7 @@
 - Added support for label shorthand syntax.
 - `Field` now has two variants; `LabelledField` and `ShorthandField`.
 - `Variant` now uses a new `VariantField` type instead of `Field(Type)`.
-- `RecordUpdate` variant of `Expression` now uses a new `RecordUpdateField` 
+- `RecordUpdate` variant of `Expression` now uses a new `RecordUpdateField`
   type instead of `#(String, Expression)`.
 
 ## v1.1.0 - 2024-12-04
