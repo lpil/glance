@@ -1,5 +1,5 @@
 name = "glance"
-version = "5.0.0"
+version = "5.0.1"
 description = "A Gleam source code parser, in Gleam!"
 gleam = ">= 1.7.0"
 

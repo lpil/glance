@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v5.0.1 - 2025-08-25
 
 - Fixed the precedence of boolean and integer negation operators.
 
