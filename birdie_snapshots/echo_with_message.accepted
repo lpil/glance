@@ -1,0 +1,41 @@
+---
+version: 1.2.7
+title: echo_with_message
+file: ./test/glance_test.gleam
+test_name: echo_with_message_test
+---
+pub fn main() { echo 3.14 as "This is pi" }
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(0, 43),
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(Echo(
+            Span(16, 41),
+            Some(Float(
+              Span(21, 25),
+              "3.14",
+            )),
+            Some(String(
+              Span(29, 41),
+              "This is pi",
+            )),
+          )),
+        ],
+      ),
+    ),
+  ],
+)

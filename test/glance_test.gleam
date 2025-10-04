@@ -1941,3 +1941,9 @@ pub fn main() {
   |> check_location(Pattern)
   |> birdie.snap(title: "constructor_pattern_location")
 }
+
+pub fn echo_with_message_test() {
+  "pub fn main() { echo 3.14 as \"This is pi\" }"
+  |> to_snapshot
+  |> birdie.snap(title: "echo_with_message")
+}
