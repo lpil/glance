@@ -140,7 +140,11 @@ pub type Expression {
     left: Expression,
     right: Expression,
   )
-  Echo(location: Span, expression: Option(Expression))
+  Echo(
+    location: Span,
+    expression: Option(Expression),
+    message: Option(Expression),
+  )
 }
 
 pub type Clause {
@@ -1274,21 +1278,30 @@ fn expression_unit(
       #(Some(BitString(Span(start, end), segments)), tokens)
     }
 
-    [#(t.Echo, P(start)), ..tokens] ->
-      case context {
+    [#(t.Echo, P(start)), ..tokens] -> {
+      let result = case context {
         // `echo` in a pipeline doesn't have an expression after it
         ExpressionUnitAfterPipe -> {
           let span = span_from_string(start, "echo")
-          Ok(#(Some(Echo(span, None)), tokens))
+          Ok(#(span, None, tokens))
         }
         RegularExpressionUnit ->
           result.map(expression(tokens), fn(expression_and_tokens) {
             let #(expression, tokens) = expression_and_tokens
             let span = Span(start, expression.location.end)
-            let expression = Echo(span, Some(expression))
-            #(Some(expression), tokens)
+            #(span, Some(expression), tokens)
           })
       }
+      use #(span, echo_expression, tokens) <- result.try(result)
+      case tokens {
+        [#(t.As, _), ..tokens] -> {
+          use #(message, tokens) <- result.map(expression(tokens))
+          let span = Span(span.start, message.location.end)
+          #(Some(Echo(span, echo_expression, Some(message))), tokens)
+        }
+        _ -> Ok(#(Some(Echo(span, echo_expression, None)), tokens))
+      }
+    }
 
     _ -> Ok(#(None, tokens))
   })

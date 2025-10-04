@@ -440,14 +440,17 @@ fn try_fold_expression(
     | glance.Variable(_, _)
     | glance.Panic(_, _)
     | glance.Todo(_, _)
-    | glance.Echo(_, None) -> Ok(acc)
+    | glance.Echo(_, None, _) -> Ok(acc)
 
     glance.NegateInt(_location, expression)
     | glance.NegateBool(_location, expression)
-    | glance.Echo(_location, Some(expression))
+    | glance.Echo(_location, Some(expression), None)
     | glance.FieldAccess(location: _, container: expression, label: _)
     | glance.TupleIndex(location: _, tuple: expression, index: _) ->
       try_fold_expression(expression, acc, fun)
+
+    glance.Echo(_location, Some(expression), Some(message)) ->
+      try_fold_expressions([expression, message], acc, fun)
 
     glance.Block(_location, statements) ->
       try_fold_statements(statements, acc, fun)
