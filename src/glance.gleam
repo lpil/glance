@@ -73,7 +73,7 @@ pub type Pattern {
   PatternVariable(location: Span, name: String)
   PatternTuple(location: Span, elements: List(Pattern))
   PatternList(location: Span, elements: List(Pattern), tail: Option(Pattern))
-  PatternAssignment(location: Span, attern: Pattern, name: String)
+  PatternAssignment(location: Span, pattern: Pattern, name: String)
   PatternConcatenate(
     location: Span,
     prefix: String,
