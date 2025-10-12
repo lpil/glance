@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- The `pattern` field of the `PatternAssignment` variant has been renamed from
+  the previous typo `attern`.
+
 ## v5.0.1 - 2025-08-25
 
 - Fixed the precedence of boolean and integer negation operators.
