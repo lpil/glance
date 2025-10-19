@@ -37,6 +37,7 @@ Module(
                 )),
                 LabelledField(
                   "x",
+                  Span(36, 38),
                   PatternInt(
                     Span(39, 40),
                     "2",

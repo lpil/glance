@@ -28,7 +28,12 @@ Module(
             Span(16, 22),
             "Wibble",
           ),
-          [ShorthandField("field")],
+          [
+            ShorthandField(
+              "field",
+              Span(23, 29),
+            ),
+          ],
         ),
       ),
     ),

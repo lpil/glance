@@ -36,10 +36,12 @@ Module(
               )),
               LabelledField(
                 "one",
+                Span(26, 30),
                 Int(Span(31, 32), "2"),
               ),
               LabelledField(
                 "two",
+                Span(34, 38),
                 Int(Span(39, 40), "3"),
               ),
             ],

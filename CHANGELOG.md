@@ -4,8 +4,11 @@
 
 - The `pattern` field of the `PatternAssignment` variant has been renamed from
   the previous typo `attern`.
-
 - The `echo ... as message` syntax is now supported.
+- The `LabelledField` variant now has a `label_location` field which stores the
+  location of the label.
+- The `LabelShorthand` variant now has a `location` field which stores the
+  location of the label.
 
 ## v5.0.1 - 2025-08-25
 
