@@ -38,15 +38,22 @@ Module(
                 Span(28, 38),
                 "unlabelled",
               )),
-              ShorthandField("shorthand_mid"),
+              ShorthandField(
+                "shorthand_mid",
+                Span(40, 54),
+              ),
               LabelledField(
                 "non_shorthand",
+                Span(56, 70),
                 Variable(
                   Span(71, 72),
                   "a",
                 ),
               ),
-              ShorthandField("shorthand_end"),
+              ShorthandField(
+                "shorthand_end",
+                Span(74, 88),
+              ),
             ],
           )),
         ],

@@ -1,0 +1,11 @@
+---
+version: 1.2.7
+title: label_shorthand_location
+file: ./test/glance_test.gleam
+test_name: label_shorthand_location_test
+---
+
+pub fn main() {
+  wibble(some_label:)
+         ▔▔▔▔▔▔▔▔▔▔▔
+}

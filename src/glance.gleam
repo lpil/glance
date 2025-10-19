@@ -315,8 +315,8 @@ pub type VariantField {
 }
 
 pub type Field(t) {
-  LabelledField(label: String, item: t)
-  ShorthandField(label: String)
+  LabelledField(label: String, label_location: Span, item: t)
+  ShorthandField(label: String, location: Span)
   UnlabelledField(item: t)
 }
 
@@ -2134,16 +2134,26 @@ fn field(
   of parser: fn(Tokens) -> Result(#(t, Tokens), Error),
 ) -> Result(#(Field(t), Tokens), Error) {
   case tokens {
-    [#(t.Name(name), _), #(t.Colon, _), ..tokens] ->
+    [#(t.Name(name), start), #(t.Colon, end), ..tokens] ->
       case tokens {
         // Field is using shorthand (`value:` instead of `value: value`)
         [#(t.Comma, _), ..] | [#(t.RightParen, _), ..] -> {
-          Ok(#(ShorthandField(name), tokens))
+          Ok(#(
+            ShorthandField(name, Span(start.byte_offset, end.byte_offset + 1)),
+            tokens,
+          ))
         }
         // Field is not using shorthand
         _ -> {
           use #(t, tokens) <- result.try(parser(tokens))
-          Ok(#(LabelledField(name, t), tokens))
+          Ok(#(
+            LabelledField(
+              name,
+              t,
+              label_location: Span(start.byte_offset, end.byte_offset + 1),
+            ),
+            tokens,
+          ))
         }
       }
     _ -> {

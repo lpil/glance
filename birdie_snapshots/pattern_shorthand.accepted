@@ -46,7 +46,10 @@ Module(
                       None,
                       "Wabble",
                       [
-                        ShorthandField("field"),
+                        ShorthandField(
+                          "field",
+                          Span(46, 52),
+                        ),
                       ],
                       False,
                     ),

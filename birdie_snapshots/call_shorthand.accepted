@@ -33,7 +33,12 @@ Module(
               Span(21, 27),
               "wobble",
             ),
-            [ShorthandField("field")],
+            [
+              ShorthandField(
+                "field",
+                Span(28, 34),
+              ),
+            ],
           )),
         ],
       ),

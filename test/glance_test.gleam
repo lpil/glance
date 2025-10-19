@@ -27,6 +27,7 @@ type Entity {
   Function
   Expression
   Pattern
+  Label
 }
 
 fn check_location(src: String, entity: Entity) -> String {
@@ -70,6 +71,21 @@ fn check_location(src: String, entity: Entity) -> String {
       let assert glance.Assignment(pattern:, ..) = statement
         as "Statement is not an assignment"
       pattern.location
+    }
+
+    Label -> {
+      let assert [function, ..] = module.functions as "Function not found"
+      let assert [statement, ..] = function.definition.body as "Body is empty"
+      let assert glance.Expression(expression) = statement
+        as "Statement is not an expression"
+      let assert glance.Call(arguments:, ..) = expression
+        as "Expression is not a call"
+      let assert [argument] = arguments as "Call does not have one argument"
+      case argument {
+        glance.LabelledField(label_location:, ..) -> label_location
+        glance.ShorthandField(location:, ..) -> location
+        glance.UnlabelledField(..) -> panic as "Argument does not have a label"
+      }
     }
   }
 
@@ -1946,4 +1962,24 @@ pub fn echo_with_message_test() {
   "pub fn main() { echo 3.14 as \"This is pi\" }"
   |> to_snapshot
   |> birdie.snap(title: "echo_with_message")
+}
+
+pub fn label_location_test() {
+  "
+pub fn main() {
+  wibble(some_label: some_value)
+}
+"
+  |> check_location(Label)
+  |> birdie.snap(title: "label_location")
+}
+
+pub fn label_shorthand_location_test() {
+  "
+pub fn main() {
+  wibble(some_label:)
+}
+"
+  |> check_location(Label)
+  |> birdie.snap(title: "label_shorthand_location")
 }

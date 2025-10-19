@@ -30,6 +30,7 @@ Module(
             )),
             LabelledField(
               "wobber",
+              Span(17, 24),
               Float(Span(25, 28), "2.0"),
             ),
           ],
