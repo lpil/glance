@@ -11,6 +11,7 @@ pub type X = fn(A, B) -> C
 Module(
   [],
   [],
+  [],
   [
     Definition(
       [],

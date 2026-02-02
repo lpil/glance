@@ -11,6 +11,7 @@ pub type X = wibble.Y
 Module(
   [],
   [],
+  [],
   [
     Definition(
       [],

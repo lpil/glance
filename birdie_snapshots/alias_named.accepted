@@ -11,6 +11,7 @@ pub type X = Y
 Module(
   [],
   [],
+  [],
   [
     Definition(
       [],

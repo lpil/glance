@@ -1,3 +1,4 @@
+import gleam/bit_array
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -19,12 +20,17 @@ pub type Attribute {
 
 pub type Module {
   Module(
+    comments: List(Comment),
     imports: List(Definition(Import)),
     custom_types: List(Definition(CustomType)),
     type_aliases: List(Definition(TypeAlias)),
     constants: List(Definition(Constant)),
     functions: List(Definition(Function)),
   )
+}
+
+pub type Comment {
+  Comment(text: String, span: Span)
 }
 
 pub type Function {
@@ -339,11 +345,140 @@ pub type Error {
 }
 
 pub fn module(src: String) -> Result(Module, Error) {
-  glexer.new(src)
-  |> glexer.discard_comments
-  |> glexer.discard_whitespace
-  |> glexer.lex
-  |> slurp(Module([], [], [], [], []), [], _)
+  let tokens =
+    glexer.new(src)
+    |> glexer.discard_whitespace
+    |> glexer.lex
+
+  let #(comments, tokens) = collect_comments(src, tokens)
+
+  slurp(Module(comments, [], [], [], [], []), [], tokens)
+}
+
+type CommentKind {
+  RegularComment
+  DocComment
+  ModuleComment
+}
+
+type PendingComment {
+  PendingComment(kind: CommentKind, text: String, span: Span)
+}
+
+fn collect_comments(src: String, tokens: Tokens) -> #(List(Comment), Tokens) {
+  collect_comments_loop(src, tokens, None, [], [])
+}
+
+fn collect_comments_loop(
+  src: String,
+  tokens: Tokens,
+  pending: Option(PendingComment),
+  comments: List(Comment),
+  kept: Tokens,
+) -> #(List(Comment), Tokens) {
+  case tokens {
+    [] -> #(list.reverse(flush_pending(pending, comments)), list.reverse(kept))
+    [#(token, position), ..rest] -> {
+      case comment_from_token(token, position) {
+        Some(#(kind, text, span)) -> {
+          let #(pending, comments) = case pending {
+            None -> #(PendingComment(kind, text, span), comments)
+            Some(PendingComment(prev_kind, prev_text, prev_span)) ->
+              case
+                kind == prev_kind
+                && are_adjacent_comment_lines(src, prev_span.end, span.start)
+              {
+                True -> #(
+                  PendingComment(
+                    kind,
+                    prev_text <> "\n" <> text,
+                    Span(prev_span.start, span.end),
+                  ),
+                  comments,
+                )
+                False -> #(PendingComment(kind, text, span), [
+                  Comment(prev_text, prev_span),
+                  ..comments
+                ])
+              }
+          }
+          collect_comments_loop(src, rest, Some(pending), comments, kept)
+        }
+
+        None -> {
+          let comments = flush_pending(pending, comments)
+          collect_comments_loop(src, rest, None, comments, [
+            #(token, position),
+            ..kept
+          ])
+        }
+      }
+    }
+  }
+}
+
+fn flush_pending(
+  pending: Option(PendingComment),
+  comments: List(Comment),
+) -> List(Comment) {
+  case pending {
+    None -> comments
+    Some(PendingComment(kind: _, text: text, span: span)) -> [
+      Comment(text, span),
+      ..comments
+    ]
+  }
+}
+
+fn comment_from_token(
+  token: Token,
+  position: Position,
+) -> Option(#(CommentKind, String, Span)) {
+  let P(start) = position
+  let end = string_offset(start, t.to_source(token))
+  case token {
+    t.CommentNormal(text) -> Some(#(RegularComment, text, Span(start, end)))
+    t.CommentDoc(text) -> Some(#(DocComment, text, Span(start, end)))
+    t.CommentModule(text) -> Some(#(ModuleComment, text, Span(start, end)))
+    _ -> None
+  }
+}
+
+fn are_adjacent_comment_lines(
+  src: String,
+  prev_end: Int,
+  next_start: Int,
+) -> Bool {
+  let between = slice_bytes(src, prev_end, next_start)
+  string.trim(between) == "" && count_newlines(between) == 1
+}
+
+fn slice_bytes(src: String, start: Int, end: Int) -> String {
+  let length = end - start
+  case bit_array.slice(bit_array.from_string(src), at: start, take: length) {
+    Ok(bits) -> {
+      case bit_array.to_string(bits) {
+        Ok(text) -> text
+        Error(_) -> ""
+      }
+    }
+    Error(_) -> ""
+  }
+}
+
+fn count_newlines(text: String) -> Int {
+  count_newlines_loop(text, 0)
+}
+
+fn count_newlines_loop(text: String, count: Int) -> Int {
+  case string.pop_grapheme(text) {
+    Ok(#(char, rest)) ->
+      case char == "\n" {
+        True -> count_newlines_loop(rest, count + 1)
+        False -> count_newlines_loop(rest, count)
+      }
+    Error(_) -> count
+  }
 }
 
 fn push_constant(

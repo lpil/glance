@@ -12,6 +12,7 @@ pub type Box(x) {
 
 Module(
   [],
+  [],
   [
     Definition(
       [],

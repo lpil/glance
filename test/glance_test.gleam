@@ -150,7 +150,7 @@ pub fn parse_self_test() {
 pub fn empty_test() {
   ""
   |> glance.module
-  |> should.equal(Ok(glance.Module([], [], [], [], [])))
+  |> should.equal(Ok(glance.Module([], [], [], [], [], [])))
 }
 
 pub fn public_enum_test() {

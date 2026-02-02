@@ -11,6 +11,7 @@ pub type X = _whatever
 Module(
   [],
   [],
+  [],
   [
     Definition(
       [],

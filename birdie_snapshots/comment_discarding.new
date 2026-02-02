@@ -1,8 +1,6 @@
 ---
 version: 1.2.7
 title: comment_discarding
-file: ./test/glance_test.gleam
-test_name: comment_discarding_test
 ---
 pub type
     // Comment!

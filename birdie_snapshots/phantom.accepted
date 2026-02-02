@@ -12,6 +12,7 @@ pub type Spooky(t) {
 
 Module(
   [],
+  [],
   [
     Definition(
       [],
