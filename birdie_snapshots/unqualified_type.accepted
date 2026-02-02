@@ -9,7 +9,6 @@ import one/two/three.{type One, type Two, three, four, type Five as X, type Six 
 ---------------------------
 
 Module(
-  [],
   [
     Definition(
       [],
@@ -42,6 +41,7 @@ Module(
       ),
     ),
   ],
+  [],
   [],
   [],
   [],

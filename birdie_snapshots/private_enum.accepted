@@ -12,7 +12,6 @@ type Cardinal {
 
 Module(
   [],
-  [],
   [
     Definition(
       [],
@@ -31,6 +30,7 @@ Module(
       ),
     ),
   ],
+  [],
   [],
   [],
   [],

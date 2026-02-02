@@ -20,12 +20,12 @@ pub type Attribute {
 
 pub type Module {
   Module(
-    comments: List(Comment),
     imports: List(Definition(Import)),
     custom_types: List(Definition(CustomType)),
     type_aliases: List(Definition(TypeAlias)),
     constants: List(Definition(Constant)),
     functions: List(Definition(Function)),
+    comments: List(Comment),
   )
 }
 
@@ -352,7 +352,7 @@ pub fn module(src: String) -> Result(Module, Error) {
 
   let #(comments, tokens) = collect_comments(src, tokens)
 
-  slurp(Module(comments, [], [], [], [], []), [], tokens)
+  slurp(Module([], [], [], [], [], comments), [], tokens)
 }
 
 type CommentKind {

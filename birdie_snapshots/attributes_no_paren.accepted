@@ -16,7 +16,6 @@ Module(
   [],
   [],
   [],
-  [],
   [
     Definition(
       [Attribute("thingbobby", [])],
@@ -35,4 +34,5 @@ Module(
       ),
     ),
   ],
+  [],
 )

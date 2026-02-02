@@ -17,7 +17,6 @@ pub type HashAlgorithm {
 
 Module(
   [],
-  [],
   [
     Definition(
       [],
@@ -49,6 +48,7 @@ Module(
       ),
     ),
   ],
+  [],
   [],
   [],
   [],

@@ -12,7 +12,6 @@ pub type Box(a) {
 
 Module(
   [],
-  [],
   [
     Definition(
       [],
@@ -47,6 +46,7 @@ Module(
       ),
     ),
   ],
+  [],
   [],
   [],
   [],

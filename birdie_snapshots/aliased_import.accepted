@@ -9,7 +9,6 @@ import one/two/three as four
 ---------------------------
 
 Module(
-  [],
   [
     Definition(
       [],
@@ -22,6 +21,7 @@ Module(
       ),
     ),
   ],
+  [],
   [],
   [],
   [],

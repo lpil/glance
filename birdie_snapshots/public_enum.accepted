@@ -12,7 +12,6 @@ test_name: public_enum_test
 ---------------------------
 
 Module(
-  [Comment(" comment", Span(0, 10))],
   [],
   [
     Definition(
@@ -35,4 +34,5 @@ Module(
   [],
   [],
   [],
+  [Comment(" comment", Span(0, 10))],
 )

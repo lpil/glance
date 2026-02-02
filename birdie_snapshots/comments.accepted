@@ -15,17 +15,6 @@ pub fn main() { Nil }
 ---------------------------
 
 Module(
-  [
-    Comment(
-      " Module comment",
-      Span(0, 18),
-    ),
-    Comment(" Comment", Span(20, 30)),
-    Comment(
-      " Doc comment",
-      Span(32, 47),
-    ),
-  ],
   [],
   [],
   [],
@@ -46,6 +35,17 @@ Module(
           )),
         ],
       ),
+    ),
+  ],
+  [
+    Comment(
+      " Module comment",
+      Span(0, 18),
+    ),
+    Comment(" Comment", Span(20, 30)),
+    Comment(
+      " Doc comment",
+      Span(32, 47),
     ),
   ],
 )
