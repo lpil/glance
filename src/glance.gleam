@@ -1,4 +1,3 @@
-import gleam/bit_array
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -350,7 +349,7 @@ pub fn module(src: String) -> Result(Module, Error) {
     |> glexer.discard_whitespace
     |> glexer.lex
 
-  let #(comments, tokens) = collect_comments(src, tokens)
+  let #(comments, tokens) = collect_comments(tokens)
 
   slurp(Module([], [], [], [], [], comments), [], tokens)
 }
@@ -365,12 +364,11 @@ type PendingComment {
   PendingComment(kind: CommentKind, text: String, span: Span)
 }
 
-fn collect_comments(src: String, tokens: Tokens) -> #(List(Comment), Tokens) {
-  collect_comments_loop(src, tokens, None, [], [])
+fn collect_comments(tokens: Tokens) -> #(List(Comment), Tokens) {
+  collect_comments_loop(tokens, None, [], [])
 }
 
 fn collect_comments_loop(
-  src: String,
   tokens: Tokens,
   pending: Option(PendingComment),
   comments: List(Comment),
@@ -384,10 +382,7 @@ fn collect_comments_loop(
           let #(pending, comments) = case pending {
             None -> #(PendingComment(kind, text, span), comments)
             Some(PendingComment(prev_kind, prev_text, prev_span)) ->
-              case
-                kind == prev_kind
-                && are_adjacent_comment_lines(src, prev_span.end, span.start)
-              {
+              case kind == prev_kind && kind != RegularComment {
                 True -> #(
                   PendingComment(
                     kind,
@@ -402,12 +397,12 @@ fn collect_comments_loop(
                 ])
               }
           }
-          collect_comments_loop(src, rest, Some(pending), comments, kept)
+          collect_comments_loop(rest, Some(pending), comments, kept)
         }
 
         None -> {
           let comments = flush_pending(pending, comments)
-          collect_comments_loop(src, rest, None, comments, [
+          collect_comments_loop(rest, None, comments, [
             #(token, position),
             ..kept
           ])
@@ -441,43 +436,6 @@ fn comment_from_token(
     t.CommentDoc(text) -> Some(#(DocComment, text, Span(start, end)))
     t.CommentModule(text) -> Some(#(ModuleComment, text, Span(start, end)))
     _ -> None
-  }
-}
-
-fn are_adjacent_comment_lines(
-  src: String,
-  prev_end: Int,
-  next_start: Int,
-) -> Bool {
-  let between = slice_bytes(src, prev_end, next_start)
-  string.trim(between) == "" && count_newlines(between) == 1
-}
-
-fn slice_bytes(src: String, start: Int, end: Int) -> String {
-  let length = end - start
-  case bit_array.slice(bit_array.from_string(src), at: start, take: length) {
-    Ok(bits) -> {
-      case bit_array.to_string(bits) {
-        Ok(text) -> text
-        Error(_) -> ""
-      }
-    }
-    Error(_) -> ""
-  }
-}
-
-fn count_newlines(text: String) -> Int {
-  count_newlines_loop(text, 0)
-}
-
-fn count_newlines_loop(text: String, count: Int) -> Int {
-  case string.pop_grapheme(text) {
-    Ok(#(char, rest)) ->
-      case char == "\n" {
-        True -> count_newlines_loop(rest, count + 1)
-        False -> count_newlines_loop(rest, count)
-      }
-    Error(_) -> count
   }
 }
 
