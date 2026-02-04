@@ -34,5 +34,11 @@ Module(
   [],
   [],
   [],
-  [Comment(" comment", Span(0, 10))],
+  [
+    Comment(
+      RegularComment,
+      " comment",
+      Span(0, 10),
+    ),
+  ],
 )

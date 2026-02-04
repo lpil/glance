@@ -39,11 +39,17 @@ Module(
   ],
   [
     Comment(
+      DocComment,
       " Module comment",
       Span(0, 18),
     ),
-    Comment(" Comment", Span(20, 30)),
     Comment(
+      RegularComment,
+      " Comment",
+      Span(20, 30),
+    ),
+    Comment(
+      DocComment,
       " Doc comment",
       Span(32, 47),
     ),

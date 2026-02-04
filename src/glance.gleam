@@ -29,7 +29,7 @@ pub type Module {
 }
 
 pub type Comment {
-  Comment(text: String, span: Span)
+  Comment(kind: CommentKind, text: String, span: Span)
 }
 
 pub type Function {
@@ -354,7 +354,7 @@ pub fn module(src: String) -> Result(Module, Error) {
   slurp(Module([], [], [], [], [], comments), [], tokens)
 }
 
-type CommentKind {
+pub type CommentKind {
   RegularComment
   DocComment
   ModuleComment
@@ -392,7 +392,7 @@ fn collect_comments_loop(
                   comments,
                 )
                 False -> #(PendingComment(kind, text, span), [
-                  Comment(prev_text, prev_span),
+                  Comment(prev_kind, prev_text, prev_span),
                   ..comments
                 ])
               }
@@ -418,8 +418,8 @@ fn flush_pending(
 ) -> List(Comment) {
   case pending {
     None -> comments
-    Some(PendingComment(kind: _, text: text, span: span)) -> [
-      Comment(text, span),
+    Some(PendingComment(kind: kind, text: text, span: span)) -> [
+      Comment(kind, text, span),
       ..comments
     ]
   }
