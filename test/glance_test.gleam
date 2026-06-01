@@ -858,6 +858,14 @@ pub fn concatenate_pattern_with_prefix_assignment_test() {
   |> birdie.snap(title: "concatenate_pattern_with_prefix_assignment")
 }
 
+pub fn concatenate_pattern_with_prefix_assignment_and_discard_test() {
+  "pub fn main() { let \"1\" as x <> _ = \"\" }"
+  |> to_snapshot
+  |> birdie.snap(
+    title: "concatenate_pattern_with_prefix_assignment_and_discard",
+  )
+}
+
 pub fn assignment_pattern_test() {
   "pub fn main() { let x as y = 1 }"
   |> to_snapshot

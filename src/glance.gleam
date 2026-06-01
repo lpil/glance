@@ -985,6 +985,18 @@ fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
     }
     [
       #(t.String(v), P(start)),
+      #(t.As, _),
+      #(t.Name(l), _),
+      #(t.LessGreater, _),
+      #(t.DiscardName(r), P(name_start)),
+      ..tokens
+    ] -> {
+      let span = Span(start, string_offset(name_start, r) + 1)
+      let pattern = PatternConcatenate(span, v, Some(Named(l)), Discarded(r))
+      Ok(#(pattern, tokens))
+    }
+    [
+      #(t.String(v), P(start)),
       #(t.LessGreater, _),
       #(t.Name(n), P(name_start)),
       ..tokens

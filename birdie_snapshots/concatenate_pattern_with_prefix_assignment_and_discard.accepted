@@ -1,0 +1,42 @@
+---
+version: 1.2.7
+title: concatenate_pattern_with_prefix_assignment_and_discard
+file: ./test/glance_test.gleam
+test_name: concatenate_pattern_with_prefix_assignment_and_discard_test
+---
+pub fn main() { let "1" as x <> _ = "" }
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(0, 40),
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Span(16, 38),
+            Let,
+            PatternConcatenate(
+              Span(20, 33),
+              "1",
+              Some(Named("x")),
+              Discarded(""),
+            ),
+            None,
+            String(Span(36, 38), ""),
+          ),
+        ],
+      ),
+    ),
+  ],
+)
