@@ -28,6 +28,7 @@ pub type Module {
   )
 }
 
+/// A comment found in the source code.
 pub type Comment {
   Comment(kind: CommentKind, text: String, span: Span)
 }
@@ -354,14 +355,18 @@ pub fn module(src: String) -> Result(Module, Error) {
   slurp(Module([], [], [], [], [], comments), [], tokens)
 }
 
-pub type CommentKind {
-  RegularComment
-  DocComment
-  ModuleComment
-}
-
 type PendingComment {
   PendingComment(kind: CommentKind, text: String, span: Span)
+}
+
+/// The kind of comment syntax used in the source code.
+pub type CommentKind {
+  /// A regular comment starting with `//`.
+  RegularComment
+  /// A documentation comment starting with `///`.
+  DocComment
+  /// A module documentation comment starting with `////`.
+  ModuleComment
 }
 
 fn collect_comments(tokens: Tokens) -> #(List(Comment), Tokens) {
@@ -376,40 +381,77 @@ fn collect_comments_loop(
 ) -> #(List(Comment), Tokens) {
   case tokens {
     [] -> #(list.reverse(flush_pending(pending, comments)), list.reverse(kept))
+    [#(t.CommentNormal(text), position), ..rest] -> {
+      let span = token_span(position, t.CommentNormal(text))
+      push_pending_comment(
+        rest,
+        RegularComment,
+        text,
+        span,
+        pending,
+        comments,
+        kept,
+      )
+    }
+    [#(t.CommentDoc(text), position), ..rest] -> {
+      let span = token_span(position, t.CommentDoc(text))
+      push_pending_comment(
+        rest,
+        DocComment,
+        text,
+        span,
+        pending,
+        comments,
+        kept,
+      )
+    }
+    [#(t.CommentModule(text), position), ..rest] -> {
+      let span = token_span(position, t.CommentModule(text))
+      push_pending_comment(
+        rest,
+        ModuleComment,
+        text,
+        span,
+        pending,
+        comments,
+        kept,
+      )
+    }
     [#(token, position), ..rest] -> {
-      case comment_from_token(token, position) {
-        Some(#(kind, text, span)) -> {
-          let #(pending, comments) = case pending {
-            None -> #(PendingComment(kind, text, span), comments)
-            Some(PendingComment(prev_kind, prev_text, prev_span)) ->
-              case kind == prev_kind && kind != RegularComment {
-                True -> #(
-                  PendingComment(
-                    kind,
-                    prev_text <> "\n" <> text,
-                    Span(prev_span.start, span.end),
-                  ),
-                  comments,
-                )
-                False -> #(PendingComment(kind, text, span), [
-                  Comment(prev_kind, prev_text, prev_span),
-                  ..comments
-                ])
-              }
-          }
-          collect_comments_loop(rest, Some(pending), comments, kept)
-        }
-
-        None -> {
-          let comments = flush_pending(pending, comments)
-          collect_comments_loop(rest, None, comments, [
-            #(token, position),
-            ..kept
-          ])
-        }
-      }
+      let comments = flush_pending(pending, comments)
+      collect_comments_loop(rest, None, comments, [#(token, position), ..kept])
     }
   }
+}
+
+fn push_pending_comment(
+  tokens: Tokens,
+  kind: CommentKind,
+  text: String,
+  span: Span,
+  pending: Option(PendingComment),
+  comments: List(Comment),
+  kept: Tokens,
+) -> #(List(Comment), Tokens) {
+  let #(pending, comments) = case pending {
+    None -> #(PendingComment(kind, text, span), comments)
+    Some(PendingComment(prev_kind, prev_text, prev_span)) ->
+      case kind == prev_kind && kind != RegularComment {
+        True -> #(
+          PendingComment(
+            kind,
+            prev_text <> "\n" <> text,
+            Span(prev_span.start, span.end),
+          ),
+          comments,
+        )
+        False -> #(PendingComment(kind, text, span), [
+          Comment(prev_kind, prev_text, prev_span),
+          ..comments
+        ])
+      }
+  }
+  collect_comments_loop(tokens, Some(pending), comments, kept)
 }
 
 fn flush_pending(
@@ -425,18 +467,10 @@ fn flush_pending(
   }
 }
 
-fn comment_from_token(
-  token: Token,
-  position: Position,
-) -> Option(#(CommentKind, String, Span)) {
+fn token_span(position: Position, token: Token) -> Span {
   let P(start) = position
   let end = string_offset(start, t.to_source(token))
-  case token {
-    t.CommentNormal(text) -> Some(#(RegularComment, text, Span(start, end)))
-    t.CommentDoc(text) -> Some(#(DocComment, text, Span(start, end)))
-    t.CommentModule(text) -> Some(#(ModuleComment, text, Span(start, end)))
-    _ -> None
-  }
+  Span(start, end)
 }
 
 fn push_constant(
@@ -1187,7 +1221,9 @@ fn binary_operator(token: Token) -> Result(BinaryOperator, Nil) {
   }
 }
 
-fn pop_binary_operator(tokens: Tokens) -> Result(#(BinaryOperator, Tokens), Nil) {
+fn pop_binary_operator(
+  tokens: Tokens,
+) -> Result(#(BinaryOperator, Tokens), Nil) {
   case tokens {
     [#(token, _), ..tokens] -> {
       use op <- result.map(binary_operator(token))

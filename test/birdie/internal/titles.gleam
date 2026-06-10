@@ -218,7 +218,9 @@ fn birdie_import(module: glance.Module) -> Result(BirdieImport, Nil) {
   }
 }
 
-fn imported_snap(values: List(glance.UnqualifiedImport)) -> Result(String, Nil) {
+fn imported_snap(
+  values: List(glance.UnqualifiedImport),
+) -> Result(String, Nil) {
   use nil, value <- list.fold_until(over: values, from: Error(Nil))
   case value {
     glance.UnqualifiedImport(name: "snap", alias: None) -> list.Stop(Ok("snap"))
