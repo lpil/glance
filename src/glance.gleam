@@ -29,8 +29,13 @@ pub type Module {
 }
 
 /// A comment found in the source code.
+/// text is the text of the comment with the leading forward shash(es) stripped.
+/// For DocComment and ModuleComment, the text may be multi-line.
+/// Location is the span of the comment in the source code.
 pub type Comment {
-  Comment(kind: CommentKind, text: String, span: Span)
+  RegularComment(text: String, location: Span)
+  DocComment(text: String, location: Span)
+  ModuleComment(text: String, location: Span)
 }
 
 pub type Function {
@@ -355,67 +360,88 @@ pub fn module(src: String) -> Result(Module, Error) {
   slurp(Module([], [], [], [], [], comments), [], tokens)
 }
 
-type PendingComment {
-  PendingComment(kind: CommentKind, text: String, span: Span)
-}
-
-/// The kind of comment syntax used in the source code.
-pub type CommentKind {
-  /// A regular comment starting with `//`.
-  RegularComment
-  /// A documentation comment starting with `///`.
-  DocComment
-  /// A module documentation comment starting with `////`.
-  ModuleComment
-}
-
 fn collect_comments(tokens: Tokens) -> #(List(Comment), Tokens) {
   collect_comments_loop(tokens, None, [], [])
 }
 
 fn collect_comments_loop(
   tokens: Tokens,
-  pending: Option(PendingComment),
+  pending: Option(Comment),
   comments: List(Comment),
   kept: Tokens,
 ) -> #(List(Comment), Tokens) {
   case tokens {
     [] -> #(list.reverse(flush_pending(pending, comments)), list.reverse(kept))
-    [#(t.CommentNormal(text), position), ..rest] -> {
-      let span = token_span(position, t.CommentNormal(text))
-      push_pending_comment(
+    [#(t.CommentNormal(text), P(start)), ..rest] -> {
+      collect_comments_loop(
         rest,
-        RegularComment,
-        text,
-        span,
-        pending,
-        comments,
+        Some(RegularComment(text, Span(start, string_offset(start, text) + 2))),
+        case pending {
+          None -> comments
+          Some(pending) -> [pending, ..comments]
+        },
         kept,
       )
     }
-    [#(t.CommentDoc(text), position), ..rest] -> {
-      let span = token_span(position, t.CommentDoc(text))
-      push_pending_comment(
-        rest,
-        DocComment,
-        text,
-        span,
-        pending,
-        comments,
-        kept,
-      )
+    [#(t.CommentDoc(text), P(start)), ..rest] -> {
+      let span = Span(start, string_offset(start, text) + 3)
+
+      case pending {
+        None ->
+          collect_comments_loop(
+            rest,
+            Some(DocComment(text, span)),
+            comments,
+            kept,
+          )
+        Some(DocComment(pending_text, pending_span)) ->
+          collect_comments_loop(
+            rest,
+            Some(DocComment(
+              pending_text <> "\n" <> text,
+              Span(pending_span.start, span.end),
+            )),
+            comments,
+            kept,
+          )
+        Some(pending) ->
+          collect_comments_loop(
+            rest,
+            Some(DocComment(text, span)),
+            [pending, ..comments],
+            kept,
+          )
+      }
     }
-    [#(t.CommentModule(text), position), ..rest] -> {
-      let span = token_span(position, t.CommentModule(text))
-      push_pending_comment(
-        rest,
-        ModuleComment,
-        text,
-        span,
-        pending,
-        comments,
-        kept,
-      )
+    [#(t.CommentModule(text), P(start)), ..rest] -> {
+      let span = Span(start, string_offset(start, text) + 4)
+
+      case pending {
+        None ->
+          collect_comments_loop(
+            rest,
+            Some(ModuleComment(text, span)),
+            comments,
+            kept,
+          )
+        Some(ModuleComment(pending_text, pending_span)) ->
+          collect_comments_loop(
+            rest,
+            Some(ModuleComment(
+              pending_text <> "\n" <> text,
+              Span(pending_span.start, span.end),
+            )),
+            comments,
+            kept,
+          )
+        Some(pending) ->
+          collect_comments_loop(
+            rest,
+            Some(ModuleComment(text, span)),
+            [pending, ..comments],
+            kept,
+          )
+      }
     }
     [#(token, position), ..rest] -> {
       let comments = flush_pending(pending, comments)
@@ -424,46 +450,13 @@ fn collect_comments_loop(
   }
 }
 
-fn push_pending_comment(
-  tokens: Tokens,
-  kind: CommentKind,
-  text: String,
-  span: Span,
-  pending: Option(PendingComment),
-  comments: List(Comment),
-  kept: Tokens,
-) -> #(List(Comment), Tokens) {
-  let #(pending, comments) = case pending {
-    None -> #(PendingComment(kind, text, span), comments)
-    Some(PendingComment(prev_kind, prev_text, prev_span)) ->
-      case kind == prev_kind && kind != RegularComment {
-        True -> #(
-          PendingComment(
-            kind,
-            prev_text <> "\n" <> text,
-            Span(prev_span.start, span.end),
-          ),
-          comments,
-        )
-        False -> #(PendingComment(kind, text, span), [
-          Comment(prev_kind, prev_text, prev_span),
-          ..comments
-        ])
-      }
-  }
-  collect_comments_loop(tokens, Some(pending), comments, kept)
-}
-
 fn flush_pending(
-  pending: Option(PendingComment),
+  pending: Option(Comment),
   comments: List(Comment),
 ) -> List(Comment) {
   case pending {
     None -> comments
-    Some(PendingComment(kind: kind, text: text, span: span)) -> [
-      Comment(kind, text, span),
-      ..comments
-    ]
+    Some(comment) -> [comment, ..comments]
   }
 }
 
