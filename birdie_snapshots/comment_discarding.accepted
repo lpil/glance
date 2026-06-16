@@ -37,28 +37,17 @@ Module(
   [],
   [],
   [
-    Comment(
-      RegularComment,
+    RegularComment(
       " Comment!",
       Span(13, 24),
     ),
-    Comment(
-      RegularComment,
-      " one",
-      Span(39, 45),
-    ),
-    Comment(
-      RegularComment,
-      " two",
-      Span(60, 66),
-    ),
-    Comment(
-      RegularComment,
+    RegularComment(" one", Span(39, 45)),
+    RegularComment(" two", Span(60, 66)),
+    RegularComment(
       " three",
       Span(82, 90),
     ),
-    Comment(
-      RegularComment,
+    RegularComment(
       " four",
       Span(106, 113),
     ),

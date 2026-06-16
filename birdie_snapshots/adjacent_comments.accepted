@@ -1,14 +1,13 @@
 ---
 version: 1.2.7
-title: comments
+title: adjacent_comments
 file: ./test/glance_test.gleam
-test_name: comments_test
+test_name: adjacent_comments_test
 ---
-/// Module comment
-
-// Comment
-
+//// Module comment
+//// second line
 /// Doc comment
+/// second line
 pub fn main() { Nil }
 
 
@@ -23,14 +22,14 @@ Module(
     Definition(
       [],
       Function(
-        Span(48, 69),
+        Span(69, 90),
         "main",
         Public,
         [],
         None,
         [
           Expression(Variable(
-            Span(64, 67),
+            Span(85, 88),
             "Nil",
           )),
         ],
@@ -38,17 +37,15 @@ Module(
     ),
   ],
   [
-    DocComment(
-      " Module comment",
-      Span(0, 18),
-    ),
-    RegularComment(
-      " Comment",
-      Span(20, 30),
+    ModuleComment(
+      " Module comment
+ second line",
+      Span(0, 36),
     ),
     DocComment(
-      " Doc comment",
-      Span(32, 47),
+      " Doc comment
+ second line",
+      Span(37, 68),
     ),
   ],
 )
