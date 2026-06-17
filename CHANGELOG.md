@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- String prefix patterns that discard the rest can now be parsed.
+
 ## v6.0.0 - 2025-10-21
 
 - The `pattern` field of the `PatternAssignment` variant has been renamed from
