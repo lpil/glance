@@ -1,10 +1,15 @@
 ---
 version: 1.2.7
-title: nil
+title: adjacent_comments
 file: ./test/glance_test.gleam
-test_name: nil_test
+test_name: adjacent_comments_test
 ---
+//// Module comment
+//// second line
+/// Doc comment
+/// second line
 pub fn main() { Nil }
+
 
 ---------------------------
 
@@ -17,19 +22,30 @@ Module(
     Definition(
       [],
       Function(
-        Span(0, 21),
+        Span(69, 90),
         "main",
         Public,
         [],
         None,
         [
           Expression(Variable(
-            Span(16, 19),
+            Span(85, 88),
             "Nil",
           )),
         ],
       ),
     ),
   ],
-  [],
+  [
+    ModuleComment(
+      " Module comment
+ second line",
+      Span(0, 36),
+    ),
+    DocComment(
+      " Doc comment
+ second line",
+      Span(37, 68),
+    ),
+  ],
 )

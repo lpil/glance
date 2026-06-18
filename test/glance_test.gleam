@@ -150,7 +150,7 @@ pub fn parse_self_test() {
 pub fn empty_test() {
   ""
   |> glance.module
-  |> should.equal(Ok(glance.Module([], [], [], [], [])))
+  |> should.equal(Ok(glance.Module([], [], [], [], [], [])))
 }
 
 pub fn public_enum_test() {
@@ -1062,6 +1062,65 @@ pub fn main() { Nil }
 "
   |> to_snapshot
   |> birdie.snap(title: "comments")
+}
+
+pub fn adjacent_comments_test() {
+  "//// Module comment
+//// second line
+/// Doc comment
+/// second line
+pub fn main() { Nil }
+"
+  |> to_snapshot
+  |> birdie.snap(title: "adjacent_comments")
+}
+
+pub fn regular_comments_are_collected_separately_test() {
+  let assert Ok(module) =
+    glance.module("// one
+// two
+")
+
+  module.comments
+  |> should.equal([
+    glance.RegularComment(" one", glance.Span(0, 6)),
+    glance.RegularComment(" two", glance.Span(7, 13)),
+  ])
+}
+
+pub fn adjacent_doc_comments_are_combined_test() {
+  let assert Ok(module) =
+    glance.module("/// one
+/// two
+")
+
+  module.comments
+  |> should.equal([glance.DocComment(" one\n two", glance.Span(0, 15))])
+}
+
+pub fn adjacent_module_comments_are_combined_test() {
+  let assert Ok(module) =
+    glance.module("//// one
+//// two
+")
+
+  module.comments
+  |> should.equal([glance.ModuleComment(" one\n two", glance.Span(0, 17))])
+}
+
+pub fn different_comment_kinds_are_not_combined_test() {
+  let assert Ok(module) =
+    glance.module("//// module
+/// doc
+//// more
+")
+
+  module.comments
+  |> should.equal([
+    glance.ModuleComment(" module", glance.Span(0, 11)),
+    glance.DocComment(" doc", glance.Span(12, 19)),
+    glance.ModuleComment(" more", glance.Span(20, 29)),
+  ])
 }
 
 pub fn or_test() {

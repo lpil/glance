@@ -24,7 +24,18 @@ pub type Module {
     type_aliases: List(Definition(TypeAlias)),
     constants: List(Definition(Constant)),
     functions: List(Definition(Function)),
+    comments: List(Comment),
   )
+}
+
+/// A comment found in the source code.
+/// text is the text of the comment with the leading forward shash(es) stripped.
+/// For DocComment and ModuleComment, the text may be multi-line.
+/// Location is the span of the comment in the source code.
+pub type Comment {
+  RegularComment(text: String, location: Span)
+  DocComment(text: String, location: Span)
+  ModuleComment(text: String, location: Span)
 }
 
 pub type Function {
@@ -339,11 +350,120 @@ pub type Error {
 }
 
 pub fn module(src: String) -> Result(Module, Error) {
-  glexer.new(src)
-  |> glexer.discard_comments
-  |> glexer.discard_whitespace
-  |> glexer.lex
-  |> slurp(Module([], [], [], [], []), [], _)
+  let tokens =
+    glexer.new(src)
+    |> glexer.discard_whitespace
+    |> glexer.lex
+
+  let #(comments, tokens) = collect_comments(tokens)
+
+  slurp(Module([], [], [], [], [], comments), [], tokens)
+}
+
+fn collect_comments(tokens: Tokens) -> #(List(Comment), Tokens) {
+  collect_comments_loop(tokens, None, [], [])
+}
+
+fn collect_comments_loop(
+  tokens: Tokens,
+  pending: Option(Comment),
+  comments: List(Comment),
+  kept: Tokens,
+) -> #(List(Comment), Tokens) {
+  case tokens {
+    [] -> #(list.reverse(flush_pending(pending, comments)), list.reverse(kept))
+    [#(t.CommentNormal(text), P(start)), ..rest] -> {
+      collect_comments_loop(
+        rest,
+        Some(RegularComment(text, Span(start, string_offset(start, text) + 2))),
+        case pending {
+          None -> comments
+          Some(pending) -> [pending, ..comments]
+        },
+        kept,
+      )
+    }
+    [#(t.CommentDoc(text), P(start)), ..rest] -> {
+      let span = Span(start, string_offset(start, text) + 3)
+
+      case pending {
+        None ->
+          collect_comments_loop(
+            rest,
+            Some(DocComment(text, span)),
+            comments,
+            kept,
+          )
+        Some(DocComment(pending_text, pending_span)) ->
+          collect_comments_loop(
+            rest,
+            Some(DocComment(
+              pending_text <> "\n" <> text,
+              Span(pending_span.start, span.end),
+            )),
+            comments,
+            kept,
+          )
+        Some(pending) ->
+          collect_comments_loop(
+            rest,
+            Some(DocComment(text, span)),
+            [pending, ..comments],
+            kept,
+          )
+      }
+    }
+    [#(t.CommentModule(text), P(start)), ..rest] -> {
+      let span = Span(start, string_offset(start, text) + 4)
+
+      case pending {
+        None ->
+          collect_comments_loop(
+            rest,
+            Some(ModuleComment(text, span)),
+            comments,
+            kept,
+          )
+        Some(ModuleComment(pending_text, pending_span)) ->
+          collect_comments_loop(
+            rest,
+            Some(ModuleComment(
+              pending_text <> "\n" <> text,
+              Span(pending_span.start, span.end),
+            )),
+            comments,
+            kept,
+          )
+        Some(pending) ->
+          collect_comments_loop(
+            rest,
+            Some(ModuleComment(text, span)),
+            [pending, ..comments],
+            kept,
+          )
+      }
+    }
+    [#(token, position), ..rest] -> {
+      let comments = flush_pending(pending, comments)
+      collect_comments_loop(rest, None, comments, [#(token, position), ..kept])
+    }
+  }
+}
+
+fn flush_pending(
+  pending: Option(Comment),
+  comments: List(Comment),
+) -> List(Comment) {
+  case pending {
+    None -> comments
+    Some(comment) -> [comment, ..comments]
+  }
+}
+
+fn token_span(position: Position, token: Token) -> Span {
+  let P(start) = position
+  let end = string_offset(start, t.to_source(token))
+  Span(start, end)
 }
 
 fn push_constant(
@@ -1106,7 +1226,9 @@ fn binary_operator(token: Token) -> Result(BinaryOperator, Nil) {
   }
 }
 
-fn pop_binary_operator(tokens: Tokens) -> Result(#(BinaryOperator, Tokens), Nil) {
+fn pop_binary_operator(
+  tokens: Tokens,
+) -> Result(#(BinaryOperator, Tokens), Nil) {
   case tokens {
     [#(token, _), ..tokens] -> {
       use op <- result.map(binary_operator(token))
