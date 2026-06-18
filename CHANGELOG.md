@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v6.1.0 - 2026-06-18
 
 - String prefix patterns that discard the rest can now be parsed.
 
