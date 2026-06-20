@@ -754,6 +754,12 @@ pub fn bit_string_value_sizes_test() {
   |> birdie.snap(title: "bit_string_value_sizes")
 }
 
+pub fn bit_string_pattern_arithmetic_sizes_test() {
+  "pub fn main() { let <<v:size(len - 1), rest:bits>> = x }"
+  |> to_snapshot
+  |> birdie.snap(title: "bit_string_pattern_arithmetic_sizes")
+}
+
 pub fn bit_string_units_test() {
   "pub fn main() { <<1, 2:unit(5), 5:unit(3)>> }"
   |> to_snapshot

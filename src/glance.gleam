@@ -82,7 +82,7 @@ pub type Pattern {
   )
   PatternBitString(
     location: Span,
-    segments: List(#(Pattern, List(BitStringSegmentOption(Pattern)))),
+    segments: List(#(Pattern, List(BitStringSegmentOption))),
   )
   PatternVariant(
     location: Span,
@@ -130,7 +130,7 @@ pub type Expression {
   )
   BitString(
     location: Span,
-    segments: List(#(Expression, List(BitStringSegmentOption(Expression)))),
+    segments: List(#(Expression, List(BitStringSegmentOption))),
   )
 
   Case(location: Span, subjects: List(Expression), clauses: List(Clause))
@@ -155,7 +155,7 @@ pub type Clause {
   )
 }
 
-pub type BitStringSegmentOption(t) {
+pub type BitStringSegmentOption {
   BytesOption
   IntOption
   FloatOption
@@ -171,7 +171,7 @@ pub type BitStringSegmentOption(t) {
   BigOption
   LittleOption
   NativeOption
-  SizeValueOption(t)
+  SizeValueOption(Expression)
   SizeOption(Int)
   UnitOption(Int)
 }
@@ -1353,28 +1353,26 @@ fn todo_panic(
 fn bit_string_segment(
   parser: fn(Tokens) -> Result(#(t, Tokens), Error),
   tokens: Tokens,
-) -> Result(#(#(t, List(BitStringSegmentOption(t))), Tokens), Error) {
+) -> Result(#(#(t, List(BitStringSegmentOption)), Tokens), Error) {
   use #(value, tokens) <- result.try(parser(tokens))
-  let result = optional_bit_string_segment_options(parser, tokens)
+  let result = optional_bit_string_segment_options(tokens)
   use #(options, tokens) <- result.try(result)
   Ok(#(#(value, options), tokens))
 }
 
 fn optional_bit_string_segment_options(
-  parser: fn(Tokens) -> Result(#(t, Tokens), Error),
   tokens: Tokens,
-) -> Result(#(List(BitStringSegmentOption(t)), Tokens), Error) {
+) -> Result(#(List(BitStringSegmentOption), Tokens), Error) {
   case tokens {
-    [#(t.Colon, _), ..tokens] -> bit_string_segment_options(parser, [], tokens)
+    [#(t.Colon, _), ..tokens] -> bit_string_segment_options([], tokens)
     _ -> Ok(#([], tokens))
   }
 }
 
 fn bit_string_segment_options(
-  parser: fn(Tokens) -> Result(#(t, Tokens), Error),
-  options: List(BitStringSegmentOption(t)),
+  options: List(BitStringSegmentOption),
   tokens: Tokens,
-) -> Result(#(List(BitStringSegmentOption(t)), Tokens), Error) {
+) -> Result(#(List(BitStringSegmentOption), Tokens), Error) {
   use #(option, tokens) <- result.try(case tokens {
     // Size as just an int
     [#(t.Int(i), position), ..tokens] -> {
@@ -1384,9 +1382,10 @@ fn bit_string_segment_options(
       }
     }
 
-    // Size as an expression
+    // Size as an expression. The size is always an expression, even in a
+    // pattern segment, so that arithmetic such as `size(len - 1)` is accepted.
     [#(t.Name("size"), _), #(t.LeftParen, _), ..tokens] -> {
-      use #(value, tokens) <- result.try(parser(tokens))
+      use #(value, tokens) <- result.try(expression(tokens))
       use _, tokens <- expect(t.RightParen, tokens)
       Ok(#(SizeValueOption(value), tokens))
     }
@@ -1433,8 +1432,7 @@ fn bit_string_segment_options(
   let options = [option, ..options]
 
   case tokens {
-    [#(t.Minus, _), ..tokens] ->
-      bit_string_segment_options(parser, options, tokens)
+    [#(t.Minus, _), ..tokens] -> bit_string_segment_options(options, tokens)
     _ -> Ok(#(list.reverse(options), tokens))
   }
 }
