@@ -754,10 +754,34 @@ pub fn bit_string_value_sizes_test() {
   |> birdie.snap(title: "bit_string_value_sizes")
 }
 
+pub fn bit_string_expression_size_call_test() {
+  "pub fn main() { <<1:size(x())>> }"
+  |> to_snapshot
+  |> birdie.snap(title: "bit_string_expression_size_call")
+}
+
 pub fn bit_string_pattern_arithmetic_sizes_test() {
   "pub fn main() { let <<v:size(len - 1), rest:bits>> = x }"
   |> to_snapshot
   |> birdie.snap(title: "bit_string_pattern_arithmetic_sizes")
+}
+
+pub fn bit_string_pattern_arithmetic_size_options_test() {
+  "pub fn main() { let <<v:little-signed-size(n * 8)>> = x }"
+  |> to_snapshot
+  |> birdie.snap(title: "bit_string_pattern_arithmetic_size_options")
+}
+
+pub fn bit_string_pattern_size_block_test() {
+  "pub fn main() { let <<v:size({ len + 1 } * 8 + 1)>> = x }"
+  |> to_snapshot
+  |> birdie.snap(title: "bit_string_pattern_size_block")
+}
+
+pub fn bit_string_pattern_size_call_error_test() {
+  "pub fn main() { let <<v:size(x())>> = x }"
+  |> to_snapshot
+  |> birdie.snap(title: "bit_string_pattern_size_call_error")
 }
 
 pub fn bit_string_units_test() {

@@ -1,0 +1,86 @@
+---
+version: 1.2.7
+title: bit_string_pattern_size_block
+file: ./test/glance_test.gleam
+test_name: bit_string_pattern_size_block_test
+---
+pub fn main() { let <<v:size({ len + 1 } * 8 + 1)>> = x }
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(0, 57),
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Span(16, 55),
+            Let,
+            PatternBitString(
+              Span(20, 51),
+              [
+                #(
+                  PatternVariable(
+                    Span(22, 23),
+                    "v",
+                  ),
+                  [
+                    SizeValueOption(BitArraySizeBinaryOperator(
+                      Span(29, 48),
+                      BitArraySizeAdd,
+                      BitArraySizeBinaryOperator(
+                        Span(29, 44),
+                        BitArraySizeMultiply,
+                        BitArraySizeBlock(
+                          Span(29, 40),
+                          BitArraySizeBinaryOperator(
+                            Span(31, 38),
+                            BitArraySizeAdd,
+                            BitArraySizeVariable(
+                              Span(
+                                31,
+                                34,
+                              ),
+                              "len",
+                            ),
+                            BitArraySizeInt(
+                              Span(
+                                37,
+                                38,
+                              ),
+                              "1",
+                            ),
+                          ),
+                        ),
+                        BitArraySizeInt(
+                          Span(43, 44),
+                          "8",
+                        ),
+                      ),
+                      BitArraySizeInt(
+                        Span(47, 48),
+                        "1",
+                      ),
+                    )),
+                  ],
+                ),
+              ],
+            ),
+            None,
+            Variable(Span(54, 55), "x"),
+          ),
+        ],
+      ),
+    ),
+  ],
+)

@@ -1,10 +1,10 @@
 ---
 version: 1.2.7
-title: bit_string_pattern_arithmetic_sizes
+title: bit_string_pattern_arithmetic_size_options
 file: ./test/glance_test.gleam
-test_name: bit_string_pattern_arithmetic_sizes_test
+test_name: bit_string_pattern_arithmetic_size_options_test
 ---
-pub fn main() { let <<v:size(len - 1), rest:bits>> = x }
+pub fn main() { let <<v:little-signed-size(n * 8)>> = x }
 
 ---------------------------
 
@@ -17,17 +17,17 @@ Module(
     Definition(
       [],
       Function(
-        Span(0, 56),
+        Span(0, 57),
         "main",
         Public,
         [],
         None,
         [
           Assignment(
-            Span(16, 54),
+            Span(16, 55),
             Let,
             PatternBitString(
-              Span(20, 50),
+              Span(20, 51),
               [
                 #(
                   PatternVariable(
@@ -35,31 +35,26 @@ Module(
                     "v",
                   ),
                   [
+                    LittleOption,
+                    SignedOption,
                     SizeValueOption(BitArraySizeBinaryOperator(
-                      Span(29, 36),
-                      BitArraySizeSubtract,
+                      Span(43, 48),
+                      BitArraySizeMultiply,
                       BitArraySizeVariable(
-                        Span(29, 32),
-                        "len",
+                        Span(43, 44),
+                        "n",
                       ),
                       BitArraySizeInt(
-                        Span(35, 36),
-                        "1",
+                        Span(47, 48),
+                        "8",
                       ),
                     )),
                   ],
                 ),
-                #(
-                  PatternVariable(
-                    Span(39, 43),
-                    "rest",
-                  ),
-                  [BitsOption],
-                ),
               ],
             ),
             None,
-            Variable(Span(53, 54), "x"),
+            Variable(Span(54, 55), "x"),
           ),
         ],
       ),

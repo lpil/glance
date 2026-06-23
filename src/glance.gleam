@@ -82,7 +82,7 @@ pub type Pattern {
   )
   PatternBitString(
     location: Span,
-    segments: List(#(Pattern, List(BitStringSegmentOption))),
+    segments: List(#(Pattern, List(BitStringSegmentOption(BitArraySize)))),
   )
   PatternVariant(
     location: Span,
@@ -130,7 +130,7 @@ pub type Expression {
   )
   BitString(
     location: Span,
-    segments: List(#(Expression, List(BitStringSegmentOption))),
+    segments: List(#(Expression, List(BitStringSegmentOption(Expression)))),
   )
 
   Case(location: Span, subjects: List(Expression), clauses: List(Clause))
@@ -155,7 +155,7 @@ pub type Clause {
   )
 }
 
-pub type BitStringSegmentOption {
+pub type BitStringSegmentOption(t) {
   BytesOption
   IntOption
   FloatOption
@@ -171,9 +171,29 @@ pub type BitStringSegmentOption {
   BigOption
   LittleOption
   NativeOption
-  SizeValueOption(Expression)
+  SizeValueOption(t)
   SizeOption(Int)
   UnitOption(Int)
+}
+
+pub type BitArraySize {
+  BitArraySizeInt(location: Span, value: String)
+  BitArraySizeVariable(location: Span, name: String)
+  BitArraySizeBinaryOperator(
+    location: Span,
+    operator: BitArraySizeOperator,
+    left: BitArraySize,
+    right: BitArraySize,
+  )
+  BitArraySizeBlock(location: Span, inner: BitArraySize)
+}
+
+pub type BitArraySizeOperator {
+  BitArraySizeAdd
+  BitArraySizeSubtract
+  BitArraySizeMultiply
+  BitArraySizeDivide
+  BitArraySizeRemainder
 }
 
 pub type BinaryOperator {
@@ -1046,7 +1066,7 @@ fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
     }
 
     [#(t.LessLess, P(start)), ..tokens] -> {
-      let parser = bit_string_segment(pattern, _)
+      let parser = bit_string_segment(pattern, bit_array_size, _)
       let result = comma_delimited([], tokens, parser, t.GreaterGreater)
       use #(segments, end, tokens) <- result.try(result)
       Ok(#(PatternBitString(Span(start, end), segments), tokens))
@@ -1284,7 +1304,7 @@ fn expression_unit(
     }
 
     [#(t.LessLess, P(start)), ..tokens] -> {
-      let parser = bit_string_segment(expression, _)
+      let parser = bit_string_segment(expression, expression, _)
       let result = comma_delimited([], tokens, parser, t.GreaterGreater)
       use #(segments, end, tokens) <- result.map(result)
       #(Some(BitString(Span(start, end), segments)), tokens)
@@ -1351,28 +1371,32 @@ fn todo_panic(
 }
 
 fn bit_string_segment(
-  parser: fn(Tokens) -> Result(#(t, Tokens), Error),
+  parser: fn(Tokens) -> Result(#(value, Tokens), Error),
+  size_parser: fn(Tokens) -> Result(#(size, Tokens), Error),
   tokens: Tokens,
-) -> Result(#(#(t, List(BitStringSegmentOption)), Tokens), Error) {
+) -> Result(#(#(value, List(BitStringSegmentOption(size))), Tokens), Error) {
   use #(value, tokens) <- result.try(parser(tokens))
-  let result = optional_bit_string_segment_options(tokens)
+  let result = optional_bit_string_segment_options(size_parser, tokens)
   use #(options, tokens) <- result.try(result)
   Ok(#(#(value, options), tokens))
 }
 
 fn optional_bit_string_segment_options(
+  size_parser: fn(Tokens) -> Result(#(size, Tokens), Error),
   tokens: Tokens,
-) -> Result(#(List(BitStringSegmentOption), Tokens), Error) {
+) -> Result(#(List(BitStringSegmentOption(size)), Tokens), Error) {
   case tokens {
-    [#(t.Colon, _), ..tokens] -> bit_string_segment_options([], tokens)
+    [#(t.Colon, _), ..tokens] ->
+      bit_string_segment_options(size_parser, [], tokens)
     _ -> Ok(#([], tokens))
   }
 }
 
 fn bit_string_segment_options(
-  options: List(BitStringSegmentOption),
+  size_parser: fn(Tokens) -> Result(#(size, Tokens), Error),
+  options: List(BitStringSegmentOption(size)),
   tokens: Tokens,
-) -> Result(#(List(BitStringSegmentOption), Tokens), Error) {
+) -> Result(#(List(BitStringSegmentOption(size)), Tokens), Error) {
   use #(option, tokens) <- result.try(case tokens {
     // Size as just an int
     [#(t.Int(i), position), ..tokens] -> {
@@ -1382,10 +1406,9 @@ fn bit_string_segment_options(
       }
     }
 
-    // Size as an expression. The size is always an expression, even in a
-    // pattern segment, so that arithmetic such as `size(len - 1)` is accepted.
+    // Size as an expression, or as a restricted bit array size in patterns.
     [#(t.Name("size"), _), #(t.LeftParen, _), ..tokens] -> {
-      use #(value, tokens) <- result.try(expression(tokens))
+      use #(value, tokens) <- result.try(size_parser(tokens))
       use _, tokens <- expect(t.RightParen, tokens)
       Ok(#(SizeValueOption(value), tokens))
     }
@@ -1432,8 +1455,127 @@ fn bit_string_segment_options(
   let options = [option, ..options]
 
   case tokens {
-    [#(t.Minus, _), ..tokens] -> bit_string_segment_options(options, tokens)
+    [#(t.Minus, _), ..tokens] ->
+      bit_string_segment_options(size_parser, options, tokens)
     _ -> Ok(#(list.reverse(options), tokens))
+  }
+}
+
+fn bit_array_size(tokens: Tokens) -> Result(#(BitArraySize, Tokens), Error) {
+  bit_array_size_loop(tokens, [], [])
+}
+
+fn bit_array_size_loop(
+  tokens: Tokens,
+  operators: List(BitArraySizeOperator),
+  values: List(BitArraySize),
+) -> Result(#(BitArraySize, Tokens), Error) {
+  use #(size, tokens) <- result.try(bit_array_size_unit(tokens))
+  let values = [size, ..values]
+
+  case pop_bit_array_size_operator(tokens) {
+    Ok(#(operator, tokens)) -> {
+      case handle_bit_array_size_operator(Some(operator), operators, values) {
+        #(Some(size), _, _) -> Ok(#(size, tokens))
+        #(None, operators, values) ->
+          bit_array_size_loop(tokens, operators, values)
+      }
+    }
+    Error(_) ->
+      case handle_bit_array_size_operator(None, operators, values).0 {
+        None -> unexpected_error(tokens)
+        Some(size) -> Ok(#(size, tokens))
+      }
+  }
+}
+
+fn bit_array_size_unit(tokens: Tokens) -> Result(#(BitArraySize, Tokens), Error) {
+  case tokens {
+    [#(t.Name(name), P(start)), ..tokens] ->
+      Ok(#(BitArraySizeVariable(span_from_string(start, name), name), tokens))
+
+    [#(t.Int(value), P(start)), ..tokens] ->
+      Ok(#(BitArraySizeInt(span_from_string(start, value), value), tokens))
+
+    [#(t.LeftBrace, P(start)), ..tokens] -> {
+      use #(inner, tokens) <- result.try(bit_array_size(tokens))
+      use P(end), tokens <- expect(t.RightBrace, tokens)
+      Ok(#(BitArraySizeBlock(Span(start, end + 1), inner), tokens))
+    }
+
+    [#(other, position), ..] -> Error(UnexpectedToken(other, position))
+    [] -> Error(UnexpectedEndOfInput)
+  }
+}
+
+fn bit_array_size_operator(token: Token) -> Result(BitArraySizeOperator, Nil) {
+  case token {
+    t.Plus -> Ok(BitArraySizeAdd)
+    t.Minus -> Ok(BitArraySizeSubtract)
+    t.Star -> Ok(BitArraySizeMultiply)
+    t.Slash -> Ok(BitArraySizeDivide)
+    t.Percent -> Ok(BitArraySizeRemainder)
+    _ -> Error(Nil)
+  }
+}
+
+fn bit_array_size_precedence(operator: BitArraySizeOperator) -> Int {
+  case operator {
+    BitArraySizeAdd | BitArraySizeSubtract -> 7
+    BitArraySizeMultiply | BitArraySizeDivide | BitArraySizeRemainder -> 8
+  }
+}
+
+fn pop_bit_array_size_operator(
+  tokens: Tokens,
+) -> Result(#(BitArraySizeOperator, Tokens), Nil) {
+  case tokens {
+    [#(token, _), ..tokens] -> {
+      use operator <- result.map(bit_array_size_operator(token))
+      #(operator, tokens)
+    }
+    [] -> Error(Nil)
+  }
+}
+
+fn handle_bit_array_size_operator(
+  next: Option(BitArraySizeOperator),
+  operators: List(BitArraySizeOperator),
+  values: List(BitArraySize),
+) -> #(Option(BitArraySize), List(BitArraySizeOperator), List(BitArraySize)) {
+  case next, operators, values {
+    Some(operator), [], _ -> #(None, [operator], values)
+
+    Some(next), [previous, ..operators], [a, b, ..rest_values] -> {
+      case
+        bit_array_size_precedence(previous) >= bit_array_size_precedence(next)
+      {
+        True -> {
+          let span = Span(b.location.start, a.location.end)
+          let size = BitArraySizeBinaryOperator(span, previous, b, a)
+          let values = [size, ..rest_values]
+          handle_bit_array_size_operator(Some(next), operators, values)
+        }
+        False -> #(None, [next, previous, ..operators], values)
+      }
+    }
+
+    None, [operator, ..operators], [a, b, ..values] -> {
+      let values = [
+        BitArraySizeBinaryOperator(
+          Span(b.location.start, a.location.end),
+          operator,
+          b,
+          a,
+        ),
+        ..values
+      ]
+      handle_bit_array_size_operator(None, operators, values)
+    }
+
+    None, [], [size] -> #(Some(size), operators, values)
+    None, [], [] -> #(None, operators, values)
+    _, _, _ -> panic as "parser bug, bit array size not fully reduced"
   }
 }
 

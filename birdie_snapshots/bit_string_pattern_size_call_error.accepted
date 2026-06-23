@@ -1,0 +1,14 @@
+---
+version: 1.2.7
+title: bit_string_pattern_size_call_error
+file: ./test/glance_test.gleam
+test_name: bit_string_pattern_size_call_error_test
+---
+pub fn main() { let <<v:size(x())>> = x }
+
+---------------------------
+
+Error(UnexpectedToken(
+  LeftParen,
+  Position(30),
+))

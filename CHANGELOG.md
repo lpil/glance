@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+- Arithmetic in bit array pattern segment sizes can now be parsed.
+- `BitStringSegmentOption` now takes a type parameter for `SizeValueOption`.
+- The size value in pattern bit array segment options now uses the new
+  `BitArraySize` type.
+
 ## v6.1.0 - 2026-06-18
 
 - String prefix patterns that discard the rest can now be parsed.
