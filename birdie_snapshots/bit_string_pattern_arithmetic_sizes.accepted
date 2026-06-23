@@ -1,0 +1,68 @@
+---
+version: 1.2.7
+title: bit_string_pattern_arithmetic_sizes
+file: ./test/glance_test.gleam
+test_name: bit_string_pattern_arithmetic_sizes_test
+---
+pub fn main() { let <<v:size(len - 1), rest:bits>> = x }
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(0, 56),
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Span(16, 54),
+            Let,
+            PatternBitString(
+              Span(20, 50),
+              [
+                #(
+                  PatternVariable(
+                    Span(22, 23),
+                    "v",
+                  ),
+                  [
+                    SizeValueOption(BitArraySizeBinaryOperator(
+                      Span(29, 36),
+                      BitArraySizeSubtract,
+                      BitArraySizeVariable(
+                        Span(29, 32),
+                        "len",
+                      ),
+                      BitArraySizeInt(
+                        Span(35, 36),
+                        "1",
+                      ),
+                    )),
+                  ],
+                ),
+                #(
+                  PatternVariable(
+                    Span(39, 43),
+                    "rest",
+                  ),
+                  [BitsOption],
+                ),
+              ],
+            ),
+            None,
+            Variable(Span(53, 54), "x"),
+          ),
+        ],
+      ),
+    ),
+  ],
+)

@@ -1,0 +1,48 @@
+---
+version: 1.2.7
+title: bit_string_expression_size_call
+file: ./test/glance_test.gleam
+test_name: bit_string_expression_size_call_test
+---
+pub fn main() { <<1:size(x())>> }
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(0, 33),
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(BitString(
+            Span(16, 31),
+            [
+              #(
+                Int(Span(18, 19), "1"),
+                [
+                  SizeValueOption(Call(
+                    Span(25, 28),
+                    Variable(
+                      Span(25, 26),
+                      "x",
+                    ),
+                    [],
+                  )),
+                ],
+              ),
+            ],
+          )),
+        ],
+      ),
+    ),
+  ],
+)
