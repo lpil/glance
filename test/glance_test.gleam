@@ -828,6 +828,15 @@ pub fn let_assert_todo_precedence_test() {
   |> birdie.snap(title: "let_assert_todo_precedence")
 }
 
+pub fn let_assert_message_before_negation_test() {
+  "pub fn main() {
+  let assert [x] = [5] as \"label\"
+  -x
+}"
+  |> to_snapshot
+  |> birdie.snap(title: "let_assert_message_before_negation")
+}
+
 pub fn int_pattern_test() {
   "pub fn main() { let 123 = 1 }"
   |> to_snapshot
@@ -1118,6 +1127,12 @@ pub fn todo_as_block_test() {
   |> birdie.snap(title: "todo_as_block")
 }
 
+pub fn todo_message_before_binary_operator_test() {
+  "pub fn main() { todo as \"a\" <> \"b\" }"
+  |> to_snapshot
+  |> birdie.snap(title: "todo_message_before_binary_operator")
+}
+
 pub fn expression_panic_message_test() {
   "pub fn main() { panic(\"huh\") }"
   |> to_snapshot
@@ -1138,6 +1153,12 @@ pub fn panic_as_block_test() {
 }"
   |> to_snapshot
   |> birdie.snap(title: "panic_as_block")
+}
+
+pub fn panic_message_before_binary_operator_test() {
+  "pub fn main() { panic as \"a\" <> \"b\" }"
+  |> to_snapshot
+  |> birdie.snap(title: "panic_message_before_binary_operator")
 }
 
 pub fn label_capture_test() {
@@ -1385,6 +1406,15 @@ pub fn main() {
 "
   |> to_snapshot
   |> birdie.snap(title: "assert_precedence_with_todo")
+}
+
+pub fn assert_message_before_negation_test() {
+  "pub fn main() {
+  assert x as \"label\"
+  -x
+}"
+  |> to_snapshot
+  |> birdie.snap(title: "assert_message_before_negation")
 }
 
 pub fn use_with_annotations_test() {
@@ -2000,6 +2030,12 @@ pub fn echo_with_message_test() {
   "pub fn main() { echo 3.14 as \"This is pi\" }"
   |> to_snapshot
   |> birdie.snap(title: "echo_with_message")
+}
+
+pub fn echo_message_before_binary_operator_test() {
+  "pub fn main() { True |> echo as Label(\"label\").text && False }"
+  |> to_snapshot
+  |> birdie.snap(title: "echo_message_before_binary_operator")
 }
 
 pub fn label_location_test() {
