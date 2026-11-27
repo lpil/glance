@@ -844,7 +844,7 @@ fn assert_(tokens: Tokens, start: Int) -> Result(#(Statement, Tokens), Error) {
   use #(subject, tokens) <- result.try(expression(tokens))
   case tokens {
     [#(t.As, _), ..tokens] ->
-      case expression(tokens) {
+      case as_message(tokens) {
         Error(error) -> Error(error)
         Ok(#(message, tokens)) -> {
           let statement =
@@ -890,7 +890,7 @@ fn assignment(
 
   use #(kind, tokens, end) <- result.try(case kind, tokens {
     LetAssert(None), [#(t.As, _), ..tokens] -> {
-      use #(message, tokens) <- result.map(expression(tokens))
+      use #(message, tokens) <- result.map(as_message(tokens))
       #(LetAssert(message: Some(message)), tokens, message.location.end)
     }
     LetAssert(_), _ | Let, _ -> Ok(#(kind, tokens, value.location.end))
@@ -1088,6 +1088,15 @@ fn pattern(tokens: Tokens) -> Result(#(Pattern, Tokens), Error) {
 
 fn expression(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
   expression_loop(tokens, [], [], RegularExpressionUnit)
+}
+
+fn as_message(tokens: Tokens) -> Result(#(Expression, Tokens), Error) {
+  let unit = expression_unit(tokens, RegularExpressionUnit)
+  use #(maybe_message, tokens) <- result.try(unit)
+  case maybe_message {
+    Some(message) -> Ok(#(message, tokens))
+    None -> unexpected_error(tokens)
+  }
 }
 
 fn unexpected_error(tokens: Tokens) -> Result(a, Error) {
@@ -1327,7 +1336,7 @@ fn expression_unit(
       use #(span, echo_expression, tokens) <- result.try(result)
       case tokens {
         [#(t.As, _), ..tokens] -> {
-          use #(message, tokens) <- result.map(expression(tokens))
+          use #(message, tokens) <- result.map(as_message(tokens))
           let span = Span(span.start, message.location.end)
           #(Some(Echo(span, echo_expression, Some(message))), tokens)
         }
@@ -1357,7 +1366,7 @@ fn todo_panic(
 ) -> Result(#(Option(Expression), Tokens), Error) {
   case tokens {
     [#(t.As, _), ..tokens] -> {
-      use #(reason, tokens) <- result.try(expression(tokens))
+      use #(reason, tokens) <- result.try(as_message(tokens))
       let span = Span(start, reason.location.end)
       let expression = constructor(span, Some(reason))
       Ok(#(Some(expression), tokens))

@@ -1,0 +1,42 @@
+---
+version: 1.2.7
+title: panic_message_before_binary_operator
+file: ./test/glance_test.gleam
+test_name: panic_message_before_binary_operator_test
+---
+pub fn main() { panic as "a" <> "b" }
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(0, 37),
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(BinaryOperator(
+            Span(16, 35),
+            Concatenate,
+            Panic(
+              Span(16, 28),
+              Some(String(
+                Span(25, 28),
+                "a",
+              )),
+            ),
+            String(Span(32, 35), "b"),
+          )),
+        ],
+      ),
+    ),
+  ],
+)

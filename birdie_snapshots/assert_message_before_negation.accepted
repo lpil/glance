@@ -1,0 +1,45 @@
+---
+version: 1.2.7
+title: assert_message_before_negation
+file: ./test/glance_test.gleam
+test_name: assert_message_before_negation_test
+---
+pub fn main() {
+  assert x as "label"
+  -x
+}
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(0, 44),
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assert(
+            Span(18, 37),
+            Variable(Span(25, 26), "x"),
+            Some(String(
+              Span(30, 37),
+              "label",
+            )),
+          ),
+          Expression(NegateInt(
+            Span(40, 42),
+            Variable(Span(41, 42), "x"),
+          )),
+        ],
+      ),
+    ),
+  ],
+)

@@ -1,0 +1,67 @@
+---
+version: 1.2.7
+title: echo_message_before_binary_operator
+file: ./test/glance_test.gleam
+test_name: echo_message_before_binary_operator_test
+---
+pub fn main() { True |> echo as Label("label").text && False }
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(0, 62),
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Expression(BinaryOperator(
+            Span(16, 60),
+            And,
+            BinaryOperator(
+              Span(16, 51),
+              Pipe,
+              Variable(
+                Span(16, 20),
+                "True",
+              ),
+              Echo(
+                Span(24, 51),
+                None,
+                Some(FieldAccess(
+                  Span(32, 51),
+                  Call(
+                    Span(32, 46),
+                    Variable(
+                      Span(32, 37),
+                      "Label",
+                    ),
+                    [
+                      UnlabelledField(String(
+                        Span(38, 45),
+                        "label",
+                      )),
+                    ],
+                  ),
+                  "text",
+                )),
+              ),
+            ),
+            Variable(
+              Span(55, 60),
+              "False",
+            ),
+          )),
+        ],
+      ),
+    ),
+  ],
+)

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Fixed the message after `as` in `echo`, `assert`, `let assert`, `todo` and
+  `panic` being parsed as a full expression instead of a single expression unit.
+
 ## v7.0.0 - 2026-07-09
 
 - Arithmetic in bit array pattern segment sizes can now be parsed.

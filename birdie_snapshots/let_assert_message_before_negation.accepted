@@ -1,0 +1,60 @@
+---
+version: 1.2.7
+title: let_assert_message_before_negation
+file: ./test/glance_test.gleam
+test_name: let_assert_message_before_negation_test
+---
+pub fn main() {
+  let assert [x] = [5] as "label"
+  -x
+}
+
+---------------------------
+
+Module(
+  [],
+  [],
+  [],
+  [],
+  [
+    Definition(
+      [],
+      Function(
+        Span(0, 56),
+        "main",
+        Public,
+        [],
+        None,
+        [
+          Assignment(
+            Span(18, 49),
+            LetAssert(Some(String(
+              Span(42, 49),
+              "label",
+            ))),
+            PatternList(
+              Span(29, 32),
+              [
+                PatternVariable(
+                  Span(30, 31),
+                  "x",
+                ),
+              ],
+              None,
+            ),
+            None,
+            List(
+              Span(35, 38),
+              [Int(Span(36, 37), "5")],
+              None,
+            ),
+          ),
+          Expression(NegateInt(
+            Span(52, 54),
+            Variable(Span(53, 54), "x"),
+          )),
+        ],
+      ),
+    ),
+  ],
+)
